@@ -1,14 +1,18 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getSupabaseConfig } from './config'
 
 export async function updateSession(request: NextRequest) {
 	let supabaseResponse = NextResponse.next({
 		request,
 	})
 
+	// Obtener configuración de Supabase con fallbacks
+	const config = getSupabaseConfig()
+
 	const supabase = createServerClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL!,
-		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+		config.url,
+		config.anonKey,
 		{
 			cookies: {
 				getAll() {
@@ -38,9 +42,16 @@ export async function updateSession(request: NextRequest) {
 	if (
 		!user &&
 		!request.nextUrl.pathname.startsWith('/auth') &&
-		!request.nextUrl.pathname === '/'
+		request.nextUrl.pathname !== '/'
 	) {
 		// no user, potentially respond by redirecting the user to the login page
+		const url = request.nextUrl.clone()
+		url.pathname = '/auth/login'
+		return NextResponse.redirect(url)
+	}
+
+	// Proteger ruta /home - solo usuarios autenticados
+	if (!user && request.nextUrl.pathname === '/home') {
 		const url = request.nextUrl.clone()
 		url.pathname = '/auth/login'
 		return NextResponse.redirect(url)
@@ -61,3 +72,4 @@ export async function updateSession(request: NextRequest) {
 
 	return supabaseResponse
 }
+

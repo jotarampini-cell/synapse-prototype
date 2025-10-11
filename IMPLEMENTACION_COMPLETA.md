@@ -208,3 +208,11 @@ La aplicación se compiló exitosamente sin errores:
 - ✅ UI/UX moderna
 
 Solo necesitas configurar las variables de entorno y la base de datos para comenzar a usar la aplicación.
+
+
+
+
+
+
+
+

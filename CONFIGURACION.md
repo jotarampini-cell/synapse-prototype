@@ -81,3 +81,11 @@ El código está conectado al repositorio: https://github.com/jotarampini-cell/S
 - Solo necesitas configurar Supabase y Google OAuth
 - Todos los archivos de la aplicación están listos
 - La base de datos se configurará automáticamente con los archivos SQL
+
+
+
+
+
+
+
+

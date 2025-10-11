@@ -1,8 +1,20 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Brain, Search, Network, Sparkles } from "lucide-react"
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
+import { ThemeToggle } from "@/components/theme-toggle"
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Verificar si el usuario está autenticado
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  // Si está autenticado, redirigir al home
+  if (user) {
+    redirect('/home')
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -14,6 +26,7 @@ export default function HomePage() {
               <span className="text-xl font-semibold text-foreground">Synapse</span>
             </div>
             <div className="flex items-center gap-4">
+              <ThemeToggle />
               <Link href="/auth/login">
                 <Button variant="ghost">Iniciar Sesión</Button>
               </Link>

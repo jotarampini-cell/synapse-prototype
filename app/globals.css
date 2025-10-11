@@ -24,9 +24,9 @@
   --muted: #e8eaed;
   --muted-foreground: #5f6368;
 
-  /* Accent - Green for success/connections */
-  --accent: #2e7d32;
-  --accent-foreground: #ffffff;
+  /* Accent - Neutral gray for navigation */
+  --accent: #f1f3f4;
+  --accent-foreground: #1a1d1f;
 
   /* Destructive */
   --destructive: #d32f2f;
@@ -76,9 +76,9 @@
   --muted: #2c2f33;
   --muted-foreground: #9aa0a6;
 
-  /* Accent - Lighter green for dark mode */
-  --accent: #66bb6a;
-  --accent-foreground: #0a0a0a;
+  /* Accent - Dark gray for dark mode navigation */
+  --accent: #2c2f33;
+  --accent-foreground: #f8f9fa;
 
   /* Destructive */
   --destructive: #ef5350;
@@ -184,4 +184,15 @@
 
 .animate-float {
   animation: float 3s ease-in-out infinite;
+}
+
+/* Command Palette Custom Styles */
+.command-palette-custom [data-slot="command-item"][data-selected="true"] {
+  background: linear-gradient(to right, hsl(var(--primary) / 0.05), hsl(var(--primary) / 0.15)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.command-palette-custom [data-slot="command-item"]:hover {
+  background: linear-gradient(to right, hsl(var(--primary) / 0.05), hsl(var(--primary) / 0.15)) !important;
+  color: hsl(var(--foreground)) !important;
 }

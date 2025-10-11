@@ -11,10 +11,12 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Settings } from 'lucide-react'
+import { LogOut, User, Settings, Home, FileText, BarChart3, Sun, Moon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { signOut } from '@/app/actions/auth'
 import { toast } from 'sonner'
+import Link from 'next/link'
+import { useTheme } from 'next-themes'
 
 interface User {
 	id: string
@@ -25,6 +27,7 @@ interface User {
 export function UserMenu() {
 	const [user, setUser] = useState<User | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
+	const { theme, setTheme } = useTheme()
 
 	useEffect(() => {
 		const supabase = createClient()
@@ -113,6 +116,25 @@ export function UserMenu() {
 					</div>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
+				<DropdownMenuItem asChild>
+					<Link href="/home" className="flex items-center">
+						<Home className="mr-2 h-4 w-4" />
+						<span>Home</span>
+					</Link>
+				</DropdownMenuItem>
+				<DropdownMenuItem asChild>
+					<Link href="/notes" className="flex items-center">
+						<FileText className="mr-2 h-4 w-4" />
+						<span>Mis Notas</span>
+					</Link>
+				</DropdownMenuItem>
+				<DropdownMenuItem asChild>
+					<Link href="/dashboard" className="flex items-center">
+						<BarChart3 className="mr-2 h-4 w-4" />
+						<span>Dashboard</span>
+					</Link>
+				</DropdownMenuItem>
+				<DropdownMenuSeparator />
 				<DropdownMenuItem>
 					<User className="mr-2 h-4 w-4" />
 					<span>Perfil</span>
@@ -120,6 +142,15 @@ export function UserMenu() {
 				<DropdownMenuItem>
 					<Settings className="mr-2 h-4 w-4" />
 					<span>Configuración</span>
+				</DropdownMenuItem>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+					{theme === 'dark' ? (
+						<Sun className="mr-2 h-4 w-4" />
+					) : (
+						<Moon className="mr-2 h-4 w-4" />
+					)}
+					<span>{theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}</span>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem onClick={handleSignOut}>
@@ -130,3 +161,6 @@ export function UserMenu() {
 		</DropdownMenu>
 	)
 }
+
+
+

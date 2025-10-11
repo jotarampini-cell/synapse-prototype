@@ -99,3 +99,11 @@ Código disponible en: https://github.com/jotarampini-cell/SynapseAI.git
 ### Error de permisos
 - Verifica que RLS esté habilitado en todas las tablas
 - Comprueba que las políticas de seguridad estén activas
+
+
+
+
+
+
+
+

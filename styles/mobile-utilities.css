@@ -1,0 +1,255 @@
+/* Mobile-First Utilities */
+
+/* Touch targets - mínimo 44x44px según Apple HIG y Material Design */
+.touch-target {
+  @apply min-h-[44px] min-w-[44px];
+}
+
+.touch-target-sm {
+  @apply min-h-[36px] min-w-[36px];
+}
+
+.touch-target-lg {
+  @apply min-h-[48px] min-w-[48px];
+}
+
+/* Mobile spacing */
+.mobile-padding {
+  @apply p-4 md:p-6;
+}
+
+.mobile-padding-sm {
+  @apply p-2 md:p-4;
+}
+
+.mobile-padding-lg {
+  @apply p-6 md:p-8;
+}
+
+.mobile-margin {
+  @apply m-4 md:m-6;
+}
+
+.mobile-margin-sm {
+  @apply m-2 md:m-4;
+}
+
+.mobile-margin-lg {
+  @apply m-6 md:m-8;
+}
+
+/* Safe area para notch y home indicator */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+.safe-area-all {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Mobile typography */
+.mobile-text-sm {
+  @apply text-sm md:text-base;
+}
+
+.mobile-text-base {
+  @apply text-base md:text-lg;
+}
+
+.mobile-text-lg {
+  @apply text-lg md:text-xl;
+}
+
+.mobile-text-xl {
+  @apply text-xl md:text-2xl;
+}
+
+.mobile-text-2xl {
+  @apply text-2xl md:text-3xl;
+}
+
+/* Mobile containers */
+.mobile-container {
+  @apply w-full max-w-sm mx-auto px-4 md:max-w-4xl md:px-6;
+}
+
+.mobile-container-sm {
+  @apply w-full max-w-xs mx-auto px-4 md:max-w-2xl md:px-6;
+}
+
+.mobile-container-lg {
+  @apply w-full max-w-md mx-auto px-4 md:max-w-6xl md:px-6;
+}
+
+/* Mobile flex utilities */
+.mobile-flex-col {
+  @apply flex flex-col md:flex-row;
+}
+
+.mobile-flex-row {
+  @apply flex flex-row md:flex-col;
+}
+
+.mobile-flex-wrap {
+  @apply flex flex-wrap md:flex-nowrap;
+}
+
+/* Mobile grid utilities */
+.mobile-grid-1 {
+  @apply grid grid-cols-1 md:grid-cols-2;
+}
+
+.mobile-grid-2 {
+  @apply grid grid-cols-2 md:grid-cols-3;
+}
+
+.mobile-grid-3 {
+  @apply grid grid-cols-3 md:grid-cols-4;
+}
+
+/* Mobile visibility */
+.mobile-only {
+  @apply block md:hidden;
+}
+
+.desktop-only {
+  @apply hidden md:block;
+}
+
+.tablet-only {
+  @apply hidden md:block lg:hidden;
+}
+
+/* Mobile shadows */
+.mobile-shadow {
+  @apply shadow-sm md:shadow-md;
+}
+
+.mobile-shadow-lg {
+  @apply shadow-md md:shadow-lg;
+}
+
+/* Mobile borders */
+.mobile-border {
+  @apply border md:border-2;
+}
+
+.mobile-border-t {
+  @apply border-t md:border-t-2;
+}
+
+.mobile-border-b {
+  @apply border-b md:border-b-2;
+}
+
+/* Mobile rounded corners */
+.mobile-rounded {
+  @apply rounded-md md:rounded-lg;
+}
+
+.mobile-rounded-lg {
+  @apply rounded-lg md:rounded-xl;
+}
+
+.mobile-rounded-xl {
+  @apply rounded-xl md:rounded-2xl;
+}
+
+/* Mobile animations */
+.mobile-transition {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+.mobile-transition-slow {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Mobile focus states */
+.mobile-focus {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+}
+
+.mobile-focus-inset {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset;
+}
+
+/* Mobile scroll behavior */
+.mobile-scroll {
+  @apply overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent;
+}
+
+.mobile-scroll-smooth {
+  @apply overflow-y-auto scroll-smooth scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent;
+}
+
+/* Mobile backdrop blur */
+.mobile-backdrop {
+  @apply backdrop-blur-sm md:backdrop-blur-md;
+}
+
+.mobile-backdrop-lg {
+  @apply backdrop-blur-md md:backdrop-blur-lg;
+}
+
+/* Mobile z-index utilities */
+.mobile-z-dropdown {
+  @apply z-40 md:z-50;
+}
+
+.mobile-z-modal {
+  @apply z-50 md:z-50;
+}
+
+.mobile-z-tooltip {
+  @apply z-30 md:z-40;
+}
+
+/* Mobile input styles */
+.mobile-input {
+  @apply h-12 px-4 text-base border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary md:h-10 md:px-3 md:text-sm;
+}
+
+.mobile-textarea {
+  @apply min-h-[120px] p-4 text-base border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none md:min-h-[100px] md:p-3 md:text-sm;
+}
+
+/* Mobile button styles */
+.mobile-button {
+  @apply h-12 px-6 text-base font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 md:h-10 md:px-4 md:text-sm;
+}
+
+.mobile-button-sm {
+  @apply h-10 px-4 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 md:h-8 md:px-3 md:text-xs;
+}
+
+.mobile-button-lg {
+  @apply h-14 px-8 text-lg font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 md:h-12 md:px-6 md:text-base;
+}
+
+/* Mobile card styles */
+.mobile-card {
+  @apply p-4 border border-border rounded-lg bg-card shadow-sm md:p-6 md:shadow-md;
+}
+
+.mobile-card-sm {
+  @apply p-3 border border-border rounded-md bg-card shadow-sm md:p-4 md:shadow-md;
+}
+
+.mobile-card-lg {
+  @apply p-6 border border-border rounded-lg bg-card shadow-md md:p-8 md:shadow-lg;
+}

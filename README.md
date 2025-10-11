@@ -189,3 +189,11 @@ npm install --legacy-peer-deps
 ## 📄 Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
+
+
+
+
+
+
+
+

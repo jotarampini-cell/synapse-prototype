@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 import { Suspense } from "react"
 
@@ -19,19 +20,26 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({
-  children,
+	children,
 }: Readonly<{
-  children: React.ReactNode
+	children: React.ReactNode
 }>) {
-  return (
-    <html lang="en" className="dark">
-      <body className={`font-sans ${inter.variable} antialiased`}>
-        <Suspense fallback={null}>
-          {children}
-          <Analytics />
-          <Toaster />
-        </Suspense>
-      </body>
-    </html>
-  )
+	return (
+		<html lang="en" suppressHydrationWarning>
+			<body className={`font-sans ${inter.variable} antialiased`}>
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="light"
+					enableSystem={false}
+					disableTransitionOnChange
+				>
+					<Suspense fallback={null}>
+						{children}
+						<Analytics />
+						<Toaster />
+					</Suspense>
+				</ThemeProvider>
+			</body>
+		</html>
+	)
 }

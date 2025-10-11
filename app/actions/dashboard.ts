@@ -1,8 +1,23 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { demoContents, demoStats } from '@/lib/demo-data'
 
 export async function getUserStats() {
+	// Verificar si Supabase está configurado
+	const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+	const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+	
+	if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('placeholder')) {
+		// Modo demo
+		return {
+			total_contents: demoStats.totalNotes,
+			total_connections: 0,
+			total_nodes: 0,
+			recent_growth: demoStats.recentActivity
+		}
+	}
+
 	const supabase = await createClient()
 
 	const { data: { user } } = await supabase.auth.getUser()
@@ -20,17 +35,16 @@ export async function getUserStats() {
 		if (error) {
 			console.error('Error getting user stats:', error)
 			// Fallback a consultas individuales
-			const [contentsResult, connectionsResult, nodesResult, recentResult] = await Promise.all([
+			const [contentsResult, connectionsResult, recentResult] = await Promise.all([
 				supabase.from('contents').select('id', { count: 'exact' }).eq('user_id', user.id),
 				supabase.from('connections').select('id', { count: 'exact' }).eq('user_id', user.id),
-				supabase.from('graph_nodes').select('id', { count: 'exact' }).eq('user_id', user.id),
 				supabase.from('contents').select('id', { count: 'exact' }).eq('user_id', user.id).gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
 			])
 
 			return {
 				total_contents: contentsResult.count || 0,
 				total_connections: connectionsResult.count || 0,
-				total_nodes: nodesResult.count || 0,
+				total_nodes: 0,
 				recent_growth: recentResult.count || 0
 			}
 		}
@@ -166,3 +180,73 @@ export async function getProcessingItems() {
 		throw new Error('Error al obtener elementos en procesamiento')
 	}
 }
+
+export async function getUserContents(limit?: number) {
+	// Verificar si Supabase está configurado
+	const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+	const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+	
+	if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('placeholder')) {
+		// Modo demo - retornar datos de demostración
+		return demoContents.slice(0, limit || 50).map(content => ({
+			...content,
+			hasSummary: content.hasSummary,
+			summary: content.hasSummary ? {
+				id: `summary-${content.id}`,
+				summary: `Resumen de demostración para "${content.title}"`,
+				key_concepts: content.tags || [],
+				created_at: content.created_at
+			} : null
+		}))
+	}
+
+	const supabase = await createClient()
+
+	const { data: { user } } = await supabase.auth.getUser()
+	
+	if (!user) {
+		throw new Error('Usuario no autenticado')
+	}
+
+	try {
+		// Obtener contenidos con sus resúmenes usando LEFT JOIN
+		const { data, error } = await supabase
+			.from('contents')
+			.select(`
+				id,
+				title,
+				content,
+				content_type,
+				tags,
+				created_at,
+				updated_at,
+				file_url,
+				summaries (
+					id,
+					summary,
+					key_concepts,
+					created_at
+				)
+			`)
+			.eq('user_id', user.id)
+			.order('created_at', { ascending: false })
+			.limit(limit || 50)
+
+		if (error) {
+			throw new Error(error.message)
+		}
+
+		// Transformar los datos para incluir información de resúmenes
+		const contents = (data || []).map(content => ({
+			...content,
+			hasSummary: content.summaries && content.summaries.length > 0,
+			summary: content.summaries?.[0] || null
+		}))
+
+		return contents
+	} catch (error) {
+		console.error('Error getting user contents:', error)
+		throw new Error('Error al obtener contenidos del usuario')
+	}
+}
+
