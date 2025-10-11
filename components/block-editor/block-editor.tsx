@@ -137,6 +137,10 @@ export function BlockEditor({
 
 	useEffect(() => {
 		if (editorRef.current && editorData !== content && !shouldUseMobileEditor) {
+			// Only update if external content changes and editor is not currently saving
+			// This prevents an infinite loop
+			// TODO: Implement a more robust way to handle external content updates without re-initializing
+			// For now, we'll just re-initialize if content changes significantly
 			editorRef.current.destroy()
 			editorRef.current = null
 			initializeEditor(content)
@@ -200,7 +204,7 @@ export function BlockEditor({
 			const Warning = WarningModule.default
 			const Paragraph = ParagraphModule.default
 
-			editorRef.current = new EditorJS({
+			editorRef.current = new (EditorJS as any)({
 				holder: "editorjs-container",
 				placeholder,
 				readOnly: readonly,
@@ -226,6 +230,7 @@ export function BlockEditor({
 							const outputData = await editorRef.current.save()
 							setEditorData(outputData)
 							onUpdate(outputData)
+							// TODO: Implement undo/redo stack for Editor.js
 							setCanUndo(true)
 							setCanRedo(false)
 						} catch (e) {
@@ -254,10 +259,12 @@ export function BlockEditor({
 	}
 
 	const handleUndo = () => {
+		// Editor.js does not have a built-in undo/redo. This would require custom implementation.
 		console.log("Undo not implemented for Editor.js yet.")
 	}
 
 	const handleRedo = () => {
+		// Editor.js does not have a built-in undo/redo. This would require custom implementation.
 		console.log("Redo not implemented for Editor.js yet.")
 	}
 
