@@ -7,21 +7,8 @@ import { useMobileEditor } from "@/hooks/use-editor-selection"
 import { Button } from "@/components/ui/button"
 import { Save, Undo2, Redo2 } from "lucide-react"
 
-// Import Editor.js tools directly
-import EditorJS from "@editorjs/editorjs"
-import Header from "@editorjs/header"
-import List from "@editorjs/list"
-import Quote from "@editorjs/quote"
-import Code from "@editorjs/code"
-import Table from "@editorjs/table"
-import LinkTool from "@editorjs/link"
-import Checklist from "@editorjs/checklist"
-import Marker from "@editorjs/marker"
-import Underline from "@editorjs/underline"
-import InlineCode from "@editorjs/inline-code"
-import Delimiter from "@editorjs/delimiter"
-import Warning from "@editorjs/warning"
-import Paragraph from "@editorjs/paragraph"
+// Dynamic imports para evitar SSR issues
+import dynamic from "next/dynamic"
 
 interface BlockEditorProps {
 	content?: any
@@ -156,7 +143,7 @@ export function BlockEditor({
 		}
 	}, [content, shouldUseMobileEditor])
 
-	const initializeEditor = (initialData = content) => {
+	const initializeEditor = async (initialData = content) => {
 		if (editorRef.current) {
 			editorRef.current.destroy()
 		}
@@ -179,43 +166,80 @@ export function BlockEditor({
 			}
 		}
 
-		editorRef.current = new (EditorJS as any)({
-			holder: "editorjs-container",
-			placeholder,
-			readOnly: readonly,
-			data: editorData,
-			tools: {
-				header: Header,
-				paragraph: Paragraph,
-				list: List,
-				checklist: Checklist,
-				quote: Quote,
-				code: Code,
-				table: Table,
-				linkTool: LinkTool,
-				marker: Marker,
-				underline: Underline,
-				inlineCode: InlineCode,
-				delimiter: Delimiter,
-				warning: Warning
-			},
-			onChange: async () => {
-				if (editorRef.current) {
-					try {
-						const outputData = await editorRef.current.save()
-						setEditorData(outputData)
-						onUpdate(outputData)
-						setCanUndo(true)
-						setCanRedo(false)
-					} catch (e) {
-						console.error("Error saving editor data:", e)
+		try {
+			// Wait for dynamic imports to load
+			const [EditorJSModule, HeaderModule, ListModule, QuoteModule, CodeModule, TableModule, LinkToolModule, ChecklistModule, MarkerModule, UnderlineModule, InlineCodeModule, DelimiterModule, WarningModule, ParagraphModule] = await Promise.all([
+				import("@editorjs/editorjs"),
+				import("@editorjs/header"),
+				import("@editorjs/list"),
+				import("@editorjs/quote"),
+				import("@editorjs/code"),
+				import("@editorjs/table"),
+				import("@editorjs/link"),
+				import("@editorjs/checklist"),
+				import("@editorjs/marker"),
+				import("@editorjs/underline"),
+				import("@editorjs/inline-code"),
+				import("@editorjs/delimiter"),
+				import("@editorjs/warning"),
+				import("@editorjs/paragraph")
+			])
+
+			const EditorJS = EditorJSModule.default
+			const Header = HeaderModule.default
+			const List = ListModule.default
+			const Quote = QuoteModule.default
+			const Code = CodeModule.default
+			const Table = TableModule.default
+			const LinkTool = LinkToolModule.default
+			const Checklist = ChecklistModule.default
+			const Marker = MarkerModule.default
+			const Underline = UnderlineModule.default
+			const InlineCode = InlineCodeModule.default
+			const Delimiter = DelimiterModule.default
+			const Warning = WarningModule.default
+			const Paragraph = ParagraphModule.default
+
+			editorRef.current = new EditorJS({
+				holder: "editorjs-container",
+				placeholder,
+				readOnly: readonly,
+				data: editorData,
+				tools: {
+					header: Header,
+					paragraph: Paragraph,
+					list: List,
+					checklist: Checklist,
+					quote: Quote,
+					code: Code,
+					table: Table,
+					linkTool: LinkTool,
+					marker: Marker,
+					underline: Underline,
+					inlineCode: InlineCode,
+					delimiter: Delimiter,
+					warning: Warning
+				},
+				onChange: async () => {
+					if (editorRef.current) {
+						try {
+							const outputData = await editorRef.current.save()
+							setEditorData(outputData)
+							onUpdate(outputData)
+							setCanUndo(true)
+							setCanRedo(false)
+						} catch (e) {
+							console.error("Error saving editor data:", e)
+						}
 					}
-				}
-			},
-			onReady: () => {
-				console.log("Editor.js is ready to work!")
-			},
-		})
+				},
+				onReady: () => {
+					console.log("Editor.js is ready to work!")
+				},
+			})
+		} catch (error) {
+			console.error("Error initializing Editor.js:", error)
+		}
 	}
 
 	const handleSave = async () => {
