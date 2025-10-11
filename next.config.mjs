@@ -13,7 +13,6 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '10mb',
     },
-    instrumentationHook: false,
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
