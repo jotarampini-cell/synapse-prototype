@@ -6,9 +6,10 @@ import { MobileEditor } from "@/components/mobile-editor/mobile-editor"
 import { useMobileEditor } from "@/hooks/use-editor-selection"
 import { Button } from "@/components/ui/button"
 import { Save, Undo2, Redo2 } from "lucide-react"
+import { log } from "@/lib/logger"
 
 // Dynamic imports para evitar SSR issues
-import dynamic from "next/dynamic"
+// import dynamic from "next/dynamic"
 
 interface BlockEditorProps {
 	content?: { blocks?: Array<{ type: string; data?: Record<string, unknown> }> } | string
@@ -235,16 +236,16 @@ export function BlockEditor({
 							setCanUndo(true)
 							setCanRedo(false)
 						} catch (e) {
-							console.error("Error saving editor data:", e)
+							log.error("Error saving editor data:", { error: e })
 						}
 					}
 				},
 				onReady: () => {
-					console.log("Editor.js is ready to work!")
+					log.info("Editor.js is ready to work!")
 				},
 			})
 		} catch (error) {
-			console.error("Error initializing Editor.js:", error)
+			log.error("Error initializing Editor.js:", { error })
 		}
 	}
 
@@ -254,19 +255,19 @@ export function BlockEditor({
 				const outputData = await editorRef.current.save()
 				onSave(outputData)
 			} catch (e) {
-				console.error("Error saving editor data:", e)
+				log.error("Error saving editor data:", { error: e })
 			}
 		}
 	}
 
 	const handleUndo = () => {
 		// Editor.js does not have a built-in undo/redo. This would require custom implementation.
-		console.log("Undo not implemented for Editor.js yet.")
+		log.info("Undo not implemented for Editor.js yet.")
 	}
 
 	const handleRedo = () => {
 		// Editor.js does not have a built-in undo/redo. This would require custom implementation.
-		console.log("Redo not implemented for Editor.js yet.")
+		log.info("Redo not implemented for Editor.js yet.")
 	}
 
 	// Handlers para el editor móvil

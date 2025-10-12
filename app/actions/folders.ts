@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/logger'
 
 export interface Folder {
 	id: string
@@ -92,7 +93,7 @@ export async function createFolder(data: CreateFolderData) {
 		revalidatePath('/notes')
 		return { success: true, folder }
 	} catch (error) {
-		console.error('Error creating folder:', error)
+		log.error('Error creating folder:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al crear carpeta')
 	}
 }
@@ -103,7 +104,7 @@ export async function getFolderTree() {
 	const { data: { user } } = await supabase.auth.getUser()
 	
 	if (!user) {
-		console.log('Usuario no autenticado en getFolderTree')
+		log.info('Usuario no autenticado en getFolderTree')
 		return []
 	}
 
@@ -111,7 +112,7 @@ export async function getFolderTree() {
 		// Usar directamente el fallback ya que la función SQL no existe aún
 		return await getFolderTreeFallback(user.id)
 	} catch (error) {
-		console.error('Error getting folder tree:', error)
+		log.error('Error getting folder tree:', { error })
 		throw new Error('Error al obtener árbol de carpetas')
 	}
 }
@@ -200,7 +201,7 @@ async function getFolderTreeFallback(userId: string) {
 
 		return flattenTree(rootFolders)
 	} catch (error) {
-		console.error('Error in fallback folder tree:', error)
+		log.error('Error in fallback folder tree:', { error })
 		throw new Error('Error al obtener carpetas')
 	}
 }
@@ -248,7 +249,7 @@ export async function updateFolder(folderId: string, data: UpdateFolderData) {
 		revalidatePath('/notes')
 		return { success: true, folder }
 	} catch (error) {
-		console.error('Error updating folder:', error)
+		log.error('Error updating folder:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al actualizar carpeta')
 	}
 }
@@ -320,7 +321,7 @@ export async function deleteFolder(folderId: string) {
 		revalidatePath('/notes')
 		return { success: true, message: `Carpeta "${folder.name}" eliminada correctamente` }
 	} catch (error) {
-		console.error('Error deleting folder:', error)
+		log.error('Error deleting folder:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al eliminar carpeta')
 	}
 }
@@ -409,7 +410,7 @@ export async function moveFolder(folderId: string, newParentId: string | null) {
 		revalidatePath('/notes')
 		return { success: true, folder: updatedFolder }
 	} catch (error) {
-		console.error('Error moving folder:', error)
+		log.error('Error moving folder:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al mover carpeta')
 	}
 }
@@ -437,7 +438,7 @@ export async function getFolderById(folderId: string) {
 
 		return folder
 	} catch (error) {
-		console.error('Error getting folder:', error)
+		log.error('Error getting folder:', { error })
 		throw new Error('Error al obtener carpeta')
 	}
 }
@@ -489,7 +490,7 @@ export async function createInboxFolder() {
 		revalidatePath('/notes')
 		return { success: true, folder: inbox, created: true }
 	} catch (error) {
-		console.error('Error creating inbox folder:', error)
+		log.error('Error creating inbox folder:', { error })
 		throw new Error('Error al crear carpeta Inbox')
 	}
 }
@@ -537,7 +538,7 @@ export async function createDiaryFolder() {
 		revalidatePath('/notes')
 		return { success: true, folder: diary, created: true }
 	} catch (error) {
-		console.error('Error creating diary folder:', error)
+		log.error('Error creating diary folder:', { error })
 		throw new Error('Error al crear carpeta Diario')
 	}
 }

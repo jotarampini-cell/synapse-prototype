@@ -146,8 +146,8 @@ export function AIStatusIndicator({
 
 // Componente para mostrar el estado de IA en el header
 export function AIHeaderStatus({ onOpenAIPanel }: { onOpenAIPanel?: () => void }) {
-	const [, setAiStatus] = useState<'idle' | 'analyzing' | 'completed' | 'error'>('idle')
-	const [, setLastActivity] = useState<string>("")
+	const [_aiStatus, _setAiStatus] = useState<'idle' | 'analyzing' | 'completed' | 'error'>('idle')
+	const [_lastActivity, _setLastActivity] = useState<string>("")
 
 	useEffect(() => {
 		// Simular cambios de estado de IA
@@ -200,7 +200,7 @@ export function AIEditorStatus({
 			await onAnalyze()
 			setAiStatus('completed')
 			setTimeout(() => setAiStatus('idle'), 3000)
-		} catch (_error) {
+		} catch {
 			setAiStatus('error')
 			setTimeout(() => setAiStatus('idle'), 5000)
 		}

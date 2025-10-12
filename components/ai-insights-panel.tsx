@@ -25,8 +25,6 @@ import { log } from '@/lib/logger'
 
 interface AIInsightsPanelProps {
 	noteId: string | null
-	noteContent?: string
-	noteTitle?: string
 	isOpen: boolean
 	onClose: () => void
 	onToggleCollapse: () => void

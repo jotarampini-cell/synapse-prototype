@@ -126,7 +126,7 @@ export function ActionPlanGenerator({
 			setGeneratedPlan(mockPlan)
 			toast.success("Plan de acción generado exitosamente")
 			
-		} catch (error) {
+		} catch {
 			// log.error('Error generating action plan:', { error })
 			toast.error("Error al generar el plan de acción")
 		} finally {

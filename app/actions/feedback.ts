@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { log } from "@/lib/logger"
 
 export interface AIFeedback {
 	id: string
@@ -37,14 +38,14 @@ export async function submitFeedback(data: {
 			})
 
 		if (error) {
-			console.error('Error submitting feedback:', error)
+			log.error('Error submitting feedback:', { error })
 			return { success: false, error: error.message }
 		}
 
 		revalidatePath('/notes')
 		return { success: true }
 	} catch (error) {
-		console.error('Error submitting feedback:', error)
+		log.error('Error submitting feedback:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -73,7 +74,7 @@ export async function getFeedbackStats(): Promise<{
 			.eq('user_id', user.id)
 
 		if (error) {
-			console.error('Error fetching feedback stats:', error)
+			log.error('Error fetching feedback stats:', { error })
 			return { success: false, error: error.message }
 		}
 
@@ -97,7 +98,7 @@ export async function getFeedbackStats(): Promise<{
 
 		return { success: true, stats }
 	} catch (error) {
-		console.error('Error fetching feedback stats:', error)
+		log.error('Error fetching feedback stats:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -123,13 +124,13 @@ export async function getRecentFeedback(limit: number = 10): Promise<{
 			.limit(limit)
 
 		if (error) {
-			console.error('Error fetching recent feedback:', error)
+			log.error('Error fetching recent feedback:', { error })
 			return { success: false, error: error.message }
 		}
 
 		return { success: true, feedback }
 	} catch (error) {
-		console.error('Error fetching recent feedback:', error)
+		log.error('Error fetching recent feedback:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
