@@ -75,7 +75,7 @@ export function createWebSpeechRecognition(languageCode: string = 'es-ES'): Prom
       return;
     }
 
-    const recognition = new (window as any).webkitSpeechRecognition();
+    const recognition = new (window as { webkitSpeechRecognition?: { new (): { continuous: boolean; interimResults: boolean; lang: string; onresult: (event: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => void; onerror: (event: { error: string }) => void; start: () => void } } }).webkitSpeechRecognition!();
     recognition.continuous = true;
     recognition.interimResults = false;
     recognition.lang = languageCode;

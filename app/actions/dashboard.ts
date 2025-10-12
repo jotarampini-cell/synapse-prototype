@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { demoContents, demoStats } from '@/lib/demo-data'
+import { log } from '@/lib/logger'
 
 export async function getUserStats() {
 	// Verificar si Supabase está configurado
@@ -33,7 +34,7 @@ export async function getUserStats() {
 		})
 
 		if (error) {
-			console.error('Error getting user stats:', error)
+			log.error('Error getting user stats:', { error })
 			// Fallback a consultas individuales
 			const [contentsResult, connectionsResult, recentResult] = await Promise.all([
 				supabase.from('contents').select('id', { count: 'exact' }).eq('user_id', user.id),
@@ -56,7 +57,7 @@ export async function getUserStats() {
 			recent_growth: 0
 		}
 	} catch (error) {
-		console.error('Error getting user stats:', error)
+		log.error('Error getting user stats:', { error })
 		throw new Error('Error al obtener estadísticas')
 	}
 }
@@ -92,7 +93,7 @@ export async function getRecentSummaries() {
 
 		return data || []
 	} catch (error) {
-		console.error('Error getting recent summaries:', error)
+		log.error('Error getting recent summaries:', { error })
 		throw new Error('Error al obtener resúmenes recientes')
 	}
 }
@@ -120,7 +121,7 @@ export async function getSuggestedConnections() {
 
 		return data || []
 	} catch (error) {
-		console.error('Error getting suggested connections:', error)
+		log.error('Error getting suggested connections:', { error })
 		throw new Error('Error al obtener conexiones sugeridas')
 	}
 }
@@ -176,7 +177,7 @@ export async function getProcessingItems() {
 
 		return processingItems
 	} catch (error) {
-		console.error('Error getting processing items:', error)
+		log.error('Error getting processing items:', { error })
 		throw new Error('Error al obtener elementos en procesamiento')
 	}
 }
@@ -245,7 +246,7 @@ export async function getUserContents(limit?: number) {
 
 		return contents
 	} catch (error) {
-		console.error('Error getting user contents:', error)
+		log.error('Error getting user contents:', { error })
 		throw new Error('Error al obtener contenidos del usuario')
 	}
 }

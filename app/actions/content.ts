@@ -9,7 +9,7 @@ import {
 	suggestConnections
 } from '@/lib/gemini/client'
 import { transcribeAudio } from '@/lib/speech/client'
-import { Database } from '@/lib/database.types'
+// import { Database } from '@/lib/database.types'
 
 // type Content = Database['public']['Tables']['contents']['Insert']
 
@@ -99,7 +99,7 @@ export async function createBasicTextContent(formData: FormData) {
 					.single()
 				
 				if (inboxError) {
-					console.error('Error creating Inbox folder:', inboxError)
+					log.error('Error creating Inbox folder:', { error: inboxError })
 				} else {
 					finalFolderId = newInboxFolder.id
 				}
@@ -120,7 +120,7 @@ export async function createBasicTextContent(formData: FormData) {
 			.single()
 
 		if (contentError) {
-			console.error('Supabase error:', contentError)
+			log.error('Supabase error:', { error: contentError })
 			throw new Error(`Error de base de datos: ${contentError.message}`)
 		}
 
@@ -132,7 +132,7 @@ export async function createBasicTextContent(formData: FormData) {
 		
 		return { success: true, contentId: contentData.id }
 	} catch (error) {
-		console.error('Error creating basic content:', error)
+		log.error('Error creating basic content:', { error })
 		// Asegurar que el error sea serializable
 		const errorMessage = error instanceof Error ? error.message : 'Error al crear contenido'
 		throw new Error(errorMessage)
@@ -207,7 +207,7 @@ export async function createBasicFileContent(formData: FormData) {
 					.single()
 				
 				if (inboxError) {
-					console.error('Error creating Inbox folder:', inboxError)
+					log.error('Error creating Inbox folder:', { error: inboxError })
 				} else {
 					finalFolderId = newInboxFolder.id
 				}
@@ -237,7 +237,7 @@ export async function createBasicFileContent(formData: FormData) {
 		
 		return { success: true, contentId: contentData.id }
 	} catch (error) {
-		console.error('Error creating file content:', error)
+		log.error('Error creating file content:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al subir archivo')
 	}
 }
@@ -273,7 +273,7 @@ export async function createBasicVoiceContent(formData: FormData) {
 				const transcription = await transcribeAudio(audioBuffer)
 				finalContent = transcription.transcript
 			} catch (transcriptionError) {
-				console.error('Error en transcripción:', transcriptionError)
+				log.error('Error en transcripción:', { error: transcriptionError })
 				// Continuar con el contenido manual si la transcripción falla
 				if (!content) {
 					throw new Error('Error al transcribir el audio. Por favor, proporciona el contenido manualmente.')
@@ -314,7 +314,7 @@ export async function createBasicVoiceContent(formData: FormData) {
 					.single()
 				
 				if (inboxError) {
-					console.error('Error creating Inbox folder:', inboxError)
+					log.error('Error creating Inbox folder:', { error: inboxError })
 				} else {
 					finalFolderId = newInboxFolder.id
 				}
@@ -342,7 +342,7 @@ export async function createBasicVoiceContent(formData: FormData) {
 		
 		return { success: true, contentId: contentData.id }
 	} catch (error) {
-		console.error('Error creating voice content:', error)
+		log.error('Error creating voice content:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al crear contenido de voz')
 	}
 }
@@ -414,7 +414,7 @@ export async function transcribeAudioFile(formData: FormData) {
 			language: language
 		}
 	} catch (error) {
-		console.error('Error transcribing audio:', error)
+		log.error('Error transcribing audio:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al transcribir el audio')
 	}
 }
@@ -513,7 +513,7 @@ export async function analyzeContentWithAI(contentId: string, analysisType: 'sum
 		
 		return { success: true, results }
 	} catch (error) {
-		console.error('Error analyzing content:', error)
+		log.error('Error analyzing content:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al analizar contenido')
 	}
 }
@@ -673,7 +673,7 @@ export async function updateContent(contentId: string, formData: FormData, optio
 		
 		return { success: true }
 	} catch (error) {
-		console.error('Error updating content:', error)
+		log.error('Error updating content:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al actualizar contenido')
 	}
 }
@@ -701,7 +701,7 @@ export async function getUserContents() {
 	const { data: { user } } = await supabase.auth.getUser()
 	
 	if (!user) {
-		console.log('Usuario no autenticado en getUserContents')
+		log.info('Usuario no autenticado en getUserContents')
 		return []
 	}
 	

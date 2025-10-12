@@ -37,7 +37,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
-import { FolderTree } from "@/components/folder-tree"
+// import { FolderTree } from "@/components/folder-tree"
 import { NotesList } from "@/components/notes-list"
 import { NoteEditor } from "@/components/note-editor"
 import { AIPanel } from "@/components/ai-panel"
@@ -89,7 +89,7 @@ export default function NotesPage() {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
 	const [sortBy, setSortBy] = useState<'updated_at' | 'created_at' | 'title'>('updated_at')
-	const [sortOrder] = useState<'asc' | 'desc'>('desc')
+	// const [sortOrder] = useState<'asc' | 'desc'>('desc')
 	const [filterBy, setFilterBy] = useState<'all' | 'pinned' | 'archived'>('all')
 	const [showDefaultFoldersPrompt, setShowDefaultFoldersPrompt] = useState(false)
 	
@@ -302,7 +302,7 @@ export default function NotesPage() {
 	}
 
 	// Handle note update
-	const handleNoteUpdate = (_updatedNote: Note) => {
+	const handleNoteUpdate = () => {
 		// This will trigger a re-render of the notes list
 		// The actual update is handled by the NoteEditor component
 	}

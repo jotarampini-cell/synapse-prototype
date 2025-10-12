@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
-import { useTouchGestures, useSwipeActions, useLongPress, usePinchZoom } from "@/hooks/use-touch-gestures"
-import { useRealtimeSync, useNotesSync } from "@/hooks/use-realtime-sync"
+import { useTouchGestures } from "@/hooks/use-touch-gestures"
+import { useRealtimeSync } from "@/hooks/use-realtime-sync"
 import { usePushNotifications } from "@/components/notifications/push-notifications"
 import { VirtualNotesList, VirtualActionsList } from "@/components/virtual-list"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
