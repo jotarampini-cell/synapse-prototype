@@ -18,6 +18,10 @@ yarn-error.log*
 
 # env files
 .env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # vercel
 .vercel
@@ -25,3 +29,40 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# package managers
+pnpm-lock.yaml
+yarn.lock
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Documentation and certification files
+CERTIFICACION_*.md
+ESTADO_*.md
+IMPLEMENTACION_*.md
+CONFIGURACION*.md
+SETUP_*.md
+CONFIGURAR_*.md
+
+# Temporary files
+*-temp.*
+temp-*
+block-editor-temp.*
+
+# Logs
+logs
+*.log

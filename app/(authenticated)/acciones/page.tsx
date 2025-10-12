@@ -16,7 +16,9 @@ import {
 	Clock,
 	Star,
 	Calendar,
-	MoreHorizontal
+	MoreHorizontal,
+	AlertCircle,
+	Briefcase
 } from "lucide-react"
 
 // Mock data
@@ -287,17 +289,130 @@ export default function AccionesPage() {
 		)
 	}
 
-	// Layout desktop (simplificado)
+	// Layout desktop
 	return (
 		<div className="h-screen flex flex-col bg-background">
-			<header className="h-16 px-6 flex items-center border-b border-border">
+			<header className="h-16 px-6 flex items-center justify-between border-b border-border">
 				<h1 className="text-2xl font-bold">Acciones</h1>
+				<div className="flex items-center gap-4">
+					<div className="relative">
+						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+						<Input 
+							placeholder="Buscar acciones..." 
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+							className="pl-9 w-64"
+						/>
+					</div>
+					<Button>
+						<Plus className="h-4 w-4 mr-2" />
+						Nueva Acción
+					</Button>
+				</div>
 			</header>
 			<main className="flex-1 p-6">
-				<div className="max-w-6xl mx-auto">
-					<p className="text-muted-foreground">
-						Vista desktop de acciones. Cambia el tamaño de la ventana a menos de 768px para ver la vista móvil.
-					</p>
+				<div className="max-w-7xl mx-auto">
+					{/* Stats Cards */}
+					<div className="grid grid-cols-4 gap-6 mb-8">
+						<Card className="p-6">
+							<div className="flex items-center gap-4">
+								<div className="p-3 bg-red-100 rounded-lg">
+									<AlertCircle className="h-6 w-6 text-red-600" />
+								</div>
+								<div>
+									<p className="text-3xl font-bold">{actions.filter(a => a.priority === "high").length}</p>
+									<p className="text-sm text-muted-foreground">Alta Prioridad</p>
+								</div>
+							</div>
+						</Card>
+						<Card className="p-6">
+							<div className="flex items-center gap-4">
+								<div className="p-3 bg-blue-100 rounded-lg">
+									<Clock className="h-6 w-6 text-blue-600" />
+								</div>
+								<div>
+									<p className="text-3xl font-bold">{actions.filter(a => a.status === "in_progress").length}</p>
+									<p className="text-sm text-muted-foreground">En Progreso</p>
+								</div>
+							</div>
+						</Card>
+						<Card className="p-6">
+							<div className="flex items-center gap-4">
+								<div className="p-3 bg-green-100 rounded-lg">
+									<CheckSquare className="h-6 w-6 text-green-600" />
+								</div>
+								<div>
+									<p className="text-3xl font-bold">{actions.filter(a => a.status === "completed").length}</p>
+									<p className="text-sm text-muted-foreground">Completadas</p>
+								</div>
+							</div>
+						</Card>
+						<Card className="p-6">
+							<div className="flex items-center gap-4">
+								<div className="p-3 bg-gray-100 rounded-lg">
+									<Calendar className="h-6 w-6 text-gray-600" />
+								</div>
+								<div>
+									<p className="text-3xl font-bold">{actions.filter(a => a.status === "pending").length}</p>
+									<p className="text-sm text-muted-foreground">Pendientes</p>
+								</div>
+							</div>
+						</Card>
+					</div>
+
+					{/* Actions List */}
+					<div className="space-y-4">
+						{filteredActions.map((action) => (
+							<Card key={action.id} className="p-6 hover:shadow-md transition-shadow cursor-pointer">
+								<div className="flex items-start justify-between">
+									<div className="flex items-start gap-4 flex-1">
+										<div className={`w-4 h-4 rounded-full mt-1 ${priorityColors[action.priority as keyof typeof priorityColors]}`} />
+										<div className="flex-1">
+											<div className="flex items-center gap-3 mb-2">
+												<h3 className="text-lg font-semibold">{action.title}</h3>
+												<Badge 
+													variant="secondary" 
+													className={`text-xs ${statusColors[action.status as keyof typeof statusColors]} text-white`}
+												>
+													{action.status === "pending" ? "Pendiente" : 
+													 action.status === "in_progress" ? "En curso" : "Completada"}
+												</Badge>
+											</div>
+											<p className="text-muted-foreground mb-3">{action.description}</p>
+											<div className="flex items-center gap-4 text-sm text-muted-foreground">
+												<div className="flex items-center gap-1">
+													<Briefcase className="h-4 w-4" />
+													<span>{action.project}</span>
+												</div>
+												<div className="flex items-center gap-1">
+													<Calendar className="h-4 w-4" />
+													<span>{new Date(action.dueDate).toLocaleDateString()}</span>
+												</div>
+											</div>
+										</div>
+									</div>
+									<Button variant="ghost" size="sm">
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</div>
+							</Card>
+						))}
+
+						{/* Empty state */}
+						{filteredActions.length === 0 && (
+							<Card className="p-12 text-center">
+								<CheckSquare className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+								<h3 className="text-xl font-semibold mb-2">No hay acciones</h3>
+								<p className="text-muted-foreground mb-6">
+									{searchQuery ? "No se encontraron acciones con ese criterio" : "Crea tu primera acción para comenzar"}
+								</p>
+								<Button size="lg">
+									<Plus className="h-4 w-4 mr-2" />
+									Nueva Acción
+								</Button>
+							</Card>
+						)}
+					</div>
 				</div>
 			</main>
 		</div>

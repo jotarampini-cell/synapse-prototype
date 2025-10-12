@@ -342,17 +342,154 @@ export default function ProyectosPage() {
 		)
 	}
 
-	// Layout desktop (simplificado)
+	// Layout desktop
 	return (
 		<div className="h-screen flex flex-col bg-background">
-			<header className="h-16 px-6 flex items-center border-b border-border">
+			<header className="h-16 px-6 flex items-center justify-between border-b border-border">
 				<h1 className="text-2xl font-bold">Proyectos</h1>
+				<div className="flex items-center gap-4">
+					<div className="relative">
+						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+						<Input 
+							placeholder="Buscar proyectos..." 
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+							className="pl-9 w-64"
+						/>
+					</div>
+					<Button>
+						<Plus className="h-4 w-4 mr-2" />
+						Nuevo Proyecto
+					</Button>
+				</div>
 			</header>
 			<main className="flex-1 p-6">
-				<div className="max-w-6xl mx-auto">
-					<p className="text-muted-foreground">
-						Vista desktop de proyectos. Cambia el tamaño de la ventana a menos de 768px para ver la vista móvil.
-					</p>
+				<div className="max-w-7xl mx-auto">
+					{/* Stats Cards */}
+					<div className="grid grid-cols-4 gap-6 mb-8">
+						<Card className="p-6">
+							<div className="flex items-center gap-4">
+								<div className="p-3 bg-blue-100 rounded-lg">
+									<Briefcase className="h-6 w-6 text-blue-600" />
+								</div>
+								<div>
+									<p className="text-3xl font-bold">{projects.length}</p>
+									<p className="text-sm text-muted-foreground">Total</p>
+								</div>
+							</div>
+						</Card>
+						<Card className="p-6">
+							<div className="flex items-center gap-4">
+								<div className="p-3 bg-green-100 rounded-lg">
+									<TrendingUp className="h-6 w-6 text-green-600" />
+								</div>
+								<div>
+									<p className="text-3xl font-bold">{projects.filter(p => p.status === "active").length}</p>
+									<p className="text-sm text-muted-foreground">Activos</p>
+								</div>
+							</div>
+						</Card>
+						<Card className="p-6">
+							<div className="flex items-center gap-4">
+								<div className="p-3 bg-blue-100 rounded-lg">
+									<Calendar className="h-6 w-6 text-blue-600" />
+								</div>
+								<div>
+									<p className="text-3xl font-bold">{projects.filter(p => p.status === "planning").length}</p>
+									<p className="text-sm text-muted-foreground">Planificando</p>
+								</div>
+							</div>
+						</Card>
+						<Card className="p-6">
+							<div className="flex items-center gap-4">
+								<div className="p-3 bg-gray-100 rounded-lg">
+									<CheckSquare className="h-6 w-6 text-gray-600" />
+								</div>
+								<div>
+									<p className="text-3xl font-bold">{projects.filter(p => p.status === "completed").length}</p>
+									<p className="text-sm text-muted-foreground">Completados</p>
+								</div>
+							</div>
+						</Card>
+					</div>
+
+					{/* Projects Grid */}
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+						{filteredProjects.map((project) => (
+							<Card key={project.id} className="p-6 hover:shadow-md transition-shadow cursor-pointer">
+								<div className="flex items-start justify-between mb-4">
+									<div className="flex items-start gap-3 flex-1">
+										<div className={`w-3 h-3 rounded-full mt-2 ${priorityColors[project.priority as keyof typeof priorityColors]}`} />
+										<div className="flex-1">
+											<div className="flex items-center gap-2 mb-2">
+												<Briefcase className="h-4 w-4 text-muted-foreground" />
+												<h3 className="text-lg font-semibold">{project.name}</h3>
+											</div>
+											<p className="text-muted-foreground mb-3">{project.description}</p>
+										</div>
+									</div>
+									<Button variant="ghost" size="sm">
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</div>
+								
+								{/* Progress bar */}
+								<div className="mb-4">
+									<div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+										<span>Progreso</span>
+										<span>{project.progress}%</span>
+									</div>
+									<div className="w-full bg-muted rounded-full h-2">
+										<div 
+											className="bg-primary h-2 rounded-full transition-all"
+											style={{ width: `${project.progress}%` }}
+										/>
+									</div>
+								</div>
+
+								<div className="flex items-center justify-between mb-3">
+									<Badge 
+										variant="secondary" 
+										className={`text-xs ${statusColors[project.status as keyof typeof statusColors]} text-white`}
+									>
+										{project.status === "active" ? "Activo" : 
+										 project.status === "planning" ? "Planificando" :
+										 project.status === "completed" ? "Completado" : "En pausa"}
+									</Badge>
+									<div className="flex items-center gap-1 text-sm text-muted-foreground">
+										<CheckSquare className="h-4 w-4" />
+										<span>{project.tasks.completed}/{project.tasks.total} tareas</span>
+									</div>
+								</div>
+
+								<div className="flex items-center justify-between pt-3 border-t border-border">
+									<div className="flex items-center gap-1 text-sm text-muted-foreground">
+										<Users className="h-4 w-4" />
+										<span>{project.team.join(", ")}</span>
+									</div>
+									<div className="flex items-center gap-1 text-sm text-muted-foreground">
+										<Calendar className="h-4 w-4" />
+										<span>{new Date(project.dueDate).toLocaleDateString()}</span>
+									</div>
+								</div>
+							</Card>
+						))}
+					</div>
+
+					{/* Empty state */}
+					{filteredProjects.length === 0 && (
+						<Card className="p-12 text-center">
+							<Briefcase className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+							<h3 className="text-xl font-semibold mb-2">No hay proyectos</h3>
+							<p className="text-muted-foreground mb-6">
+								{searchQuery ? "No se encontraron proyectos con ese criterio" : "Crea tu primer proyecto para comenzar"}
+							</p>
+							<Button size="lg">
+								<Plus className="h-4 w-4 mr-2" />
+								Nuevo Proyecto
+							</Button>
+						</Card>
+					)}
 				</div>
 			</main>
 		</div>

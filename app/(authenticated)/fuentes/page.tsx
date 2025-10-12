@@ -20,7 +20,9 @@ import {
 	BookOpen,
 	ExternalLink,
 	MoreHorizontal,
-	Tag
+	Tag,
+	Star,
+	CheckSquare
 } from "lucide-react"
 
 // Mock data
@@ -330,17 +332,152 @@ export default function FuentesPage() {
 		)
 	}
 
-	// Layout desktop (simplificado)
+	// Layout desktop
 	return (
 		<div className="h-screen flex flex-col bg-background">
-			<header className="h-16 px-6 flex items-center border-b border-border">
+			<header className="h-16 px-6 flex items-center justify-between border-b border-border">
 				<h1 className="text-2xl font-bold">Fuentes</h1>
+				<div className="flex items-center gap-4">
+					<div className="relative">
+						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+						<Input 
+							placeholder="Buscar fuentes..." 
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+							className="pl-9 w-64"
+						/>
+					</div>
+					<Button>
+						<Plus className="h-4 w-4 mr-2" />
+						Agregar Fuente
+					</Button>
+				</div>
 			</header>
 			<main className="flex-1 p-6">
-				<div className="max-w-6xl mx-auto">
-					<p className="text-muted-foreground">
-						Vista desktop de fuentes. Cambia el tamaño de la ventana a menos de 768px para ver la vista móvil.
-					</p>
+				<div className="max-w-7xl mx-auto">
+					{/* Stats Cards */}
+					<div className="grid grid-cols-4 gap-6 mb-8">
+						<Card className="p-6">
+							<div className="flex items-center gap-4">
+								<div className="p-3 bg-blue-100 rounded-lg">
+									<Link className="h-6 w-6 text-blue-600" />
+								</div>
+								<div>
+									<p className="text-3xl font-bold">{sources.length}</p>
+									<p className="text-sm text-muted-foreground">Total</p>
+								</div>
+							</div>
+						</Card>
+						<Card className="p-6">
+							<div className="flex items-center gap-4">
+								<div className="p-3 bg-green-100 rounded-lg">
+									<CheckSquare className="h-6 w-6 text-green-600" />
+								</div>
+								<div>
+									<p className="text-3xl font-bold">{sources.filter(s => s.status === "read").length}</p>
+									<p className="text-sm text-muted-foreground">Leídas</p>
+								</div>
+							</div>
+						</Card>
+						<Card className="p-6">
+							<div className="flex items-center gap-4">
+								<div className="p-3 bg-blue-100 rounded-lg">
+									<BookOpen className="h-6 w-6 text-blue-600" />
+								</div>
+								<div>
+									<p className="text-3xl font-bold">{sources.filter(s => s.status === "reading").length}</p>
+									<p className="text-sm text-muted-foreground">Leyendo</p>
+								</div>
+							</div>
+						</Card>
+						<Card className="p-6">
+							<div className="flex items-center gap-4">
+								<div className="p-3 bg-gray-100 rounded-lg">
+									<Star className="h-6 w-6 text-gray-600" />
+								</div>
+								<div>
+									<p className="text-3xl font-bold">{sources.filter(s => s.status === "saved").length}</p>
+									<p className="text-sm text-muted-foreground">Guardadas</p>
+								</div>
+							</div>
+						</Card>
+					</div>
+
+					{/* Sources Grid */}
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+						{filteredSources.map((source) => {
+							const Icon = typeIcons[source.type as keyof typeof typeIcons] || Link
+							return (
+								<Card key={source.id} className="p-6 hover:shadow-md transition-shadow cursor-pointer">
+									<div className="flex items-start gap-4">
+										<div className="p-3 bg-muted rounded-lg flex-shrink-0">
+											<Icon className="h-6 w-6" />
+										</div>
+										<div className="flex-1 min-w-0">
+											<div className="flex items-start justify-between mb-2">
+												<h3 className="text-lg font-semibold line-clamp-2 mb-2">
+													{source.title}
+												</h3>
+												<Button 
+													variant="ghost" 
+													size="sm"
+													onClick={(e) => {
+														e.stopPropagation()
+														window.open(source.url, '_blank')
+													}}
+												>
+													<ExternalLink className="h-4 w-4" />
+												</Button>
+											</div>
+											<p className="text-muted-foreground mb-3 line-clamp-2">
+												{source.description}
+											</p>
+											<div className="flex items-center gap-2 mb-3">
+												<Badge 
+													variant="secondary" 
+													className={`text-xs ${statusColors[source.status as keyof typeof statusColors]} text-white`}
+												>
+													{source.status === "read" ? "Leída" : 
+													 source.status === "reading" ? "Leyendo" : "Guardada"}
+												</Badge>
+												<Badge variant="outline" className="text-xs">
+													{source.type}
+												</Badge>
+											</div>
+											<div className="flex items-center gap-2 flex-wrap">
+												{source.tags.slice(0, 3).map((tag) => (
+													<Badge key={tag} variant="outline" className="text-xs">
+														<Tag className="h-3 w-3 mr-1" />
+														{tag}
+													</Badge>
+												))}
+												{source.tags.length > 3 && (
+													<Badge variant="outline" className="text-xs">
+														+{source.tags.length - 3}
+													</Badge>
+												)}
+											</div>
+										</div>
+									</div>
+								</Card>
+							)
+						})}
+					</div>
+
+					{/* Empty state */}
+					{filteredSources.length === 0 && (
+						<Card className="p-12 text-center">
+							<Link className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+							<h3 className="text-xl font-semibold mb-2">No hay fuentes</h3>
+							<p className="text-muted-foreground mb-6">
+								{searchQuery ? "No se encontraron fuentes con ese criterio" : "Guarda tu primera fuente para comenzar"}
+							</p>
+							<Button size="lg">
+								<Plus className="h-4 w-4 mr-2" />
+								Agregar Fuente
+							</Button>
+						</Card>
+					)}
 				</div>
 			</main>
 		</div>

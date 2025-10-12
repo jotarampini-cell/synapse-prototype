@@ -4,6 +4,7 @@ import { UnifiedNavigation } from "@/components/unified-navigation"
 import { CommandPalette } from "@/components/command-palette"
 import { useCommandPalette } from "@/hooks/use-command-palette"
 import { useRouter } from "next/navigation"
+import { ResponsiveBanner, WelcomeBanner } from "@/components/responsive-banner"
 
 export default function AuthenticatedLayout({
 	children,
@@ -25,6 +26,12 @@ export default function AuthenticatedLayout({
 	return (
 		<div className="min-h-screen bg-background">
 			<UnifiedNavigation />
+			
+			{/* Banner responsive */}
+			<div className="px-4 py-2 md:px-6">
+				<WelcomeBanner />
+			</div>
+			
 			<main>
 				{children}
 			</main>
