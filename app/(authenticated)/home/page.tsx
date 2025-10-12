@@ -12,13 +12,11 @@ import {
 	Search,
 	Plus,
 	Clock,
-	Star,
 	FileText,
 	CheckSquare,
 	Link,
 	Briefcase,
 	TrendingUp,
-	Calendar,
 	Bell
 } from "lucide-react"
 

@@ -4,7 +4,7 @@ import { UnifiedNavigation } from "@/components/unified-navigation"
 import { CommandPalette } from "@/components/command-palette"
 import { useCommandPalette } from "@/hooks/use-command-palette"
 import { useRouter } from "next/navigation"
-import { ResponsiveBanner, WelcomeBanner } from "@/components/responsive-banner"
+import { WelcomeBanner } from "@/components/responsive-banner"
 
 export default function AuthenticatedLayout({
 	children,

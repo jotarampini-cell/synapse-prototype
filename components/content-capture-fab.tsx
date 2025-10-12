@@ -21,8 +21,7 @@ import {
 	createBasicTextContent, 
 	createBasicFileContent, 
 	createBasicVoiceContent,
-	analyzeContentWithAI,
-	transcribeAudioFile 
+	analyzeContentWithAI
 } from "@/app/actions/content"
 import { getFolderTree } from "@/app/actions/folders"
 // Web Speech API se usa directamente en el componente
@@ -41,7 +40,7 @@ export function ContentCaptureFAB({ onContentSaved }: ContentCaptureFABProps = {
   const [transcription, setTranscription] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [selectedFolder, setSelectedFolder] = useState<string>("none")
-  const [folders, setFolders] = useState<any[]>([])
+  const [folders, setFolders] = useState<Array<{ id: string; name: string; color: string }>>([])
   const [quickTemplate, setQuickTemplate] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -255,7 +254,7 @@ Participantes:
       try {
         // Usar Web Speech API directamente para transcripción en tiempo real
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-          const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+          const SpeechRecognition = (window as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition || (window as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).webkitSpeechRecognition
           const recognition = new SpeechRecognition()
           recognition.continuous = true
           recognition.interimResults = true

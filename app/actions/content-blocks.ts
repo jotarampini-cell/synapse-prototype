@@ -12,7 +12,7 @@ export interface ContentBlock {
 	note_id?: string
 	file_url?: string
 	excerpt: string
-	metadata: Record<string, any>
+	metadata: Record<string, unknown>
 	order_index: number
 	created_at: string
 	updated_at: string
@@ -26,7 +26,7 @@ export interface CreateContentBlockData {
 	note_id?: string
 	file_url?: string
 	excerpt: string
-	metadata?: Record<string, any>
+	metadata?: Record<string, unknown>
 	order_index?: number
 }
 
@@ -36,7 +36,7 @@ export interface UpdateContentBlockData {
 	note_id?: string
 	file_url?: string
 	excerpt?: string
-	metadata?: Record<string, any>
+	metadata?: Record<string, unknown>
 	order_index?: number
 }
 

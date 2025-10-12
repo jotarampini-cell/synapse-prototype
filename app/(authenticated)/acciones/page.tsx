@@ -14,7 +14,6 @@ import {
 	Filter,
 	CheckSquare,
 	Clock,
-	Star,
 	Calendar,
 	MoreHorizontal,
 	AlertCircle,

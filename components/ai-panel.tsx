@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { 
@@ -13,21 +11,15 @@ import {
 	Sparkles,
 	Lightbulb,
 	CheckSquare,
-	Network,
-	ArrowRight,
-	ThumbsUp,
-	ThumbsDown,
 	RefreshCw,
 	MessageSquare,
 	Zap,
-	FileText,
-	Target
+	FileText
 } from "lucide-react"
 import { analyzeNote } from "@/app/actions/ai-analysis"
 import { generateSocraticQuestions } from '@/lib/gemini/client'
 import { RelatedNotesPanel } from "@/components/related-notes"
 import { ActionPlanGenerator } from "@/components/action-plan-generator"
-import { toast } from "sonner"
 
 interface AIPanelProps {
 	isOpen: boolean

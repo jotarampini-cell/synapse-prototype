@@ -156,7 +156,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000`
                 <ol className="text-sm space-y-2">
                   <li>1. Ve a <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">supabase.com</a></li>
                   <li>2. Crea una cuenta o inicia sesión</li>
-                  <li>3. Haz clic en "New Project"</li>
+                  <li>3. Haz clic en &quot;New Project&quot;</li>
                   <li>4. Nombre del proyecto: <code className="bg-muted px-2 py-1 rounded">SynapseAI</code></li>
                   <li>5. Elige una región cercana</li>
                   <li>6. Crea el proyecto</li>
@@ -192,9 +192,9 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000`
               <div className="bg-muted/50 p-4 rounded-lg">
                 <ol className="text-sm space-y-2">
                   <li>1. Ve al <strong>SQL Editor</strong> en Supabase</li>
-                  <li>2. Haz clic en "New query"</li>
+                  <li>2. Haz clic en &quot;New query&quot;</li>
                   <li>3. Copia y pega el contenido de <code className="bg-muted px-2 py-1 rounded">database/install_complete_schema.sql</code></li>
-                  <li>4. Haz clic en "Run" para ejecutar el esquema</li>
+                  <li>4. Haz clic en &quot;Run&quot; para ejecutar el esquema</li>
                   <li>5. Habilita la extensión <strong>vector</strong> en Settings → Database → Extensions</li>
                 </ol>
               </div>

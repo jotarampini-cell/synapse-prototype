@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { useAppKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
-import { MobileBottomNav, MobileBottomNavSpacer } from "@/components/mobile-bottom-nav"
+import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -15,26 +14,17 @@ import {
 	Plus, 
 	Grid3X3, 
 	List, 
-	Filter,
 	ChevronLeft,
 	ChevronRight,
 	ChevronDown,
 	Menu,
 	X,
-	Settings,
 	Archive,
 	Star,
 	Clock,
 	FolderOpen,
 	Brain
 } from "lucide-react"
-import { 
-	DropdownMenu, 
-	DropdownMenuContent, 
-	DropdownMenuItem, 
-	DropdownMenuTrigger,
-	DropdownMenuSeparator 
-} from "@/components/ui/dropdown-menu"
 import { 
 	Collapsible,
 	CollapsibleContent,

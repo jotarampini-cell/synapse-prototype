@@ -8,11 +8,9 @@ import { Badge } from '@/components/ui/badge'
 import { 
 	FileText, 
 	Plus, 
-	Search, 
 	Settings, 
 	Brain, 
 	Folder,
-	Tag,
 	Calendar,
 	Lightbulb,
 	CheckCircle,

@@ -47,7 +47,7 @@ export function useMobileEditor() {
 		const checkTouchDevice = () => {
 			const isTouch = 'ontouchstart' in window || 
 				navigator.maxTouchPoints > 0 || 
-				// @ts-ignore
+				// @ts-expect-error - msMaxTouchPoints es una propiedad específica de IE/Edge
 				navigator.msMaxTouchPoints > 0
 			setIsTouchDevice(isTouch)
 		}

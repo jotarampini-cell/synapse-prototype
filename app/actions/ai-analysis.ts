@@ -12,6 +12,7 @@ import {
 	extractTasks,
 	analyzeContentSentiment
 } from '@/lib/gemini/client'
+import { log } from '@/lib/logger'
 
 export interface MindMapNode {
 	main: string
@@ -65,7 +66,7 @@ export async function analyzeNote(noteId: string, analysisType: 'summary' | 'min
 			throw new Error('Nota no encontrada')
 		}
 
-		const results: any = {}
+		const results: Record<string, unknown> = {}
 
 		// Generar embedding si no existe
 		if (!content.embedding) {
@@ -153,7 +154,7 @@ export async function analyzeNote(noteId: string, analysisType: 'summary' | 'min
 				.single()
 
 			if (updateError) {
-				console.error('Error updating analysis:', updateError)
+				log.error('Error updating analysis:', { error: updateError })
 				throw new Error(updateError.message)
 			}
 			analysis = updatedAnalysis
@@ -175,7 +176,7 @@ export async function analyzeNote(noteId: string, analysisType: 'summary' | 'min
 				.single()
 
 			if (insertError) {
-				console.error('Error inserting analysis:', insertError)
+				log.error('Error inserting analysis:', { error: insertError })
 				throw new Error(insertError.message)
 			}
 			analysis = newAnalysis
@@ -184,7 +185,7 @@ export async function analyzeNote(noteId: string, analysisType: 'summary' | 'min
 		revalidatePath('/notes')
 		return { success: true, analysis, results }
 	} catch (error) {
-		console.error('Error analyzing note:', error)
+		log.error('Error analyzing note:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al analizar nota')
 	}
 }
@@ -315,27 +316,7 @@ export async function deleteAnalysis(noteId: string) {
 // FUNCIONES AUXILIARES
 // =====================================================
 
-async function analyzeSentiment(content: string): Promise<string> {
-	// Análisis de sentimiento básico usando palabras clave
-	// En una implementación real, usarías un modelo de IA más sofisticado
-	
-	const positiveWords = ['bueno', 'excelente', 'genial', 'fantástico', 'increíble', 'perfecto', 'maravilloso', 'genial', 'feliz', 'contento', 'satisfecho']
-	const negativeWords = ['malo', 'terrible', 'horrible', 'pésimo', 'triste', 'deprimido', 'enojado', 'frustrado', 'decepcionado', 'molesto']
-	
-	const words = content.toLowerCase().split(/\s+/)
-	
-	let positiveCount = 0
-	let negativeCount = 0
-	
-	words.forEach(word => {
-		if (positiveWords.some(pw => word.includes(pw))) positiveCount++
-		if (negativeWords.some(nw => word.includes(nw))) negativeCount++
-	})
-	
-	if (positiveCount > negativeCount) return 'positive'
-	if (negativeCount > positiveCount) return 'negative'
-	return 'neutral'
-}
+// Función removida ya que no se usa
 
 // =====================================================
 // ACCIONES DE TEMAS RELACIONADOS
@@ -386,9 +367,9 @@ export async function getRelatedNotes(noteId: string, limit: number = 5) {
 
 		// Filtrar la nota actual y obtener detalles completos
 		const similarIds = similarNotes
-			?.filter((note: any) => note.id !== noteId)
+			?.filter((note: { id: string }) => note.id !== noteId)
 			.slice(0, limit)
-			.map((note: any) => note.id) || []
+			.map((note: { id: string }) => note.id) || []
 
 		if (similarIds.length === 0) {
 			console.log('No se encontraron notas similares, retornando notas recientes')
@@ -417,12 +398,12 @@ export async function getRelatedNotes(noteId: string, limit: number = 5) {
 
 		// Combinar con scores de similitud
 		const notesWithSimilarity = notes?.map(note => {
-			const similarityData = similarNotes?.find((s: any) => s.id === note.id)
+			const similarityData = similarNotes?.find((s: { id: string; similarity: number }) => s.id === note.id)
 			return {
 				...note,
 				similarity: similarityData?.similarity || 0
 			}
-		}).sort((a, b) => b.similarity - a.similarity) || []
+		}).sort((a, b) => (b as { similarity: number }).similarity - (a as { similarity: number }).similarity) || []
 
 		return notesWithSimilarity
 	} catch (error) {

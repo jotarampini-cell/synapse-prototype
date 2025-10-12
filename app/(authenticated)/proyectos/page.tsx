@@ -16,10 +16,8 @@ import {
 	Users,
 	Calendar,
 	CheckSquare,
-	Clock,
 	MoreHorizontal,
-	TrendingUp,
-	AlertCircle
+	TrendingUp
 } from "lucide-react"
 
 // Mock data

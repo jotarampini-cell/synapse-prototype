@@ -30,6 +30,17 @@ export function useTouchGestures(options: TouchGestureOptions = {}) {
 	// Funcionalidad desactivada por defecto para estabilidad
 	const isEnabled = process.env.NODE_ENV === 'development' && process.env.ENABLE_TOUCH_GESTURES === 'true'
 	
+	// Mover todos los hooks al inicio para evitar problemas de orden
+	const touchState = useRef<TouchState>({
+		startX: 0,
+		startY: 0,
+		startTime: 0,
+		isLongPress: false,
+		longPressTimer: null,
+		pinchStartDistance: 0,
+		pinchStartScale: 1
+	})
+	
 	if (!isEnabled) {
 		return {
 			bindTouchEvents: () => () => {} // No-op function
@@ -50,27 +61,13 @@ export function useTouchGestures(options: TouchGestureOptions = {}) {
 		enablePinch = true
 	} = options
 
-	const touchState = useRef<TouchState>({
-		startX: 0,
-		startY: 0,
-		startTime: 0,
-		isLongPress: false,
-		longPressTimer: null,
-		pinchStartDistance: 0,
-		pinchStartScale: 1
-	})
-
 	const getDistance = useCallback((touch1: Touch, touch2: Touch) => {
 		const dx = touch1.clientX - touch2.clientX
 		const dy = touch1.clientY - touch2.clientY
 		return Math.sqrt(dx * dx + dy * dy)
 	}, [])
 
-	const getAngle = useCallback((touch1: Touch, touch2: Touch) => {
-		const dx = touch1.clientX - touch2.clientX
-		const dy = touch1.clientY - touch2.clientY
-		return Math.atan2(dy, dx) * 180 / Math.PI
-	}, [])
+	// Función removida ya que no se usa
 
 	const handleTouchStart = useCallback((e: TouchEvent) => {
 		const touch = e.touches[0]

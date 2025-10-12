@@ -155,8 +155,8 @@ async function getFolderTreeFallback(userId: string) {
 		})
 
 		// Construir árbol jerárquico
-		const folderMap = new Map<string, any>()
-		const rootFolders: any[] = []
+		const folderMap = new Map<string, Folder & { children?: Folder[] }>()
+		const rootFolders: Folder[] = []
 
 		folders?.forEach(folder => {
 			const folderWithCount = {
@@ -187,8 +187,8 @@ async function getFolderTreeFallback(userId: string) {
 		})
 
 		// Aplanar el árbol para devolverlo como lista
-		const flattenTree = (folders: any[], level = 0): any[] => {
-			const result: any[] = []
+		const flattenTree = (folders: Folder[], level = 0): Folder[] => {
+			const result: Folder[] = []
 			folders.forEach(folder => {
 				result.push({ ...folder, level })
 				if (folder.children) {
@@ -227,7 +227,7 @@ export async function updateFolder(folderId: string, data: UpdateFolderData) {
 			throw new Error('Carpeta no encontrada o no tienes permisos')
 		}
 
-		const updateData: any = {}
+		const updateData: Record<string, unknown> = {}
 		if (data.name !== undefined) updateData.name = data.name.trim()
 		if (data.color !== undefined) updateData.color = data.color
 		if (data.icon !== undefined) updateData.icon = data.icon

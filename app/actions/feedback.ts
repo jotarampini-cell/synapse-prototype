@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache"
 export interface AIFeedback {
 	id: string
 	feedback_type: 'suggestion' | 'analysis' | 'connection' | 'tag' | 'folder'
-	feedback_data: any
+	feedback_data: Record<string, unknown>
 	is_positive: boolean
 	content_id?: string
 	created_at: string
@@ -14,7 +14,7 @@ export interface AIFeedback {
 
 export async function submitFeedback(data: {
 	feedback_type: 'suggestion' | 'analysis' | 'connection' | 'tag' | 'folder'
-	feedback_data: any
+	feedback_data: Record<string, unknown>
 	is_positive: boolean
 	content_id?: string
 }): Promise<{ success: boolean; error?: string }> {

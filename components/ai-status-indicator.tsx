@@ -8,12 +8,12 @@ import {
 	Sparkles, 
 	CheckCircle, 
 	AlertCircle, 
-	Clock, 
 	Loader2,
 	Zap,
 	Eye,
 	EyeOff
 } from "lucide-react"
+import { log } from '@/lib/logger'
 
 interface AIStatusIndicatorProps {
 	status: 'idle' | 'analyzing' | 'completed' | 'error' | 'suggesting'
@@ -171,7 +171,7 @@ export function AIHeaderStatus({ onOpenAIPanel }: { onOpenAIPanel?: () => void }
 					variant="outline"
 					size="sm"
 					onClick={() => {
-						console.log('Botón Insights AI clickeado en header')
+						log.info('Botón Insights AI clickeado en header')
 						onOpenAIPanel()
 					}}
 					className="gap-1 text-xs h-8"

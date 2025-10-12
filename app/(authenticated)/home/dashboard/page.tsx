@@ -7,15 +7,11 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { 
 	Search,
-	Plus,
 	Bell,
 	FileText,
 	CheckSquare,
 	Link,
-	Briefcase,
-	TrendingUp,
-	Users,
-	Calendar
+	Briefcase
 } from "lucide-react"
 
 export default function DashboardPage() {

@@ -26,26 +26,27 @@ export function BlockEditor({
 	readonly = false 
 }: BlockEditorProps) {
 	const { shouldUseMobileEditor, isLoading } = useMobileEditor()
-	const editorRef = useRef<any>(null)
+	const editorRef = useRef<HTMLDivElement | null>(null)
 	const [isMounted, setIsMounted] = useState(false)
-	const [editorData, setEditorData] = useState<any>(content)
+	const [editorData, setEditorData] = useState<{ blocks?: Array<{ type: string; data?: Record<string, unknown> }> } | string>(content)
 	const [canUndo, setCanUndo] = useState(false)
 	const [canRedo, setCanRedo] = useState(false)
 
 	// Convertir contenido entre formatos
-	const convertToMobileFormat = (editorData: any): string => {
+	const convertToMobileFormat = (editorData: { blocks?: Array<{ type: string; data?: Record<string, unknown> }> } | string): string => {
 		if (typeof editorData === 'string') return editorData
 		if (!editorData?.blocks) return ""
 
 		return editorData.blocks
-			.map((block: any) => {
+			.map((block: { type: string; data?: Record<string, unknown> }) => {
 				switch (block.type) {
 					case 'paragraph':
 						return block.data?.text || ''
-					case 'header':
+					case 'header': {
 						const level = block.data?.level || 1
 						const headerText = block.data?.text || ''
 						return '#'.repeat(level) + ' ' + headerText
+					}
 					case 'list':
 						return block.data?.items?.map((item: string) => `- ${item}`).join('\n') || ''
 					case 'quote':

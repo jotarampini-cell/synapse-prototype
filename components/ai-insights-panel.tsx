@@ -14,7 +14,6 @@ import {
 	CheckSquare,
 	Lightbulb,
 	Link,
-	Target,
 	RefreshCw,
 	Clock,
 	X,
@@ -22,6 +21,7 @@ import {
 } from "lucide-react"
 import { analyzeNote } from "@/app/actions/ai-analysis"
 import { generateSocraticQuestions } from '@/lib/gemini/client'
+import { log } from '@/lib/logger'
 
 interface AIInsightsPanelProps {
 	noteId: string | null
@@ -51,7 +51,6 @@ export function AIInsightsPanel({
 	isCollapsed,
 	className = "" 
 }: AIInsightsPanelProps) {
-	console.log('AIInsightsPanel renderizado:', { isOpen, noteId, isCollapsed })
 	const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
 	const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -76,7 +75,7 @@ export function AIInsightsPanel({
 			const data = await response.json()
 			if (data.analysis) {
 				// Debug: ver qué datos están llegando
-				console.log('Datos de análisis recibidos:', {
+				log.info('Datos de análisis recibidos:', {
 					summary: data.analysis.summary,
 					tasks: data.analysis.extracted_tasks,
 					concepts: data.analysis.key_concepts,
@@ -98,7 +97,7 @@ export function AIInsightsPanel({
 			}
 			}
 		} catch (error) {
-			console.error('Error loading existing analysis:', error)
+			log.error('Error loading existing analysis:', error)
 		} finally {
 			setIsLoading(false)
 		}
@@ -120,7 +119,7 @@ export function AIInsightsPanel({
 				}
 			}
 		} catch (error) {
-			console.error('Error analyzing note:', error)
+			log.error('Error analyzing note:', error)
 		} finally {
 			setIsAnalyzing(false)
 		}
@@ -134,7 +133,7 @@ export function AIInsightsPanel({
 			const questions = await generateSocraticQuestions(content)
 			setSocraticQuestions(questions)
 		} catch (error) {
-			console.error("Error loading socratic questions:", error)
+			log.error("Error loading socratic questions:", error)
 		} finally {
 			setIsLoadingQuestions(false)
 		}

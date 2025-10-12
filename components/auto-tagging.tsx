@@ -16,6 +16,7 @@ import {
 	ThumbsDown
 } from 'lucide-react'
 import { getAutoTags, getSuggestedFolder } from '@/app/actions/smart-suggestions'
+import { log } from '@/lib/logger'
 
 interface AutoTaggingProps {
 	content: string
@@ -65,7 +66,7 @@ export function AutoTagging({
 			const newTags = tags.filter(tag => !currentTags.includes(tag))
 			setSuggestedTags(newTags)
 		} catch (error) {
-			console.error('Error loading suggested tags:', error)
+			log.error('Error loading suggested tags:', error)
 		} finally {
 			setIsLoadingTags(false)
 		}
@@ -76,7 +77,7 @@ export function AutoTagging({
 			const folder = await getSuggestedFolder(content, title)
 			setSuggestedFolder(folder)
 		} catch (error) {
-			console.error('Error loading suggested folder:', error)
+			log.error('Error loading suggested folder:', error)
 		} finally {
 			setIsLoadingFolder(false)
 		}
@@ -108,7 +109,7 @@ export function AutoTagging({
 		}))
 		
 		// Aquí se podría enviar el feedback a la base de datos para mejorar las sugerencias
-		console.log(`Feedback para ${suggestionId}: ${isUseful ? 'útil' : 'no útil'}`)
+		log.info(`Feedback para ${suggestionId}: ${isUseful ? 'útil' : 'no útil'}`)
 	}
 
 	const hasSuggestions = suggestedTags.length > 0 || suggestedFolder

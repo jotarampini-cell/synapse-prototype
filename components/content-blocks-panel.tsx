@@ -13,9 +13,7 @@ import {
 	Link, 
 	Upload,
 	X,
-	GripVertical,
 	ExternalLink,
-	Calendar,
 	Clock,
 	Trash2,
 	Edit3
@@ -25,11 +23,11 @@ import {
 	createContentBlock, 
 	updateContentBlock, 
 	deleteContentBlock, 
-	reorderContentBlocks,
 	type ContentBlock 
 } from "@/app/actions/content-blocks"
 import { ContentCapture } from "./content-capture"
 import { toast } from "sonner"
+import { log } from "@/lib/logger"
 
 interface ContentBlocksPanelProps {
 	noteId: string | null
@@ -68,7 +66,7 @@ export function ContentBlocksPanel({ noteId, onBlockSelect, className = "" }: Co
 				toast.error(result.error || "Error al cargar bloques")
 			}
 		} catch (error) {
-			console.error('Error loading blocks:', error)
+			log.error('Error loading blocks:', error)
 			toast.error("Error al cargar bloques de contenido")
 		} finally {
 			setIsLoading(false)
@@ -99,7 +97,7 @@ export function ContentBlocksPanel({ noteId, onBlockSelect, className = "" }: Co
 				toast.error(result.error || "Error al agregar fuente")
 			}
 		} catch (error) {
-			console.error('Error adding source:', error)
+			log.error('Error adding source:', error)
 			toast.error("Error al agregar fuente")
 		}
 	}
@@ -114,7 +112,7 @@ export function ContentBlocksPanel({ noteId, onBlockSelect, className = "" }: Co
 				toast.error(result.error || "Error al eliminar bloque")
 			}
 		} catch (error) {
-			console.error('Error deleting block:', error)
+			log.error('Error deleting block:', error)
 			toast.error("Error al eliminar bloque")
 		}
 	}
@@ -147,7 +145,7 @@ export function ContentBlocksPanel({ noteId, onBlockSelect, className = "" }: Co
 				toast.error(result.error || "Error al actualizar bloque")
 			}
 		} catch (error) {
-			console.error('Error updating block:', error)
+			log.error('Error updating block:', error)
 			toast.error("Error al actualizar bloque")
 		}
 	}

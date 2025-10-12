@@ -12,8 +12,8 @@ interface SyncStatus {
 }
 
 interface RealtimeSyncOptions {
-	onDataChange?: (data: any) => void
-	onConflict?: (conflict: any) => void
+	onDataChange?: (data: Record<string, unknown>) => void
+	onConflict?: (conflict: Record<string, unknown>) => void
 	onError?: (error: Error) => void
 	syncInterval?: number
 	retryAttempts?: number
@@ -80,33 +80,7 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 	// Funcionalidad desactivada por defecto para estabilidad
 	const isEnabled = process.env.NODE_ENV === 'development' && process.env.ENABLE_REALTIME_SYNC === 'true'
 	
-	if (!isEnabled) {
-		return {
-			syncStatus: {
-				isOnline: true,
-				isSyncing: false,
-				lastSync: null,
-				conflicts: 0,
-				error: null
-			},
-			syncData: () => Promise.resolve(),
-			resolveConflict: () => {},
-			connectWebSocket: () => {},
-			disconnectWebSocket: () => {},
-			localData: {},
-			setLocalData: () => {}
-		}
-	}
-
-	const {
-		onDataChange,
-		onConflict,
-		onError,
-		syncInterval = 30000, // 30 segundos
-		retryAttempts = 3,
-		retryDelay = 1000
-	} = options
-
+	// Mover todos los hooks al inicio para evitar problemas de orden
 	const [syncStatus, setSyncStatus] = useState<SyncStatus>({
 		isOnline: typeof window !== 'undefined' ? navigator.onLine : true,
 		isSyncing: false,
@@ -120,10 +94,31 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 	const syncTimerRef = useRef<NodeJS.Timeout | null>(null)
 
 	// Simular datos para demo
-	const [localData, setLocalData] = useState<any>({
+	const [localData, setLocalData] = useState<Record<string, unknown>>({
 		notes: [],
 		lastModified: Date.now()
 	})
+	
+	if (!isEnabled) {
+		return {
+			syncStatus,
+			syncData: () => Promise.resolve(),
+			resolveConflict: () => {},
+			connectWebSocket: () => {},
+			disconnectWebSocket: () => {},
+			localData,
+			setLocalData
+		}
+	}
+
+	const {
+		onDataChange,
+		onConflict,
+		onError,
+		syncInterval = 30000, // 30 segundos
+		retryAttempts = 3,
+		retryDelay = 1000
+	} = options
 
 	// Conectar WebSocket
 	const connectWebSocket = useCallback(() => {
@@ -209,7 +204,7 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 	}, [])
 
 	// Sincronizar datos
-	const syncData = useCallback(async (data: any) => {
+	const syncData = useCallback(async (data: Record<string, unknown>) => {
 		if (!syncStatus.isOnline) {
 			toast.error('Sin conexión a internet')
 			return
@@ -248,7 +243,7 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 	}, [syncStatus.isOnline, onError])
 
 	// Resolver conflicto
-	const resolveConflict = useCallback((resolution: 'local' | 'remote' | 'merge', data?: any) => {
+	const resolveConflict = useCallback((resolution: 'local' | 'remote' | 'merge', data?: Record<string, unknown>) => {
 		setSyncStatus(prev => ({
 			...prev,
 			conflicts: Math.max(0, prev.conflicts - 1)
@@ -337,7 +332,7 @@ export function useNotesSync() {
 		}
 	})
 
-	const syncNotes = useCallback((notes: any[]) => {
+	const syncNotes = useCallback((notes: unknown[]) => {
 		const notesData = {
 			notes,
 			lastModified: Date.now()

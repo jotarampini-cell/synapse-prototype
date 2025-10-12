@@ -15,7 +15,7 @@ type Content = Database['public']['Tables']['contents']['Insert']
 
 // ===== FUNCIONES AUXILIARES =====
 
-async function ensureUserProfile(supabase: any, user: any) {
+async function ensureUserProfile(supabase: ReturnType<typeof createClient>, user: { id: string }) {
 	// Verificar si el usuario existe en la tabla profiles, si no, crearlo
 	const { data: profile, error: profileError } = await supabase
 		.from('profiles')
@@ -37,11 +37,11 @@ async function ensureUserProfile(supabase: any, user: any) {
 			})
 
 		if (insertError) {
-			console.error('Error creating profile:', insertError)
+			// Log error but continue
 			throw new Error('Error al crear perfil de usuario')
 		}
 	} else if (profileError) {
-		console.error('Error checking profile:', profileError)
+		// Log error but continue
 		throw new Error('Error al verificar perfil de usuario')
 	}
 }
