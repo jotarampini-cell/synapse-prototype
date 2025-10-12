@@ -34,7 +34,7 @@ SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key_aqui
 GEMINI_API_KEY=AIzaSyAbJ2-IRbdX7OarBEb-N2UOcR64PVLaHE0
 
 # URL del sitio
-NEXT_PUBLIC_SITE_URL=http://localhost:3000`
+NEXT_PUBLIC_SITE_URL=https://synapse-ai.vercel.app`
     
     setEnvContent(content)
   }
