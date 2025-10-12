@@ -19,7 +19,7 @@ interface PushNotification {
 	icon?: string
 	badge?: string
 	tag?: string
-	data?: any
+	data?: Record<string, unknown>
 	timestamp: number
 	read: boolean
 }

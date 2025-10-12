@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
+import { log } from '@/lib/logger'
 
 interface SyncStatus {
 	isOnline: boolean
@@ -80,7 +81,7 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 	// Funcionalidad desactivada por defecto para estabilidad
 	const isEnabled = process.env.NODE_ENV === 'development' && process.env.ENABLE_REALTIME_SYNC === 'true'
 	
-	// Mover todos los hooks al inicio para evitar problemas de orden
+	// Todos los hooks deben estar al inicio, sin importar las condiciones
 	const [syncStatus, setSyncStatus] = useState<SyncStatus>({
 		isOnline: typeof window !== 'undefined' ? navigator.onLine : true,
 		isSyncing: false,
@@ -98,30 +99,11 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 		notes: [],
 		lastModified: Date.now()
 	})
-	
-	if (!isEnabled) {
-		return {
-			syncStatus,
-			syncData: () => Promise.resolve(),
-			resolveConflict: () => {},
-			connectWebSocket: () => {},
-			disconnectWebSocket: () => {},
-			localData,
-			setLocalData
-		}
-	}
 
-	const {
-		onDataChange,
-		onConflict,
-		onError,
-		syncInterval = 30000, // 30 segundos
-		retryAttempts = 3,
-		retryDelay = 1000
-	} = options
-
-	// Conectar WebSocket
+	// Todos los useCallback y useEffect deben estar aquí también
 	const connectWebSocket = useCallback(() => {
+		if (!isEnabled) return
+		
 		try {
 			wsRef.current = new MockWebSocket('ws://localhost:3001/sync')
 			
@@ -142,21 +124,21 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 					if (data.type === 'data') {
 						// Simular conflicto ocasional
 						if (Math.random() < 0.1) {
-							onConflict?.(data)
+							options.onConflict?.(data)
 							setSyncStatus(prev => ({
 								...prev,
 								conflicts: prev.conflicts + 1
 							}))
 							toast.warning('Conflicto de sincronización detectado')
 						} else {
-							onDataChange?.(data.payload)
+							options.onDataChange?.(data.payload)
 							setLocalData(data.payload)
 							toast.success('Datos sincronizados')
 						}
 					}
 				} catch (error) {
-					console.error('Error parsing WebSocket message:', error)
-					onError?.(error as Error)
+					log.error('Error parsing WebSocket message:', { error })
+					options.onError?.(error as Error)
 				}
 			}
 
@@ -167,11 +149,11 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 				}))
 				
 				// Intentar reconectar
-				if (retryCountRef.current < retryAttempts) {
+				if (retryCountRef.current < (options.retryAttempts || 3)) {
 					retryCountRef.current++
 					setTimeout(() => {
 						connectWebSocket()
-					}, retryDelay * retryCountRef.current)
+					}, (options.retryDelay || 1000) * retryCountRef.current)
 				}
 			}
 
@@ -180,18 +162,17 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 					...prev,
 					error: 'Error de conexión'
 				}))
-				onError?.(error as any)
+				options.onError?.(error as Error)
 			}
 		} catch (error) {
 			setSyncStatus(prev => ({
 				...prev,
 				error: 'Error al conectar'
 			}))
-			onError?.(error as Error)
+			options.onError?.(error as Error)
 		}
-	}, [onDataChange, onConflict, onError, retryAttempts, retryDelay])
+	}, [isEnabled, options])
 
-	// Desconectar WebSocket
 	const disconnectWebSocket = useCallback(() => {
 		if (wsRef.current) {
 			wsRef.current.close()
@@ -203,9 +184,8 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 		}
 	}, [])
 
-	// Sincronizar datos
 	const syncData = useCallback(async (data: Record<string, unknown>) => {
-		if (!syncStatus.isOnline) {
+		if (!isEnabled || !syncStatus.isOnline) {
 			toast.error('Sin conexión a internet')
 			return
 		}
@@ -237,12 +217,11 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 				isSyncing: false,
 				error: 'Error al sincronizar'
 			}))
-			onError?.(error as Error)
+			options.onError?.(error as Error)
 			toast.error('Error al sincronizar datos')
 		}
-	}, [syncStatus.isOnline, onError])
+	}, [isEnabled, syncStatus.isOnline, options])
 
-	// Resolver conflicto
 	const resolveConflict = useCallback((resolution: 'local' | 'remote' | 'merge', data?: Record<string, unknown>) => {
 		setSyncStatus(prev => ({
 			...prev,
@@ -260,6 +239,8 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 
 	// Detectar cambios en conectividad
 	useEffect(() => {
+		if (!isEnabled) return
+
 		const handleOnline = () => {
 			setSyncStatus(prev => ({ ...prev, isOnline: true }))
 		}
@@ -279,10 +260,12 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 				window.removeEventListener('offline', handleOffline)
 			}
 		}
-	}, []) // Removed dependencies to prevent infinite loop
+	}, [isEnabled])
 
 	// Inicializar conexión
 	useEffect(() => {
+		if (!isEnabled) return
+
 		if (typeof window !== 'undefined' && navigator.onLine) {
 			connectWebSocket()
 		}
@@ -290,14 +273,16 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 		return () => {
 			disconnectWebSocket()
 		}
-	}, []) // Removed dependencies to prevent infinite loop
+	}, [isEnabled, connectWebSocket, disconnectWebSocket])
 
 	// Sincronización periódica
 	useEffect(() => {
+		if (!isEnabled) return
+
 		if (syncStatus.isOnline && !syncTimerRef.current) {
 			syncTimerRef.current = setInterval(() => {
 				syncData(localData)
-			}, syncInterval)
+			}, options.syncInterval || 30000)
 		}
 
 		return () => {
@@ -305,7 +290,19 @@ export function useRealtimeSync(options: RealtimeSyncOptions = {}) {
 				clearInterval(syncTimerRef.current)
 			}
 		}
-	}, [syncStatus.isOnline, syncData, localData, syncInterval])
+	}, [isEnabled, syncStatus.isOnline, syncData, localData, options.syncInterval])
+	
+	if (!isEnabled) {
+		return {
+			syncStatus,
+			syncData: () => Promise.resolve(),
+			resolveConflict: () => {},
+			connectWebSocket: () => {},
+			disconnectWebSocket: () => {},
+			localData,
+			setLocalData
+		}
+	}
 
 	return {
 		syncStatus,

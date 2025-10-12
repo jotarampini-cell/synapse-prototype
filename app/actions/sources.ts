@@ -10,7 +10,7 @@ export interface Source {
 	file_path?: string
 	content_type: 'url' | 'file' | 'voice'
 	extracted_content?: string
-	metadata?: any
+	metadata?: Record<string, unknown>
 	created_at: string
 	updated_at: string
 }
@@ -21,7 +21,7 @@ export async function createSource(data: {
 	file_path?: string
 	content_type: 'url' | 'file' | 'voice'
 	extracted_content?: string
-	metadata?: any
+	metadata?: Record<string, unknown>
 }): Promise<{ success: boolean; source?: Source; error?: string }> {
 	try {
 		const supabase = await createClient()
@@ -156,7 +156,7 @@ export async function extractContentFromUrl(url: string): Promise<{
 	content?: {
 		title: string
 		content: string
-		metadata: any
+		metadata: Record<string, unknown>
 	}; 
 	error?: string 
 }> {
@@ -186,7 +186,7 @@ export async function extractContentFromFile(file: File): Promise<{
 	content?: {
 		title: string
 		content: string
-		metadata: any
+		metadata: Record<string, unknown>
 	}; 
 	error?: string 
 }> {

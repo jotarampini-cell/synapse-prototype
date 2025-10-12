@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { log } from "@/lib/logger"
 
 export interface ActionStep {
 	id: string
@@ -55,14 +56,14 @@ export async function createActionPlan(data: {
 			.single()
 
 		if (error) {
-			console.error('Error creating action plan:', error)
+			log.error('Error creating action plan:', { error })
 			return { success: false, error: error.message }
 		}
 
 		revalidatePath('/acciones')
 		return { success: true, plan }
 	} catch (error) {
-		console.error('Error creating action plan:', error)
+		log.error('Error creating action plan:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -95,13 +96,13 @@ export async function getActionPlans(filters?: {
 		const { data: plans, error } = await query.order('created_at', { ascending: false })
 
 		if (error) {
-			console.error('Error fetching action plans:', error)
+			log.error('Error fetching action plans:', { error })
 			return { success: false, error: error.message }
 		}
 
 		return { success: true, plans }
 	} catch (error) {
-		console.error('Error fetching action plans:', error)
+		log.error('Error fetching action plans:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -125,14 +126,14 @@ export async function updateActionPlan(
 			.eq('user_id', user.id)
 
 		if (error) {
-			console.error('Error updating action plan:', error)
+			log.error('Error updating action plan:', { error })
 			return { success: false, error: error.message }
 		}
 
 		revalidatePath('/acciones')
 		return { success: true }
 	} catch (error) {
-		console.error('Error updating action plan:', error)
+		log.error('Error updating action plan:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -153,14 +154,14 @@ export async function deleteActionPlan(id: string): Promise<{ success: boolean; 
 			.eq('user_id', user.id)
 
 		if (error) {
-			console.error('Error deleting action plan:', error)
+			log.error('Error deleting action plan:', { error })
 			return { success: false, error: error.message }
 		}
 
 		revalidatePath('/acciones')
 		return { success: true }
 	} catch (error) {
-		console.error('Error deleting action plan:', error)
+		log.error('Error deleting action plan:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -203,14 +204,14 @@ export async function updateActionStep(
 			.eq('user_id', user.id)
 
 		if (error) {
-			console.error('Error updating action step:', error)
+			log.error('Error updating action step:', { error })
 			return { success: false, error: error.message }
 		}
 
 		revalidatePath('/acciones')
 		return { success: true }
 	} catch (error) {
-		console.error('Error updating action step:', error)
+		log.error('Error updating action step:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -301,7 +302,7 @@ export async function generateActionPlanFromContent(contentId: string): Promise<
 		const result = await createActionPlan(planData)
 		return result
 	} catch (error) {
-		console.error('Error generating action plan:', error)
+		log.error('Error generating action plan:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -330,7 +331,7 @@ export async function getActionPlanStats(): Promise<{
 			.eq('user_id', user.id)
 
 		if (error) {
-			console.error('Error fetching action plan stats:', error)
+			log.error('Error fetching action plan stats:', { error })
 			return { success: false, error: error.message }
 		}
 
@@ -343,7 +344,7 @@ export async function getActionPlanStats(): Promise<{
 
 		return { success: true, stats }
 	} catch (error) {
-		console.error('Error fetching action plan stats:', error)
+		log.error('Error fetching action plan stats:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }

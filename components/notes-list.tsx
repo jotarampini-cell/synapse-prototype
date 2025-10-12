@@ -60,7 +60,7 @@ interface Note {
 	word_count: number
 	reading_time: number
 	hasSummary?: boolean
-	summary?: any
+	summary?: { summary: string; concepts: string[]; connections: string[] }
 	folders?: {
 		name: string
 		color: string

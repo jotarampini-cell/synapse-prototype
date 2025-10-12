@@ -87,7 +87,7 @@ export async function getProjects(): Promise<{ success: boolean; projects?: Proj
 			...project,
 			notes_count: project.project_notes?.[0]?.count || 0,
 			tasks_count: project.project_tasks?.[0]?.count || 0,
-			completed_tasks: project.project_tasks?.[0]?.tasks?.filter((t: any) => t.status === 'completed').length || 0
+			completed_tasks: project.project_tasks?.[0]?.tasks?.filter((t: { status: string }) => t.status === 'completed').length || 0
 		}))
 
 		return { success: true, projects: projectsWithStats }
@@ -231,7 +231,7 @@ export async function removeNoteFromProject(
 	}
 }
 
-export async function getProjectNotes(projectId: string): Promise<{ success: boolean; notes?: any[]; error?: string }> {
+export async function getProjectNotes(projectId: string): Promise<{ success: boolean; notes?: Array<{ id: string; title: string; content: string; created_at: string }>; error?: string }> {
 	try {
 		const supabase = await createClient()
 		const { data: { user } } = await supabase.auth.getUser()

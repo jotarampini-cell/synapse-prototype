@@ -155,7 +155,7 @@ export default function TestAdvancedFeaturesPage() {
 						return (
 							<button
 								key={tab.id}
-								onClick={() => setActiveTab(tab.id as any)}
+								onClick={() => setActiveTab(tab.id as 'gestures' | 'sync' | 'ai')}
 								className={`flex-1 flex flex-col items-center py-3 touch-target ${
 									activeTab === tab.id 
 										? 'text-primary border-b-2 border-primary' 

@@ -11,13 +11,13 @@ import {
 import { transcribeAudio } from '@/lib/speech/client'
 import { Database } from '@/lib/database.types'
 
-type Content = Database['public']['Tables']['contents']['Insert']
+// type Content = Database['public']['Tables']['contents']['Insert']
 
 // ===== FUNCIONES AUXILIARES =====
 
 async function ensureUserProfile(supabase: ReturnType<typeof createClient>, user: { id: string }) {
 	// Verificar si el usuario existe en la tabla profiles, si no, crearlo
-	const { data: profile, error: profileError } = await supabase
+	const { error: profileError } = await supabase
 		.from('profiles')
 		.select('id')
 		.eq('id', user.id)
@@ -165,7 +165,7 @@ export async function createBasicFileContent(formData: FormData) {
 		const fileExt = file.name.split('.').pop()
 		const fileName = `${user.id}/${Date.now()}.${fileExt}`
 		
-		const { data: uploadData, error: uploadError } = await supabase.storage
+		const { error: uploadError } = await supabase.storage
 			.from('content-files')
 			.upload(fileName, file)
 
@@ -443,7 +443,7 @@ export async function analyzeContentWithAI(contentId: string, analysisType: 'sum
 			throw new Error('Contenido no encontrado')
 		}
 
-		const results: any = {}
+		const results: Record<string, unknown> = {}
 
 		// Generar embedding si no existe
 		if (!content.embedding) {
@@ -620,7 +620,7 @@ export async function updateContent(contentId: string, formData: FormData, optio
 
 	try {
 		// 1. Actualizar contenido básico
-		const updateData: any = {
+		const updateData: Record<string, unknown> = {
 			title,
 			content,
 			tags,

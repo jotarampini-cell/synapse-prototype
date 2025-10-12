@@ -225,7 +225,7 @@ export async function getAnalysis(noteId: string) {
 
 		return analysis || null
 	} catch (error) {
-		console.error('Error getting analysis:', error)
+		log.error('Error getting analysis:', { error })
 		throw new Error('Error al obtener análisis')
 	}
 }
@@ -267,7 +267,7 @@ export async function updateAnalysis(noteId: string, updates: Partial<AIAnalysis
 		revalidatePath('/notes')
 		return { success: true, analysis }
 	} catch (error) {
-		console.error('Error updating analysis:', error)
+		log.error('Error updating analysis:', { error })
 		throw new Error('Error al actualizar análisis')
 	}
 }
@@ -307,7 +307,7 @@ export async function deleteAnalysis(noteId: string) {
 		revalidatePath('/notes')
 		return { success: true }
 	} catch (error) {
-		console.error('Error deleting analysis:', error)
+		log.error('Error deleting analysis:', { error })
 		throw new Error('Error al eliminar análisis')
 	}
 }
@@ -341,12 +341,12 @@ export async function getRelatedNotes(noteId: string, limit: number = 5) {
 			.single()
 
 		if (currentError) {
-			console.error('Error obteniendo nota actual:', currentError)
+			log.error('Error obteniendo nota actual:', { error: currentError })
 			return [] // Retornar array vacío en lugar de lanzar error
 		}
 
 		if (!currentNote?.embedding) {
-			console.log('Nota sin embedding, retornando notas recientes como alternativa')
+			log.info('Nota sin embedding, retornando notas recientes como alternativa')
 			// Si no hay embedding, retornar notas recientes como alternativa
 			return await getRecentNotesAsAlternative(user.id, noteId, limit)
 		}
@@ -360,7 +360,7 @@ export async function getRelatedNotes(noteId: string, limit: number = 5) {
 		})
 
 		if (error) {
-			console.error('Error en búsqueda vectorial:', error)
+			log.error('Error en búsqueda vectorial:', { error })
 			// Si falla la búsqueda vectorial, usar alternativa
 			return await getRecentNotesAsAlternative(user.id, noteId, limit)
 		}
@@ -372,7 +372,7 @@ export async function getRelatedNotes(noteId: string, limit: number = 5) {
 			.map((note: { id: string }) => note.id) || []
 
 		if (similarIds.length === 0) {
-			console.log('No se encontraron notas similares, retornando notas recientes')
+			log.info('No se encontraron notas similares, retornando notas recientes')
 			return await getRecentNotesAsAlternative(user.id, noteId, limit)
 		}
 
@@ -392,7 +392,7 @@ export async function getRelatedNotes(noteId: string, limit: number = 5) {
 			.eq('user_id', user.id)
 
 		if (notesError) {
-			console.error('Error obteniendo detalles de notas:', notesError)
+			log.error('Error obteniendo detalles de notas:', { error: notesError })
 			return await getRecentNotesAsAlternative(user.id, noteId, limit)
 		}
 
@@ -407,12 +407,12 @@ export async function getRelatedNotes(noteId: string, limit: number = 5) {
 
 		return notesWithSimilarity
 	} catch (error) {
-		console.error('Error getting related notes:', error)
+		log.error('Error getting related notes:', { error })
 		// En caso de error general, retornar notas recientes como fallback
 		try {
 			return await getRecentNotesAsAlternative(user.id, noteId, limit)
 		} catch (fallbackError) {
-			console.error('Error en fallback:', fallbackError)
+			log.error('Error en fallback:', { error: fallbackError })
 			return [] // Retornar array vacío como último recurso
 		}
 	}
@@ -440,7 +440,7 @@ async function getRecentNotesAsAlternative(userId: string, excludeNoteId: string
 		.limit(limit)
 
 	if (error) {
-		console.error('Error obteniendo notas recientes:', error)
+		log.error('Error obteniendo notas recientes:', { error })
 		return []
 	}
 
@@ -485,7 +485,7 @@ export async function getNotesByTopic(topic: string, limit: number = 10) {
 
 		return notes || []
 	} catch (error) {
-		console.error('Error getting notes by topic:', error)
+		log.error('Error getting notes by topic:', { error })
 		throw new Error('Error al buscar notas por tema')
 	}
 }
@@ -522,7 +522,7 @@ export async function getAIAnalysisStats() {
 			total_reading_time: 0
 		}
 	} catch (error) {
-		console.error('Error getting AI analysis stats:', error)
+		log.error('Error getting AI analysis stats:', { error })
 		throw new Error('Error al obtener estadísticas de IA')
 	}
 }
@@ -553,13 +553,13 @@ export async function analyzeNoteInBackground(noteId: string) {
 				.single()
 
 			if (checkError && checkError.code !== 'PGRST116') {
-				console.warn('Error checking existing analysis:', checkError.message)
+				log.warn('Error checking existing analysis:', { error: checkError.message })
 				// Continuar sin verificar análisis existente
 			} else {
 				existingAnalysis = data
 			}
 		} catch (error) {
-			console.warn('Error accessing ai_analyses table:', error)
+			log.warn('Error accessing ai_analyses table:', { error })
 			// Continuar sin verificar análisis existente
 		}
 
@@ -590,7 +590,7 @@ export async function analyzeNoteInBackground(noteId: string) {
 			.eq('id', noteId)
 
 		if (updateError) {
-			console.error('Error updating analysis status:', updateError)
+			log.error('Error updating analysis status:', { error: updateError })
 		}
 
 		// Realizar análisis completo en paralelo
@@ -622,11 +622,11 @@ export async function analyzeNoteInBackground(noteId: string) {
 				})
 
 			if (upsertError) {
-				console.warn('Error upserting AI analysis:', upsertError.message)
+				log.warn('Error upserting AI analysis:', { error: upsertError.message })
 				// Continuar sin guardar el análisis en la tabla específica
 			}
 		} catch (error) {
-			console.warn('Error accessing ai_analyses table for upsert:', error)
+			log.warn('Error accessing ai_analyses table for upsert:', { error })
 			// Continuar sin guardar el análisis en la tabla específica
 		}
 
@@ -650,7 +650,7 @@ export async function analyzeNoteInBackground(noteId: string) {
 		}
 
 	} catch (error) {
-		console.error('Error in background analysis:', error)
+		log.error('Error in background analysis:', { error })
 		
 		// Marcar como "error" en la base de datos
 		await supabase

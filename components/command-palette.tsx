@@ -47,7 +47,7 @@ export function CommandPalette({
 	onNoteSelect 
 }: CommandPaletteProps) {
 	const [searchQuery, setSearchQuery] = useState('')
-	const [recentNotes, setRecentNotes] = useState<any[]>([])
+	const [recentNotes, setRecentNotes] = useState<Array<{ id: string; title: string; content: string }>>([])
 	const router = useRouter()
 
 	useEffect(() => {

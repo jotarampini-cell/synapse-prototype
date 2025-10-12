@@ -190,7 +190,7 @@ export function MobileTemplatesModal({
 }: {
 	isOpen: boolean
 	onClose: () => void
-	onSelectTemplate: (template: any) => void
+	onSelectTemplate: (template: { id: string; name: string; content: string }) => void
 }) {
 	const templates = [
 		{

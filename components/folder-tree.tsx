@@ -62,7 +62,7 @@ interface FolderNodeProps {
 	selectedFolderId: string | null
 }
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 	folder: Folder,
 	folderOpen: FolderOpen,
 	inbox: Inbox,

@@ -56,13 +56,13 @@ export async function getContentBlocks(contentId: string): Promise<{ success: bo
 			.order('order_index', { ascending: true })
 
 		if (error) {
-			console.error('Error fetching content blocks:', error)
+			log.error('Error fetching content blocks:', { error })
 			return { success: false, error: "Error al cargar bloques de contenido" }
 		}
 
 		return { success: true, blocks: blocks || [] }
 	} catch (error) {
-		console.error('Error in getContentBlocks:', error)
+		log.error('Error in getContentBlocks:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -119,14 +119,14 @@ export async function createContentBlock(data: CreateContentBlockData): Promise<
 			.single()
 
 		if (error) {
-			console.error('Error creating content block:', error)
+			log.error('Error creating content block:', { error })
 			return { success: false, error: "Error al crear bloque de contenido" }
 		}
 
 		revalidatePath('/notes')
 		return { success: true, blockId: block.id }
 	} catch (error) {
-		console.error('Error in createContentBlock:', error)
+		log.error('Error in createContentBlock:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -170,14 +170,14 @@ export async function updateContentBlock(blockId: string, data: UpdateContentBlo
 			.eq('id', blockId)
 
 		if (error) {
-			console.error('Error updating content block:', error)
+			log.error('Error updating content block:', { error })
 			return { success: false, error: "Error al actualizar bloque de contenido" }
 		}
 
 		revalidatePath('/notes')
 		return { success: true }
 	} catch (error) {
-		console.error('Error in updateContentBlock:', error)
+		log.error('Error in updateContentBlock:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -213,14 +213,14 @@ export async function deleteContentBlock(blockId: string): Promise<{ success: bo
 			.eq('id', blockId)
 
 		if (error) {
-			console.error('Error deleting content block:', error)
+			log.error('Error deleting content block:', { error })
 			return { success: false, error: "Error al eliminar bloque de contenido" }
 		}
 
 		revalidatePath('/notes')
 		return { success: true }
 	} catch (error) {
-		console.error('Error in deleteContentBlock:', error)
+		log.error('Error in deleteContentBlock:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -260,7 +260,7 @@ export async function reorderContentBlocks(contentId: string, blockIds: string[]
 				.eq('content_id', contentId)
 
 			if (error) {
-				console.error('Error reordering content blocks:', error)
+				log.error('Error reordering content blocks:', { error })
 				return { success: false, error: "Error al reordenar bloques" }
 			}
 		}
@@ -268,7 +268,7 @@ export async function reorderContentBlocks(contentId: string, blockIds: string[]
 		revalidatePath('/notes')
 		return { success: true }
 	} catch (error) {
-		console.error('Error in reorderContentBlocks:', error)
+		log.error('Error in reorderContentBlocks:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }

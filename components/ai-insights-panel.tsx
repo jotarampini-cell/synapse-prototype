@@ -41,15 +41,13 @@ interface AnalysisData {
 	connections?: Array<{ source: string; target: string; type: string; strength: number }>
 }
 
-export function AIInsightsPanel({ 
-	noteId, 
-	noteContent = "", 
-	noteTitle = "", 
-	isOpen, 
-	onClose, 
-	onToggleCollapse, 
+export function AIInsightsPanel({
+	noteId,
+	isOpen,
+	onClose,
+	onToggleCollapse,
 	isCollapsed,
-	className = "" 
+	className = ""
 }: AIInsightsPanelProps) {
 	const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
@@ -57,7 +55,7 @@ export function AIInsightsPanel({
 	const [lastAnalyzed, setLastAnalyzed] = useState<Date | null>(null)
 	const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['summary']))
 	const [socraticQuestions, setSocraticQuestions] = useState<string[]>([])
-	const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
+	const [, setIsLoadingQuestions] = useState(false)
 
 	useEffect(() => {
 		if (isOpen && noteId && !analysisData) {
@@ -415,7 +413,7 @@ export function AIInsightsPanel({
 													<div className="space-y-2">
 														{analysisData.connections.map((connection, index) => {
 															// Manejar tanto strings como objetos
-															const connectionText = typeof connection === 'string' ? connection : connection
+															// const connectionText = typeof connection === 'string' ? connection : connection
 															const source = typeof connection === 'object' ? connection.source : 'Origen'
 															const target = typeof connection === 'object' ? connection.target : 'Destino'
 															const type = typeof connection === 'object' ? connection.type : 'Relación'

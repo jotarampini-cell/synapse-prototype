@@ -40,14 +40,13 @@ import {
 import { FolderTree } from "@/components/folder-tree"
 import { NotesList } from "@/components/notes-list"
 import { NoteEditor } from "@/components/note-editor"
-import { KnowledgePanel } from "@/components/knowledge-panel"
 import { AIPanel } from "@/components/ai-panel"
 import { AIHeaderStatus } from "@/components/ai-status-indicator"
 import { OnboardingTutorial, useOnboarding } from "@/components/onboarding-tutorial"
 import { ContentCaptureFAB } from "@/components/content-capture-fab"
-import { ThemeToggle } from "@/components/theme-toggle"
 import { CommandPalette } from "@/components/command-palette"
 import { useCommandPalette } from "@/hooks/use-command-palette"
+import { log } from "@/lib/logger"
 import { createContent } from "@/app/actions/content"
 import { createDefaultFolders } from "@/app/actions/folders"
 import { toast } from "sonner"
@@ -90,7 +89,7 @@ export default function NotesPage() {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
 	const [sortBy, setSortBy] = useState<'updated_at' | 'created_at' | 'title'>('updated_at')
-	const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+	const [sortOrder] = useState<'asc' | 'desc'>('desc')
 	const [filterBy, setFilterBy] = useState<'all' | 'pinned' | 'archived'>('all')
 	const [showDefaultFoldersPrompt, setShowDefaultFoldersPrompt] = useState(false)
 	
@@ -152,7 +151,7 @@ export default function NotesPage() {
 						}
 					}
 				} catch (error) {
-					console.error('Error checking folder count:', error)
+					log.error('Error checking folder count:', { error })
 				}
 			}, 2000)
 
@@ -259,7 +258,7 @@ export default function NotesPage() {
 			window.dispatchEvent(new CustomEvent('notesUpdated'))
 		} catch (error) {
 			toast.error("Error al crear la nota")
-			console.error("Error creating note:", error)
+			log.error("Error creating note:", { error })
 		}
 	}
 
@@ -281,7 +280,7 @@ export default function NotesPage() {
 			}
 		} catch (error) {
 			toast.error("Error al crear carpetas predeterminadas")
-			console.error("Error creating default folders:", error)
+			log.error("Error creating default folders:", { error })
 		}
 	}
 
@@ -303,12 +302,12 @@ export default function NotesPage() {
 	}
 
 	// Handle note update
-	const handleNoteUpdate = (updatedNote: Note) => {
+	const handleNoteUpdate = (_updatedNote: Note) => {
 		// This will trigger a re-render of the notes list
 		// The actual update is handled by the NoteEditor component
 	}
 
-	console.log('Estado de la página:', { isFocusMode, selectedNote, aiPanelOpen })
+	log.info('Estado de la página:', { isFocusMode, selectedNote, aiPanelOpen })
 	
 	// Layout móvil
 	if (isMobile) {
@@ -550,7 +549,7 @@ export default function NotesPage() {
 									{sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
 								</Button>
 								<AIHeaderStatus onOpenAIPanel={() => {
-									console.log('Abriendo panel de IA desde header')
+									log.info('Abriendo panel de IA desde header')
 									setAiPanelOpen(true)
 								}} />
 							</div>

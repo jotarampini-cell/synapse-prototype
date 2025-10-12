@@ -11,9 +11,9 @@ import { Save, Undo2, Redo2 } from "lucide-react"
 import dynamic from "next/dynamic"
 
 interface BlockEditorProps {
-	content?: any
-	onUpdate: (data: any) => void
-	onSave: (data: any) => void
+	content?: { blocks?: Array<{ type: string; data?: Record<string, unknown> }> } | string
+	onUpdate: (data: { blocks?: Array<{ type: string; data?: Record<string, unknown> }> } | string) => void
+	onSave: (data: { blocks?: Array<{ type: string; data?: Record<string, unknown> }> } | string) => void
 	placeholder?: string
 	readonly?: boolean
 }
@@ -60,7 +60,7 @@ export function BlockEditor({
 			.join('\n\n')
 	}
 
-	const convertToEditorJSFormat = (text: string): any => {
+	const convertToEditorJSFormat = (text: string): { blocks: Array<{ type: string; data?: Record<string, unknown> }> } => {
 		if (!text || typeof text !== 'string' || !text.trim()) {
 			return {
 				time: Date.now(),
@@ -78,7 +78,7 @@ export function BlockEditor({
 		// Conversión básica de Markdown a Editor.js
 		const lines = text.split('\n')
 		const blocks = []
-		let currentBlock: any = { id: `block-${Date.now()}`, type: "paragraph", data: { text: "" } }
+		let currentBlock: { id: string; type: string; data: { text: string } } = { id: `block-${Date.now()}`, type: "paragraph", data: { text: "" } }
 
 		for (const line of lines) {
 			if (line.startsWith('# ')) {
@@ -205,7 +205,7 @@ export function BlockEditor({
 			const Warning = WarningModule.default
 			const Paragraph = ParagraphModule.default
 
-			editorRef.current = new (EditorJS as any)({
+			editorRef.current = new (EditorJS as { new (config: Record<string, unknown>): { save: () => Promise<{ blocks: Array<{ type: string; data?: Record<string, unknown> }> }> } })({
 				holder: "editorjs-container",
 				placeholder,
 				readOnly: readonly,

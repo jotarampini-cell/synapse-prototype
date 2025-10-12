@@ -30,7 +30,7 @@ export function useTouchGestures(options: TouchGestureOptions = {}) {
 	// Funcionalidad desactivada por defecto para estabilidad
 	const isEnabled = process.env.NODE_ENV === 'development' && process.env.ENABLE_TOUCH_GESTURES === 'true'
 	
-	// Mover todos los hooks al inicio para evitar problemas de orden
+	// Todos los hooks deben estar al inicio
 	const touchState = useRef<TouchState>({
 		startX: 0,
 		startY: 0,
@@ -40,36 +40,17 @@ export function useTouchGestures(options: TouchGestureOptions = {}) {
 		pinchStartDistance: 0,
 		pinchStartScale: 1
 	})
-	
-	if (!isEnabled) {
-		return {
-			bindTouchEvents: () => () => {} // No-op function
-		}
-	}
 
-	const {
-		onLongPress,
-		onSwipeLeft,
-		onSwipeRight,
-		onSwipeUp,
-		onSwipeDown,
-		onPinchStart,
-		onPinchEnd,
-		onPinch,
-		longPressDelay = 500,
-		swipeThreshold = 50,
-		enablePinch = true
-	} = options
-
+	// Todos los useCallback y useEffect deben estar aquí también
 	const getDistance = useCallback((touch1: Touch, touch2: Touch) => {
 		const dx = touch1.clientX - touch2.clientX
 		const dy = touch1.clientY - touch2.clientY
 		return Math.sqrt(dx * dx + dy * dy)
 	}, [])
 
-	// Función removida ya que no se usa
-
 	const handleTouchStart = useCallback((e: TouchEvent) => {
+		if (!isEnabled) return
+
 		const touch = e.touches[0]
 		touchState.current.startX = touch.clientX
 		touchState.current.startY = touch.clientY
@@ -77,23 +58,25 @@ export function useTouchGestures(options: TouchGestureOptions = {}) {
 		touchState.current.isLongPress = false
 
 		// Long press timer
-		if (onLongPress) {
+		if (options.onLongPress) {
 			touchState.current.longPressTimer = setTimeout(() => {
 				touchState.current.isLongPress = true
-				onLongPress()
-			}, longPressDelay)
+				options.onLongPress()
+			}, options.longPressDelay || 500)
 		}
 
 		// Pinch gesture (two fingers)
-		if (e.touches.length === 2 && enablePinch) {
+		if (e.touches.length === 2 && options.enablePinch) {
 			const distance = getDistance(e.touches[0], e.touches[1])
 			touchState.current.pinchStartDistance = distance
 			touchState.current.pinchStartScale = 1
-			onPinchStart?.()
+			options.onPinchStart?.()
 		}
-	}, [onLongPress, longPressDelay, enablePinch, onPinchStart, getDistance])
+	}, [isEnabled, options, getDistance])
 
 	const handleTouchMove = useCallback((e: TouchEvent) => {
+		if (!isEnabled) return
+
 		// Cancel long press if moved too much
 		if (touchState.current.longPressTimer && !touchState.current.isLongPress) {
 			const touch = e.touches[0]
@@ -107,14 +90,16 @@ export function useTouchGestures(options: TouchGestureOptions = {}) {
 		}
 
 		// Pinch gesture
-		if (e.touches.length === 2 && enablePinch) {
+		if (e.touches.length === 2 && options.enablePinch) {
 			const distance = getDistance(e.touches[0], e.touches[1])
 			const scale = distance / touchState.current.pinchStartDistance
-			onPinch?.(scale)
+			options.onPinch?.(scale)
 		}
-	}, [enablePinch, onPinch, getDistance])
+	}, [isEnabled, options, getDistance])
 
 	const handleTouchEnd = useCallback((e: TouchEvent) => {
+		if (!isEnabled) return
+
 		// Clear long press timer
 		if (touchState.current.longPressTimer) {
 			clearTimeout(touchState.current.longPressTimer)
@@ -134,34 +119,36 @@ export function useTouchGestures(options: TouchGestureOptions = {}) {
 				const absDeltaY = Math.abs(deltaY)
 
 				// Determine if it's a horizontal or vertical swipe
-				if (absDeltaX > absDeltaY && absDeltaX > swipeThreshold) {
+				if (absDeltaX > absDeltaY && absDeltaX > (options.swipeThreshold || 50)) {
 					// Horizontal swipe
 					if (deltaX > 0) {
-						onSwipeRight?.()
+						options.onSwipeRight?.()
 					} else {
-						onSwipeLeft?.()
+						options.onSwipeLeft?.()
 					}
-				} else if (absDeltaY > absDeltaX && absDeltaY > swipeThreshold) {
+				} else if (absDeltaY > absDeltaX && absDeltaY > (options.swipeThreshold || 50)) {
 					// Vertical swipe
 					if (deltaY > 0) {
-						onSwipeDown?.()
+						options.onSwipeDown?.()
 					} else {
-						onSwipeUp?.()
+						options.onSwipeUp?.()
 					}
 				}
 			}
 		}
 
 		// End pinch gesture
-		if (enablePinch) {
-			onPinchEnd?.()
+		if (options.enablePinch) {
+			options.onPinchEnd?.()
 		}
 
 		// Reset state
 		touchState.current.isLongPress = false
-	}, [swipeThreshold, onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, onPinchEnd, enablePinch])
+	}, [isEnabled, options])
 
 	const bindTouchEvents = useCallback((element: HTMLElement) => {
+		if (!isEnabled) return () => {}
+
 		element.addEventListener('touchstart', handleTouchStart, { passive: false })
 		element.addEventListener('touchmove', handleTouchMove, { passive: false })
 		element.addEventListener('touchend', handleTouchEnd, { passive: false })
@@ -171,7 +158,7 @@ export function useTouchGestures(options: TouchGestureOptions = {}) {
 			element.removeEventListener('touchmove', handleTouchMove)
 			element.removeEventListener('touchend', handleTouchEnd)
 		}
-	}, [handleTouchStart, handleTouchMove, handleTouchEnd])
+	}, [isEnabled, handleTouchStart, handleTouchMove, handleTouchEnd])
 
 	// Cleanup on unmount
 	useEffect(() => {
@@ -181,6 +168,12 @@ export function useTouchGestures(options: TouchGestureOptions = {}) {
 			}
 		}
 	}, [])
+	
+	if (!isEnabled) {
+		return {
+			bindTouchEvents: () => () => {} // No-op function
+		}
+	}
 
 	return {
 		bindTouchEvents

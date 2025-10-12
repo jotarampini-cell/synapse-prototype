@@ -7,9 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { 
 	Target, 
-	Plus, 
 	CheckSquare, 
-	Calendar,
 	Clock,
 	ArrowRight,
 	Sparkles,
@@ -129,7 +127,7 @@ export function ActionPlanGenerator({
 			toast.success("Plan de acción generado exitosamente")
 			
 		} catch (error) {
-			console.error('Error generating action plan:', error)
+			// log.error('Error generating action plan:', { error })
 			toast.error("Error al generar el plan de acción")
 		} finally {
 			setIsGenerating(false)

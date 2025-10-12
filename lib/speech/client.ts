@@ -83,7 +83,7 @@ export function createWebSpeechRecognition(languageCode: string = 'es-ES'): Prom
     let finalTranscript = '';
     let confidence = 0.8; // Web Speech API no proporciona confianza exacta
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
           finalTranscript += event.results[i][0].transcript;
@@ -104,7 +104,7 @@ export function createWebSpeechRecognition(languageCode: string = 'es-ES'): Prom
       }
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: { error: string }) => {
       reject(new Error(`Error en reconocimiento: ${event.error}`));
     };
 

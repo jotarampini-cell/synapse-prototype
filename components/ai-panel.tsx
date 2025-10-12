@@ -58,7 +58,7 @@ export function AIPanel({ isOpen, onClose, noteId, noteContent = "", noteTitle =
 	const [inputValue, setInputValue] = useState("")
 	const [isAnalyzing, setIsAnalyzing] = useState(false)
 	const [socraticQuestions, setSocraticQuestions] = useState<string[]>([])
-	const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
+	const [, setIsLoadingQuestions] = useState(false)
 	
 	const messagesEndRef = useRef<HTMLDivElement>(null)
 	const inputRef = useRef<HTMLInputElement>(null)
@@ -327,7 +327,7 @@ export function AIPanel({ isOpen, onClose, noteId, noteContent = "", noteTitle =
 		{
 			id: 'action-plan',
 			text: 'Crear plan',
-			icon: <Target className="h-4 w-4" />,
+			icon: <CheckSquare className="h-4 w-4" />,
 			action: () => {
 				addUserMessage("Crea un plan de acción para esta nota")
 				setTimeout(() => {
@@ -337,25 +337,25 @@ export function AIPanel({ isOpen, onClose, noteId, noteContent = "", noteTitle =
 		}
 	]
 
-	const getPriorityColor = (priority: string) => {
-		switch (priority) {
-			case 'high': return 'bg-red-100 text-red-800'
-			case 'medium': return 'bg-yellow-100 text-yellow-800'
-			case 'low': return 'bg-green-100 text-green-800'
-			default: return 'bg-gray-100 text-gray-800'
-		}
-	}
+	// const getPriorityColor = (priority: string) => {
+	// 	switch (priority) {
+	// 		case 'high': return 'bg-red-100 text-red-800'
+	// 		case 'medium': return 'bg-yellow-100 text-yellow-800'
+	// 		case 'low': return 'bg-green-100 text-green-800'
+	// 		default: return 'bg-gray-100 text-gray-800'
+	// 	}
+	// }
 
-	const getPriorityLabel = (priority: string) => {
-		switch (priority) {
-			case 'high': return 'Alta'
-			case 'medium': return 'Media'
-			case 'low': return 'Baja'
-			default: return priority
-		}
-	}
+	// const getPriorityLabel = (priority: string) => {
+	// 	switch (priority) {
+	// 		case 'high': return 'Alta'
+	// 		case 'medium': return 'Media'
+	// 		case 'low': return 'Baja'
+	// 		default: return priority
+	// 	}
+	// }
 
-	console.log('AIPanel renderizado:', { isOpen, noteId })
+	// log.info('AIPanel renderizado:', { isOpen, noteId })
 	
 	return (
 		<>
