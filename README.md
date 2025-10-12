@@ -2,6 +2,8 @@
 
 Una aplicación de gestión de conocimiento impulsada por IA que te permite capturar, procesar y descubrir conexiones entre tus ideas.
 
+> 🚀 **Deploy automático configurado** - Las variables de entorno están configuradas en Vercel
+
 ## 🚀 Características
 
 - **Autenticación completa** con email/password y Google OAuth
