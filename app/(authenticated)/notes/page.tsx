@@ -108,16 +108,16 @@ export default function NotesPage() {
 	// Onboarding
 	const { showTutorial, completeOnboarding, closeTutorial } = useOnboarding()
 
-	// Redirigir al login si no está autenticado
-	useEffect(() => {
-		if (!loading && !user) {
-			router.push('/auth/login')
-		}
-	}, [user, loading, router])
+	// Redirigir al login si no está autenticado (TEMPORALMENTE DESHABILITADO)
+	// useEffect(() => {
+	// 	if (!loading && !user) {
+	// 		router.push('/auth/login')
+	// 	}
+	// }, [user, loading, router])
 
-	// Manejar parámetros de URL
+	// Manejar parámetros de URL (TEMPORALMENTE SIN VERIFICACIÓN DE USUARIO)
 	useEffect(() => {
-		if (!loading && user) {
+		if (!loading) { // Removida verificación de user
 			const folderParam = searchParams.get('folder')
 			const noteParam = searchParams.get('note')
 			const searchParam = searchParams.get('search')
@@ -136,9 +136,9 @@ export default function NotesPage() {
 		}
 	}, [loading, user, searchParams])
 
-	// Verificar si el usuario tiene carpetas y mostrar prompt si no las tiene
+	// Verificar si el usuario tiene carpetas y mostrar prompt si no las tiene (TEMPORALMENTE SIN VERIFICACIÓN DE USUARIO)
 	useEffect(() => {
-		if (!loading && user) {
+		if (!loading) { // Removida verificación de user
 			// Verificar si hay carpetas después de un breve delay para permitir que se carguen
 			const timer = setTimeout(async () => {
 				try {
@@ -179,12 +179,12 @@ export default function NotesPage() {
 				setAiPanelOpen(false)
 			}
 		},
-		enabled: !loading && !!user // Solo habilitar cuando esté autenticado
+		enabled: !loading // Solo habilitar cuando no esté cargando (TEMPORALMENTE SIN VERIFICACIÓN DE USUARIO)
 	})
 
-	// Atajos de teclado adicionales
+	// Atajos de teclado adicionales (TEMPORALMENTE SIN VERIFICACIÓN DE USUARIO)
 	useEffect(() => {
-		if (loading || !user) return
+		if (loading) return // Removida verificación de user
 
 		const handleKeyDown = (e: KeyboardEvent) => {
 			// Modo focus (Ctrl+Shift+F)
@@ -204,22 +204,22 @@ export default function NotesPage() {
 		return () => window.removeEventListener('keydown', handleKeyDown)
 	}, [isFocusMode, loading, user])
 
-	// Mostrar loading mientras se verifica la autenticación
-	if (loading) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				<div className="text-center">
-					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-					<p className="text-muted-foreground">Verificando autenticación...</p>
-				</div>
-			</div>
-		)
-	}
+	// Mostrar loading mientras se verifica la autenticación (TEMPORALMENTE DESHABILITADO)
+	// if (loading) {
+	// 	return (
+	// 		<div className="flex items-center justify-center min-h-screen">
+	// 			<div className="text-center">
+	// 				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+	// 				<p className="text-muted-foreground">Verificando autenticación...</p>
+	// 			</div>
+	// 		</div>
+	// 	)
+	// }
 
-	// No mostrar nada si no está autenticado (se redirigirá)
-	if (!user) {
-		return null
-	}
+	// No mostrar nada si no está autenticado (TEMPORALMENTE DESHABILITADO)
+	// if (!user) {
+	// 	return null
+	// }
 
 	// Handle note selection
 	const handleNoteSelect = (noteId: string | null) => {
