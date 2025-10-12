@@ -13,18 +13,18 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { 
 	Search,
-	Plus,
+	// Plus,
 	Bell,
 	Wifi,
 	WifiOff,
 	RefreshCw,
 	AlertTriangle,
 	CheckCircle,
-	Clock,
+	// Clock,
 	Zap,
 	RotateCcw,
-	ZoomIn,
-	ZoomOut
+	// ZoomIn,
+	// ZoomOut
 } from "lucide-react"
 
 // Mock data para virtual scrolling
@@ -50,7 +50,7 @@ const generateMockActions = (count: number) =>
 	}))
 
 export default function TestAdvancedFeaturesPage() {
-	const { isMobile, isLoading } = useMobileDetection()
+	const { isMobile } = useMobileDetection()
 	const [activeTab, setActiveTab] = useState<'virtual' | 'gestures' | 'notifications' | 'sync'>('virtual')
 	
 	// Forzar detección móvil para testing

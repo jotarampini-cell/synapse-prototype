@@ -37,7 +37,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
-// import { FolderTree } from "@/components/folder-tree"
+import { FolderTree } from "@/components/folder-tree"
 import { NotesList } from "@/components/notes-list"
 import { NoteEditor } from "@/components/note-editor"
 import { AIPanel } from "@/components/ai-panel"
@@ -51,32 +51,32 @@ import { createContent } from "@/app/actions/content"
 import { createDefaultFolders } from "@/app/actions/folders"
 import { toast } from "sonner"
 
-interface Note {
-	id: string
-	title: string
-	content: string
-	content_type: string
-	tags: string[]
-	created_at: string
-	updated_at: string
-	folder_id: string | null
-	is_pinned: boolean
-	is_archived: boolean
-	word_count: number
-	reading_time: number
-	folders?: {
-		name: string
-		color: string
-	}
-}
+// interface Note {
+// 	id: string
+// 	title: string
+// 	content: string
+// 	content_type: string
+// 	tags: string[]
+// 	created_at: string
+// 	updated_at: string
+// 	folder_id: string | null
+// 	is_pinned: boolean
+// 	is_archived: boolean
+// 	word_count: number
+// 	reading_time: number
+// 	folders?: {
+// 		name: string
+// 		color: string
+// 	}
+// }
 
-interface Folder {
-	id: string
-	name: string
-	color: string
-	parent_id: string | null
-	children?: Folder[]
-}
+// interface Folder {
+// 	id: string
+// 	name: string
+// 	color: string
+// 	parent_id: string | null
+// 	children?: Folder[]
+// }
 
 export default function NotesPage() {
 	const { user, loading } = useAuth()

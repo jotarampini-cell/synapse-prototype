@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { log } from "@/lib/logger"
 
 export interface OnboardingStep {
 	id: string
@@ -38,7 +39,7 @@ export async function getOnboardingStatus(): Promise<{
 			.single()
 
 		if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-			console.error('Error fetching onboarding status:', error)
+			log.error('Error fetching onboarding status:', { error })
 			return { success: false, error: error.message }
 		}
 
@@ -87,7 +88,7 @@ export async function getOnboardingStatus(): Promise<{
 				.single()
 
 			if (createError) {
-				console.error('Error creating onboarding:', createError)
+				log.error('Error creating onboarding:', { error: createError })
 				return { success: false, error: createError.message }
 			}
 
@@ -96,7 +97,7 @@ export async function getOnboardingStatus(): Promise<{
 
 		return { success: true, onboarding }
 	} catch (error) {
-		console.error('Error fetching onboarding status:', error)
+		log.error('Error fetching onboarding status:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -142,14 +143,14 @@ export async function completeOnboardingStep(stepId: string): Promise<{ success:
 			.eq('user_id', user.id)
 
 		if (error) {
-			console.error('Error completing onboarding step:', error)
+			log.error('Error completing onboarding step:', { error })
 			return { success: false, error: error.message }
 		}
 
 		revalidatePath('/notes')
 		return { success: true }
 	} catch (error) {
-		console.error('Error completing onboarding step:', error)
+		log.error('Error completing onboarding step:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -205,14 +206,14 @@ export async function resetOnboarding(): Promise<{ success: boolean; error?: str
 			.eq('user_id', user.id)
 
 		if (error) {
-			console.error('Error resetting onboarding:', error)
+			log.error('Error resetting onboarding:', { error })
 			return { success: false, error: error.message }
 		}
 
 		revalidatePath('/notes')
 		return { success: true }
 	} catch (error) {
-		console.error('Error resetting onboarding:', error)
+		log.error('Error resetting onboarding:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }
@@ -238,7 +239,7 @@ export async function isOnboardingCompleted(): Promise<{
 
 		return { success: true, completed: !!onboarding?.completed_at }
 	} catch (error) {
-		console.error('Error checking onboarding completion:', error)
+		log.error('Error checking onboarding completion:', { error })
 		return { success: false, error: "Error interno del servidor" }
 	}
 }

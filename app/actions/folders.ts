@@ -565,7 +565,7 @@ export async function getQuickFolders() {
 			.order('position', { ascending: true })
 
 		if (error) {
-			console.error('Error fetching folders:', error)
+			log.error('Error fetching folders:', { error })
 			throw error
 		}
 
@@ -583,7 +583,7 @@ export async function getQuickFolders() {
 				quickFolderIds = quickFoldersConfig.quick_folders
 			}
 		} catch (prefError) {
-			console.log('Tabla user_preferences no existe, usando carpetas más utilizadas')
+			log.info('Tabla user_preferences no existe, usando carpetas más utilizadas')
 		}
 
 		// Si no hay configuración, usar las 4 carpetas más utilizadas
@@ -628,7 +628,7 @@ export async function getQuickFolders() {
 			allFolders: folders || []
 		}
 	} catch (error) {
-		console.error('Error getting quick folders:', error)
+		log.error('Error getting quick folders:', { error })
 		return {
 			success: false,
 			error: 'Error al obtener carpetas rápidas',
@@ -658,7 +658,7 @@ export async function updateQuickFolders(folderIds: string[]) {
 			})
 
 		if (error) {
-			console.error('Error updating quick folders:', error)
+			log.error('Error updating quick folders:', { error })
 			// Si la tabla no existe, mostrar mensaje informativo
 			if (error.code === 'PGRST205') {
 				return {
