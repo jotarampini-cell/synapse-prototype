@@ -74,3 +74,4 @@ GRANT ALL ON public.ai_analyses TO authenticated;
 GRANT ALL ON public.contents TO authenticated;
 
 
+

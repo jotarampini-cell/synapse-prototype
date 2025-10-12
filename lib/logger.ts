@@ -75,3 +75,4 @@ export const log = {
 	warn: (message: string, context?: Record<string, unknown>) => logger.warn(message, context),
 	error: (message: string, context?: Record<string, unknown>) => logger.error(message, context)
 }
+

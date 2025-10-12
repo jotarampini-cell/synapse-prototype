@@ -11,3 +11,4 @@ COMMENT ON COLUMN public.contents.ai_analysis_status IS 'Status of AI analysis: 
 COMMENT ON COLUMN public.contents.ai_analysis_updated_at IS 'Timestamp when AI analysis was last updated';
 
 
+

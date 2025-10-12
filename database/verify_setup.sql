@@ -43,3 +43,4 @@ AND tablename IN ('ai_analyses', 'contents')
 AND indexname LIKE '%ai_analysis%';
 
 
+

@@ -2,9 +2,9 @@ import { type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
-	// Temporalmente deshabilitado para pruebas
-	return
-	// return await updateSession(request)
+	// Temporalmente deshabilitado para debug
+	console.log('🔍 Middleware interceptando:', request.nextUrl.pathname)
+	return await updateSession(request)
 }
 
 export const config = {

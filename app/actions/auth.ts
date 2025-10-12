@@ -15,11 +15,15 @@ export async function signIn(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    return { error: error.message }
+    // Si es error de credenciales inválidas, verificar si es por email no confirmado
+    if (error.message.includes('Invalid login credentials')) {
+      throw new Error('Credenciales inválidas. Si acabas de registrarte, verifica tu email o contacta al administrador.')
+    }
+    throw new Error(error.message)
   }
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect('/home')
 }
 
 export async function signUp(formData: FormData) {
@@ -30,7 +34,7 @@ export async function signUp(formData: FormData) {
     password: formData.get('password') as string,
     options: {
       data: {
-        full_name: formData.get('fullName') as string,
+        full_name: formData.get('full_name') as string,
       },
     },
   }
@@ -38,11 +42,11 @@ export async function signUp(formData: FormData) {
   const { error } = await supabase.auth.signUp(data)
 
   if (error) {
-    return { error: error.message }
+    throw new Error(error.message)
   }
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect('/home')
 }
 
 export async function signOut() {
@@ -63,7 +67,7 @@ export async function signInWithGoogle() {
   })
 
   if (error) {
-    return { error: error.message }
+    throw new Error(error.message)
   }
 
   if (data.url) {
@@ -95,12 +99,12 @@ export async function updateProfile(formData: FormData) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return { error: 'Not authenticated' }
+    throw new Error('Not authenticated')
   }
 
   const updates = {
     id: user.id,
-    full_name: formData.get('fullName') as string,
+    full_name: formData.get('full_name') as string,
     interests: (formData.get('interests') as string)?.split(',').map(i => i.trim()),
     updated_at: new Date().toISOString(),
   }
@@ -110,10 +114,10 @@ export async function updateProfile(formData: FormData) {
     .upsert(updates)
 
   if (error) {
-    return { error: error.message }
+    throw new Error(error.message)
   }
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect('/home')
 }
 

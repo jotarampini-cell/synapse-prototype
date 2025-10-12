@@ -52,21 +52,21 @@ export default function HomePage() {
 		return (
 			<div className="h-screen flex flex-col bg-background">
 				{/* Header */}
-				<header className="h-14 px-4 flex items-center border-b border-border bg-background safe-area-top">
+				<header className="h-14 px-4 flex items-center border-b border-border bg-background/95 backdrop-blur-sm safe-area-top safe-area-left safe-area-right">
 					<div className="flex-1">
-						<h1 className="text-xl font-bold">Synapse</h1>
+						<h1 className="text-xl font-bold text-foreground">Synapse</h1>
 					</div>
 					<Button 
 						variant="ghost" 
 						size="icon-mobile"
-						className="touch-target"
+						className="touch-target active:scale-95"
 					>
 						<Bell className="h-5 w-5" />
 					</Button>
 				</header>
 
 				{/* Contenido principal */}
-				<main className="flex-1 overflow-y-auto pb-20">
+				<main className="flex-1 overflow-y-auto pb-20 safe-area-left safe-area-right">
 					<div className="p-4 space-y-6">
 						{/* Búsqueda */}
 						<div className="relative">
@@ -80,19 +80,19 @@ export default function HomePage() {
 						</div>
 
 						{/* Stats Cards */}
-						<div className="grid grid-cols-2 gap-3">
+						<div className="mobile-grid-2">
 							{stats.map((stat) => {
 								const Icon = stat.icon
 								return (
-									<Card key={stat.label} className="p-4">
+									<Card key={stat.label} className="mobile-card active:scale-95 transition-transform">
 										<div className="flex items-center justify-between mb-2">
 											<Icon className="h-5 w-5 text-muted-foreground" />
 											<Badge variant="secondary" className="text-xs">
 												{stat.change}
 											</Badge>
 										</div>
-										<div className="text-2xl font-bold">{stat.value}</div>
-										<div className="text-sm text-muted-foreground">{stat.label}</div>
+										<div className="text-2xl font-bold text-foreground">{stat.value}</div>
+										<div className="mobile-text-sm text-muted-foreground">{stat.label}</div>
 									</Card>
 								)
 							})}
@@ -100,25 +100,25 @@ export default function HomePage() {
 
 						{/* Quick Actions */}
 						<div>
-							<h2 className="text-lg font-semibold mb-3">Acciones Rápidas</h2>
-							<div className="grid grid-cols-2 gap-3">
+							<h2 className="text-lg font-semibold mb-3 text-foreground">Acciones Rápidas</h2>
+							<div className="mobile-grid-2">
 								{quickActions.map((action) => {
 									const Icon = action.icon
 									return (
 										<Button
 											key={action.label}
 											variant="outline"
-											className="h-20 flex flex-col items-center justify-center gap-2 touch-target"
+											className="h-20 flex flex-col items-center justify-center gap-2 touch-target active:scale-95 transition-all"
 											onClick={() => {
 												if (action.label === "Nueva Nota") {
 													quickNoteModal.openModal()
 												}
 											}}
 										>
-											<div className={`p-2 rounded-full ${action.color}`}>
+											<div className={`p-2 rounded-full ${action.color} transition-transform`}>
 												<Icon className="h-5 w-5 text-white" />
 											</div>
-											<span className="text-sm">{action.label}</span>
+											<span className="mobile-text-sm text-foreground">{action.label}</span>
 										</Button>
 									)
 								})}

@@ -39,19 +39,14 @@ export async function updateSession(request: NextRequest) {
 		data: { user },
 	} = await supabase.auth.getUser()
 
-	if (
-		!user &&
-		!request.nextUrl.pathname.startsWith('/auth') &&
-		request.nextUrl.pathname !== '/'
-	) {
-		// no user, potentially respond by redirecting the user to the login page
-		const url = request.nextUrl.clone()
-		url.pathname = '/auth/login'
-		return NextResponse.redirect(url)
-	}
+	// Solo proteger rutas que requieren autenticación
+	const protectedRoutes = ['/home', '/notes', '/proyectos', '/fuentes', '/acciones']
+	const isProtectedRoute = protectedRoutes.some(route => 
+		request.nextUrl.pathname.startsWith(route)
+	)
 
-	// Proteger ruta /home - solo usuarios autenticados
-	if (!user && request.nextUrl.pathname === '/home') {
+	if (!user && isProtectedRoute) {
+		// Redirigir a login solo para rutas protegidas
 		const url = request.nextUrl.clone()
 		url.pathname = '/auth/login'
 		return NextResponse.redirect(url)
