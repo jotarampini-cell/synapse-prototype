@@ -71,7 +71,7 @@ GOOGLE_CLIENT_ID=tu_google_client_id
 GOOGLE_CLIENT_SECRET=tu_google_client_secret
 
 # URL del sitio (para OAuth redirects)
-NEXT_PUBLIC_SITE_URL=https://synapse-ai.vercel.app
+NEXT_PUBLIC_SITE_URL=https://synapse-ai-ten.vercel.app
 ```
 
 ### 5. Ejecutar la aplicación

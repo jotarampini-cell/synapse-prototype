@@ -7,7 +7,7 @@ export const SUPABASE_CONFIG = {
 	// URLs y claves hardcodeadas como fallback
 	url: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://nyirmouqrptuvsxffxlv.supabase.co',
 	anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55aXJtb3VxcnB0dXZzeGZmeGx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3ODYzOTgsImV4cCI6MjA3NTM2MjM5OH0.tYBJWtIbTeI54OJKBeh58uiAq5hO3faFo06ujf_5CyE',
-	siteUrl: process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'https://synapse-ai.vercel.app'
+	siteUrl: process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'https://synapse-ai-ten.vercel.app'
 } as const;
 
 /**
