@@ -3,6 +3,7 @@
 Una aplicación de gestión de conocimiento impulsada por IA que te permite capturar, procesar y descubrir conexiones entre tus ideas.
 
 > 🚀 **Deploy automático configurado** - Las variables de entorno están configuradas en Vercel
+> 🔄 **Repositorio actualizado** - Conectado a `jotarampini-cell/synapse-prototype`
 
 ## 🚀 Características
 
