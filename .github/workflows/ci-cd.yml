@@ -93,6 +93,18 @@ jobs:
         fi
         echo "✅ All Vercel secrets are configured"
 
+    - name: Verify Environment Variables
+      run: |
+        if [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" ]; then
+          echo "❌ NEXT_PUBLIC_SUPABASE_URL is not set"
+          exit 1
+        fi
+        if [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" ]; then
+          echo "❌ NEXT_PUBLIC_SUPABASE_ANON_KEY is not set"
+          exit 1
+        fi
+        echo "✅ All environment variables are configured"
+
     - name: Deploy to Vercel
       uses: amondnet/vercel-action@v25
       with:
@@ -100,3 +112,11 @@ jobs:
         vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
         vercel-args: '--prod'
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+        GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+        NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+        NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
