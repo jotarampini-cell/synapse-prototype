@@ -15,7 +15,7 @@ import { transcribeAudio } from '@/lib/speech/client'
 
 // ===== FUNCIONES AUXILIARES =====
 
-async function ensureUserProfile(supabase: ReturnType<typeof createClient>, user: { id: string }) {
+async function ensureUserProfile(supabase: Awaited<ReturnType<typeof createClient>>, user: any) {
 	// Verificar si el usuario existe en la tabla profiles, si no, crearlo
 	const { error: profileError } = await supabase
 		.from('profiles')
@@ -99,7 +99,7 @@ export async function createBasicTextContent(formData: FormData) {
 					.single()
 				
 				if (inboxError) {
-					log.error('Error creating Inbox folder:', { error: inboxError })
+					console.error('Error creating Inbox folder:', { error: inboxError })
 				} else {
 					finalFolderId = newInboxFolder.id
 				}
@@ -120,7 +120,7 @@ export async function createBasicTextContent(formData: FormData) {
 			.single()
 
 		if (contentError) {
-			log.error('Supabase error:', { error: contentError })
+			console.error('Supabase error:', { error: contentError })
 			throw new Error(`Error de base de datos: ${contentError.message}`)
 		}
 
@@ -132,7 +132,7 @@ export async function createBasicTextContent(formData: FormData) {
 		
 		return { success: true, contentId: contentData.id }
 	} catch (error) {
-		log.error('Error creating basic content:', { error })
+		console.error('Error creating basic content:', { error })
 		// Asegurar que el error sea serializable
 		const errorMessage = error instanceof Error ? error.message : 'Error al crear contenido'
 		throw new Error(errorMessage)
@@ -207,7 +207,7 @@ export async function createBasicFileContent(formData: FormData) {
 					.single()
 				
 				if (inboxError) {
-					log.error('Error creating Inbox folder:', { error: inboxError })
+					console.error('Error creating Inbox folder:', { error: inboxError })
 				} else {
 					finalFolderId = newInboxFolder.id
 				}
@@ -237,7 +237,7 @@ export async function createBasicFileContent(formData: FormData) {
 		
 		return { success: true, contentId: contentData.id }
 	} catch (error) {
-		log.error('Error creating file content:', { error })
+		console.error('Error creating file content:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al subir archivo')
 	}
 }
@@ -273,7 +273,7 @@ export async function createBasicVoiceContent(formData: FormData) {
 				const transcription = await transcribeAudio(audioBuffer)
 				finalContent = transcription.transcript
 			} catch (transcriptionError) {
-				log.error('Error en transcripción:', { error: transcriptionError })
+				console.error('Error en transcripción:', { error: transcriptionError })
 				// Continuar con el contenido manual si la transcripción falla
 				if (!content) {
 					throw new Error('Error al transcribir el audio. Por favor, proporciona el contenido manualmente.')
@@ -314,7 +314,7 @@ export async function createBasicVoiceContent(formData: FormData) {
 					.single()
 				
 				if (inboxError) {
-					log.error('Error creating Inbox folder:', { error: inboxError })
+					console.error('Error creating Inbox folder:', { error: inboxError })
 				} else {
 					finalFolderId = newInboxFolder.id
 				}
@@ -342,7 +342,7 @@ export async function createBasicVoiceContent(formData: FormData) {
 		
 		return { success: true, contentId: contentData.id }
 	} catch (error) {
-		log.error('Error creating voice content:', { error })
+		console.error('Error creating voice content:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al crear contenido de voz')
 	}
 }
@@ -414,7 +414,7 @@ export async function transcribeAudioFile(formData: FormData) {
 			language: language
 		}
 	} catch (error) {
-		log.error('Error transcribing audio:', { error })
+		console.error('Error transcribing audio:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al transcribir el audio')
 	}
 }
@@ -513,7 +513,7 @@ export async function analyzeContentWithAI(contentId: string, analysisType: 'sum
 		
 		return { success: true, results }
 	} catch (error) {
-		log.error('Error analyzing content:', { error })
+		console.error('Error analyzing content:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al analizar contenido')
 	}
 }
@@ -673,7 +673,7 @@ export async function updateContent(contentId: string, formData: FormData, optio
 		
 		return { success: true }
 	} catch (error) {
-		log.error('Error updating content:', { error })
+		console.error('Error updating content:', { error })
 		throw new Error(error instanceof Error ? error.message : 'Error al actualizar contenido')
 	}
 }
@@ -701,7 +701,7 @@ export async function getUserContents() {
 	const { data: { user } } = await supabase.auth.getUser()
 	
 	if (!user) {
-		log.info('Usuario no autenticado en getUserContents')
+		console.log('Usuario no autenticado en getUserContents')
 		return []
 	}
 	

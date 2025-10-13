@@ -215,7 +215,7 @@ export function SubtaskList({ parentTaskId, onSubtasksChange }: SubtaskListProps
 								placeholder="Detalles (opcional)..."
 								value={newSubtaskDescription}
 								onChange={(e) => setNewSubtaskDescription(e.target.value)}
-								className="min-h-[50px] md:min-h-[40px]"
+								className="min-h-[50px] md:min-h-[40px] border-0 shadow-none focus-visible:ring-0 text-sm resize-none min-w-0"
 								onKeyDown={(e) => {
 									if (e.key === "Enter" && e.ctrlKey) {
 										e.preventDefault()
@@ -226,7 +226,6 @@ export function SubtaskList({ parentTaskId, onSubtasksChange }: SubtaskListProps
 										setNewSubtaskDescription("")
 									}
 								}}
-								className="border-0 shadow-none focus-visible:ring-0 text-sm resize-none min-w-0"
 								rows={2}
 							/>
 							{/* Mensaje de ayuda */}

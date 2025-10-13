@@ -4,18 +4,6 @@ import { useState, useEffect } from "react"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { 
-	Filter,
-	CheckSquare,
-	Clock,
-	Calendar,
-	MoreHorizontal,
-	AlertCircle,
-	Briefcase,
-	List,
-	ChevronRight,
-	ChevronDown
-} from "lucide-react"
-import { 
 	getTasks, 
 	getTaskLists, 
 	createTask, 
