@@ -1,115 +1,131 @@
-import { useEffect, useCallback } from 'react'
+"use client"
 
-interface KeyboardShortcut {
+import { useEffect, useCallback } from "react"
+
+export interface KeyboardShortcut {
 	key: string
 	ctrlKey?: boolean
-	metaKey?: boolean
 	shiftKey?: boolean
 	altKey?: boolean
+	metaKey?: boolean
 	action: () => void
-	description?: string
+	description: string
 }
 
-interface UseKeyboardShortcutsOptions {
-	enabled?: boolean
-	preventDefault?: boolean
-}
-
-/**
- * Hook personalizado para manejar atajos de teclado de manera segura
- * Evita problemas de orden de hooks y proporciona una API limpia
- */
-export function useKeyboardShortcuts(
-	shortcuts: KeyboardShortcut[],
-	options: UseKeyboardShortcutsOptions = {}
-) {
-	const { enabled = true, preventDefault = true } = options
-
-	const handleKeyDown = useCallback((e: KeyboardEvent) => {
-		if (!enabled) return
+export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]) {
+	const handleKeyDown = useCallback((event: KeyboardEvent) => {
+		// Ignorar si estamos en un input, textarea o contenteditable
+		const target = event.target as HTMLElement
+		if (
+			target.tagName === 'INPUT' ||
+			target.tagName === 'TEXTAREA' ||
+			target.contentEditable === 'true' ||
+			target.closest('[contenteditable="true"]')
+		) {
+			// Solo permitir ciertos atajos en inputs
+			const allowedInInputs = ['Escape']
+			if (!allowedInInputs.includes(event.key)) {
+				return
+			}
+		}
 
 		// Buscar el atajo que coincida
-		const matchedShortcut = shortcuts.find(shortcut => {
+		const matchingShortcut = shortcuts.find(shortcut => {
 			return (
-				shortcut.key === e.key &&
-				!!shortcut.ctrlKey === e.ctrlKey &&
-				!!shortcut.metaKey === e.metaKey &&
-				!!shortcut.shiftKey === e.shiftKey &&
-				!!shortcut.altKey === e.altKey
+				shortcut.key.toLowerCase() === event.key.toLowerCase() &&
+				!!shortcut.ctrlKey === event.ctrlKey &&
+				!!shortcut.shiftKey === event.shiftKey &&
+				!!shortcut.altKey === event.altKey &&
+				!!shortcut.metaKey === event.metaKey
 			)
 		})
 
-		if (matchedShortcut) {
-			if (preventDefault) {
-				e.preventDefault()
-			}
-			matchedShortcut.action()
+		if (matchingShortcut) {
+			event.preventDefault()
+			matchingShortcut.action()
 		}
-	}, [shortcuts, enabled, preventDefault])
+	}, [shortcuts])
 
 	useEffect(() => {
-		if (!enabled) return
-
-		window.addEventListener('keydown', handleKeyDown)
-		return () => window.removeEventListener('keydown', handleKeyDown)
-	}, [handleKeyDown, enabled])
+		document.addEventListener('keydown', handleKeyDown)
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown)
+		}
+	}, [handleKeyDown])
 }
 
-/**
- * Hook específico para atajos de teclado comunes en la aplicación
- */
-export function useAppKeyboardShortcuts(options: {
+// Atajos específicos para tareas
+export const TASK_SHORTCUTS = {
+	NEW_TASK: 'n',
+	COMPLETE_TASK: 'Enter',
+	DELETE_TASK: 'Delete',
+	EDIT_TASK: 'e',
+	SEARCH: 'k',
+	ESCAPE: 'Escape',
+	TOGGLE_COMPLETED: 'c',
+	MOVE_UP: 'ArrowUp',
+	MOVE_DOWN: 'ArrowDown',
+} as const
+
+export type TaskShortcutKey = keyof typeof TASK_SHORTCUTS
+
+// Hook específico para atajos de la aplicación (notas, etc.)
+export interface AppKeyboardShortcuts {
 	onToggleSearch?: () => void
 	onNewNote?: () => void
 	onToggleSidebar?: () => void
 	onToggleAIPanel?: () => void
 	onClosePanels?: () => void
-	enabled?: boolean
-}) {
-	const {
-		onToggleSearch,
-		onNewNote,
-		onToggleSidebar,
-		onToggleAIPanel,
-		onClosePanels,
-		enabled = true
-	} = options
+}
 
-	const shortcuts: KeyboardShortcut[] = [
-		{
+export function useAppKeyboardShortcuts(shortcuts: AppKeyboardShortcuts) {
+	const keyboardShortcuts: KeyboardShortcut[] = []
+
+	// Mapear los atajos de la aplicación a atajos de teclado
+	if (shortcuts.onToggleSearch) {
+		keyboardShortcuts.push({
 			key: 'k',
 			ctrlKey: true,
-			metaKey: true,
-			action: () => onToggleSearch?.(),
-			description: 'Abrir búsqueda'
-		},
-		{
+			action: shortcuts.onToggleSearch,
+			description: 'Buscar'
+		})
+	}
+
+	if (shortcuts.onNewNote) {
+		keyboardShortcuts.push({
 			key: 'n',
 			ctrlKey: true,
-			metaKey: true,
-			action: () => onNewNote?.(),
+			action: shortcuts.onNewNote,
 			description: 'Nueva nota'
-		},
-		{
+		})
+	}
+
+	if (shortcuts.onToggleSidebar) {
+		keyboardShortcuts.push({
 			key: 'b',
 			ctrlKey: true,
-			metaKey: true,
-			action: () => onToggleSidebar?.(),
-			description: 'Alternar sidebar'
-		},
-		{
-			key: '/',
-			ctrlKey: true,
-			metaKey: true,
-			action: () => onToggleAIPanel?.(),
-			description: 'Alternar panel de IA'
-		},
-		{
-			key: 'Escape',
-			action: () => onClosePanels?.(),
-			description: 'Cerrar paneles'
-		}
-	]
+			action: shortcuts.onToggleSidebar,
+			description: 'Toggle sidebar'
+		})
+	}
 
-	useKeyboardShortcuts(shortcuts, { enabled })
+	if (shortcuts.onToggleAIPanel) {
+		keyboardShortcuts.push({
+			key: 'i',
+			ctrlKey: true,
+			action: shortcuts.onToggleAIPanel,
+			description: 'Toggle AI panel'
+		})
+	}
+
+	if (shortcuts.onClosePanels) {
+		keyboardShortcuts.push({
+			key: 'Escape',
+			action: shortcuts.onClosePanels,
+			description: 'Cerrar paneles'
+		})
+	}
+
+	// Usar el hook base
+	useKeyboardShortcuts(keyboardShortcuts)
 }

@@ -26,9 +26,9 @@ const navItems = [
 	},
 	{ 
 		icon: CheckSquare, 
-		label: "Acciones", 
-		href: "/acciones",
-		ariaLabel: "Ir a Acciones"
+		label: "Tareas", 
+		href: "/tareas",
+		ariaLabel: "Ir a Tareas"
 	},
 	{ 
 		icon: LinkIcon, 

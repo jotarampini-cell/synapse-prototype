@@ -51,10 +51,10 @@ const navigationItems: NavigationItem[] = [
 		description: "Gestiona tus notas"
 	},
 	{
-		title: "Acciones",
-		href: "/acciones",
+		title: "Tareas",
+		href: "/tareas",
 		icon: <CheckSquare className="h-4 w-4" />,
-		description: "Tareas y acciones"
+		description: "Gestiona tus tareas"
 	},
 	{
 		title: "Fuentes",
@@ -90,7 +90,7 @@ export function UnifiedNavigation({ showUserMenu = true, className }: UnifiedNav
 	}
 
 	return (
-		<header className={cn("sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm", className)}>
+		<header className={cn("sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm overflow-x-hidden", className)}>
 			<div className="container mx-auto px-6 py-4">
 				<div className="flex items-center justify-between">
 					{/* Logo */}

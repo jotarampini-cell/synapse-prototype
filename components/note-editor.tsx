@@ -11,6 +11,7 @@ import { AutoTagging } from "@/components/auto-tagging"
 import { AIEditorStatus } from "@/components/ai-status-indicator"
 import { ContentBlocksPanel } from "@/components/content-blocks-panel"
 import { AIInsightsPanel } from "@/components/ai-insights-panel"
+import { NoteLinkedTasks } from "@/components/notes/note-linked-tasks"
 import { 
 	Save, 
 	Minimize2,
@@ -25,7 +26,8 @@ import {
 	Mic,
 	Brain,
 	Sparkles,
-	X
+	X,
+	CheckSquare
 } from "lucide-react"
 import { 
 	DropdownMenu, 
@@ -52,7 +54,7 @@ import { toast } from "sonner"
 interface Note {
 	id: string
 	title: string
-	content: string
+	content: string | { blocks?: Array<{ type: string; data?: Record<string, unknown> }> }
 	content_type: string
 	tags: string[]
 	created_at: string
@@ -135,6 +137,12 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 		try {
 			setIsLoading(true)
 			const noteData = await getContentById(noteId)
+			
+			// Convertir el contenido string a formato de editor si es necesario
+			if (noteData && typeof noteData.content === 'string') {
+				noteData.content = convertStringToEditorContent(noteData.content)
+			}
+			
 			setNote(noteData)
 			setHasUnsavedChanges(false)
 		} catch (error) {
@@ -177,7 +185,9 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 			
 			const formData = new FormData()
 			formData.set('title', note.title)
-			formData.set('content', note.content)
+			// Asegurar que el contenido sea una cadena de texto
+			const contentString = typeof note.content === 'string' ? note.content : convertEditorContentToString(note.content)
+			formData.set('content', contentString)
 			formData.set('tags', note.tags.join(','))
 			if (note.folder_id && note.folder_id !== 'none') {
 				formData.set('folder_id', note.folder_id)
@@ -197,7 +207,8 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 			}
 
 			// Auto-análisis en background después de guardar (solo si no se hizo análisis manual)
-			if (skipAI && note.content.length > 100) { // Solo para notas con contenido sustancial
+			const contentLength = typeof note.content === 'string' ? note.content.length : JSON.stringify(note.content).length
+			if (skipAI && contentLength > 100) { // Solo para notas con contenido sustancial
 				setAiAnalysisStatus('analyzing')
 				setTimeout(async () => {
 					try {
@@ -230,8 +241,122 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 		}
 	}
 
-	const handleContentChange = (value: string) => {
+	// Función para convertir contenido del editor a texto
+	const convertEditorContentToString = (content: { blocks?: Array<{ type: string; data?: Record<string, unknown> }> } | string): string => {
+		if (typeof content === 'string') return content
+		if (!content?.blocks) return ""
+
+		return content.blocks
+			.map((block: { type: string; data?: Record<string, unknown> }) => {
+				switch (block.type) {
+					case 'paragraph':
+						return block.data?.text || ''
+					case 'header': {
+						const level = typeof block.data?.level === 'number' ? block.data.level : 1
+						const headerText = block.data?.text || ''
+						return '#'.repeat(level) + ' ' + headerText
+					}
+					case 'list':
+						const items = Array.isArray(block.data?.items) ? block.data.items : []
+						return items.map((item: string) => `- ${item}`).join('\n')
+					case 'quote':
+						return `> ${block.data?.text || ''}`
+					case 'code':
+						return `\`\`\`\n${block.data?.code || ''}\n\`\`\``
+					default:
+						return block.data?.text || ''
+				}
+			})
+			.filter(text => typeof text === 'string' && text.trim().length > 0)
+			.join('\n\n')
+	}
+
+	const convertStringToEditorContent = (content: string): { blocks?: Array<{ type: string; data?: Record<string, unknown> }> } | string => {
+		if (!content || typeof content !== 'string' || !content.trim()) {
+			return {
+				blocks: [
+					{
+						type: "paragraph",
+						data: { text: "" },
+					},
+				],
+			}
+		}
+
+		// Conversión básica de texto a Editor.js
+		const lines = content.split('\n')
+		const blocks: Array<{ type: string; data?: Record<string, unknown> }> = []
+		let currentBlock: { type: string; data: Record<string, unknown> } = { 
+			type: "paragraph", 
+			data: { text: "" } 
+		}
+
+		for (const line of lines) {
+			if (line.startsWith('# ')) {
+				if (currentBlock.data.text) blocks.push(currentBlock)
+				currentBlock = { 
+					type: "header", 
+					data: { text: line.slice(2), level: 1 } 
+				}
+			} else if (line.startsWith('## ')) {
+				if (currentBlock.data.text) blocks.push(currentBlock)
+				currentBlock = { 
+					type: "header", 
+					data: { text: line.slice(3), level: 2 } 
+				}
+			} else if (line.startsWith('### ')) {
+				if (currentBlock.data.text) blocks.push(currentBlock)
+				currentBlock = { 
+					type: "header", 
+					data: { text: line.slice(4), level: 3 } 
+				}
+			} else if (line.startsWith('- ')) {
+				if (currentBlock.data.text) blocks.push(currentBlock)
+				currentBlock = { 
+					type: "list", 
+					data: { style: "unordered", items: [line.slice(2)] } 
+				}
+			} else if (line.startsWith('> ')) {
+				if (currentBlock.data.text) blocks.push(currentBlock)
+				currentBlock = { 
+					type: "quote", 
+					data: { text: line.slice(2) } 
+				}
+			} else if (line.trim() === '') {
+				if (currentBlock.data.text) {
+					blocks.push(currentBlock)
+					currentBlock = { 
+						type: "paragraph", 
+						data: { text: "" } 
+					}
+				}
+			} else {
+				if (currentBlock.data.text) {
+					currentBlock.data.text += '\n' + line
+				} else {
+					currentBlock.data.text = line
+				}
+			}
+		}
+
+		if (currentBlock.data.text) {
+			blocks.push(currentBlock)
+		}
+
+		return {
+			blocks: blocks.length > 0 ? blocks : [
+				{
+					type: "paragraph",
+					data: { text: "" },
+				},
+			],
+		}
+	}
+
+	const handleContentChange = (value: { blocks?: Array<{ type: string; data?: Record<string, unknown> }> } | string) => {
 		if (note) {
+			// Solo convertir a string cuando se guarda, no en cada cambio
+			// Mantener el formato original del editor para evitar reinicios
 			setNote({ ...note, content: value })
 			setHasUnsavedChanges(true)
 		}
@@ -491,6 +616,13 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 									<Sparkles className="w-4 h-4 mr-2" />
 									Ver insights
 								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => {
+									// TODO: Implementar extracción de tareas con IA
+									console.log('Extraer tareas desde nota:', note.id)
+								}}>
+									<CheckSquare className="w-4 h-4 mr-2" />
+									Extraer tareas
+								</DropdownMenuItem>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem onClick={onClose}>
 									Cerrar editor
@@ -547,7 +679,7 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 
 					{/* Auto Tagging */}
 					<AutoTagging
-						content={note.content}
+						content={typeof note.content === 'string' ? note.content : convertEditorContentToString(note.content)}
 						title={note.title}
 						currentTags={note.tags}
 						currentFolder={note.folder_id || undefined}
@@ -577,6 +709,17 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 					onUpdate={handleContentChange}
 					onSave={() => saveNote(true)}
 					placeholder="Escribe tu nota aquí... Usa / para comandos rápidos."
+				/>
+			</div>
+
+			{/* Tareas vinculadas */}
+			<div className="border-t border-border/50 p-4">
+				<NoteLinkedTasks
+					noteId={noteId}
+					onTasksChange={() => {
+						// Actualizar la nota si es necesario
+						console.log('Tareas actualizadas')
+					}}
 				/>
 			</div>
 
