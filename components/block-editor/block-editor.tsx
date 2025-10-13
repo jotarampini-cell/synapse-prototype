@@ -35,12 +35,12 @@ export function BlockEditor({
 	const [canRedo, setCanRedo] = useState(false)
 
 	// Convertir contenido entre formatos
-	const convertToMobileFormat = (editorData: { blocks?: Array<{ type: string; data?: Record<string, unknown> }> } | string): string => {
+	const convertToMobileFormat = (editorData: any): string => {
 		if (typeof editorData === 'string') return editorData
-		if (!editorData?.blocks) return ""
+		if (!editorData?.blocks || !Array.isArray(editorData.blocks)) return ""
 
 		return editorData.blocks
-			.map((block: { type: string; data?: Record<string, unknown> }) => {
+			.map((block: any) => {
 				switch (block.type) {
 					case 'paragraph':
 						return block.data?.text || ''
@@ -49,8 +49,10 @@ export function BlockEditor({
 						const headerText = block.data?.text || ''
 						return '#'.repeat(level) + ' ' + headerText
 					}
-					case 'list':
-						return block.data?.items?.map((item: string) => `- ${item}`).join('\n') || ''
+					case 'list': {
+						const items = block.data?.items || []
+						return items.map((item: string) => `- ${item}`).join('\n')
+					}
 					case 'quote':
 						return `> ${block.data?.text || ''}`
 					case 'code':
@@ -275,20 +277,38 @@ export function BlockEditor({
 	const handleToolbarCommand = async (command: string, value?: unknown) => {
 		if (!editorRef.current) return
 		
-		// Implementar según las capacidades de Editor.js
-		// Para inline tools (bold, italic, etc), necesitarás usar los inline tools de Editor.js
-		console.log('Toolbar command:', command, value)
-		
-		// Ejemplo para algunos comandos:
-		switch (command) {
-			case 'header':
-				// Agregar bloque de header
-				break
-			case 'list':
-				// Agregar bloque de lista
-				break
-			// etc...
+		// Obtener el elemento del editor
+		const editorElement = editorRef.current.querySelector('[contenteditable="true"]') as HTMLElement
+		if (!editorElement) {
+			// Si no hay contenteditable, usar el div principal
+			const mainDiv = editorRef.current.querySelector('div[contenteditable]') as HTMLElement
+			if (!mainDiv) return
+			
+			// Enfocar el editor
+			mainDiv.focus()
+			
+			// Ejecutar comandos de formato
+			document.execCommand(command, false, value as string)
+			
+			// Actualizar el contenido
+			const newContent = mainDiv.innerHTML
+			const editorJSData = convertToEditorJSFormat(newContent)
+			setEditorData(editorJSData)
+			onUpdate(editorJSData)
+			return
 		}
+		
+		// Enfocar el editor
+		editorElement.focus()
+		
+		// Ejecutar comandos de formato
+		document.execCommand(command, false, value as string)
+		
+		// Actualizar el contenido
+		const newContent = editorElement.innerHTML
+		const editorJSData = convertToEditorJSFormat(newContent)
+		setEditorData(editorJSData)
+		onUpdate(editorJSData)
 	}
 
 	// Handlers para el editor móvil
@@ -312,7 +332,7 @@ export function BlockEditor({
 		const mobileContent = convertToMobileFormat(content)
 		return (
 			<MobileEditor
-				content={mobileContent}
+				content={typeof mobileContent === 'string' ? mobileContent : ''}
 				onUpdate={handleMobileUpdate}
 				onSave={handleMobileSave}
 				placeholder={placeholder}
@@ -321,7 +341,7 @@ export function BlockEditor({
 		)
 	}
 
-	// Renderizar Editor.js para desktop
+	// Renderizar Editor para desktop
 	return (
 		<div className="relative">
 			{/* Nuevo toolbar horizontal */}
@@ -329,9 +349,23 @@ export function BlockEditor({
 
 			{/* Editor Container */}
 			<div
-				id="editorjs-container"
+				ref={editorRef}
 				className="min-h-[200px] border border-t-0 rounded-b-lg focus-within:ring-2 focus-within:ring-primary focus-within:border-primary p-4"
-			/>
+			>
+				<div
+					contentEditable={!readonly}
+					dangerouslySetInnerHTML={{ __html: typeof content === 'string' ? content : '' }}
+					onInput={(e) => {
+						const target = e.target as HTMLElement
+						const editorJSData = convertToEditorJSFormat(target.innerHTML)
+						setEditorData(editorJSData)
+						onUpdate(editorJSData)
+					}}
+					className="outline-none min-h-[150px] prose prose-sm max-w-none"
+					style={{ whiteSpace: 'pre-wrap' }}
+					data-placeholder={placeholder}
+				/>
+			</div>
 		</div>
 	)
 }

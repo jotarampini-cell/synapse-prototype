@@ -8,11 +8,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { BlockEditor } from "@/components/block-editor"
+import { SimpleBlockEditor } from "@/components/block-editor/simple-block-editor"
 import { createBasicTextContent } from "@/app/actions/content"
 import { getRecentActivity } from "@/app/actions/activity"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import { SearchInput } from "@/components/search/search-input"
+import { FileUpload } from "@/components/file-upload/file-upload"
+import { VoiceRecorder } from "@/components/voice-recorder/voice-recorder"
 import { WelcomeBanner } from "@/components/responsive-banner"
 import { AppFooter } from "@/components/app-footer"
 import { 
@@ -52,12 +55,12 @@ export default function HomePage() {
 	const { isMobile } = useMobileDetection()
 	const quickNoteModal = useMobileModal()
 	const templatesModal = useMobileModal()
-	const [searchQuery, setSearchQuery] = useState("")
 
 	// Estados para la nota rápida
 	const [noteTitle, setNoteTitle] = useState("")
 	const [noteContent, setNoteContent] = useState("")
 	const [isSaving, setIsSaving] = useState(false)
+	const [attachedFiles, setAttachedFiles] = useState<any[]>([])
 
 	// Estados para actividad reciente
 	const [recentActivities, setRecentActivities] = useState([])
@@ -87,8 +90,30 @@ export default function HomePage() {
 		setIsSaving(true)
 		try {
 			const formData = new FormData()
-			formData.append('title', noteTitle)
-			formData.append('content', typeof noteContent === 'string' ? noteContent : JSON.stringify(noteContent))
+			formData.append('title', noteTitle.trim())
+			
+			// Manejar el contenido correctamente
+			let contentToSave = ""
+			if (typeof noteContent === 'string') {
+				contentToSave = noteContent
+			} else if (noteContent && typeof noteContent === 'object') {
+				// Si es un objeto con blocks, extraer el texto
+				if (noteContent.blocks && Array.isArray(noteContent.blocks)) {
+					contentToSave = noteContent.blocks
+						.map((block: any) => {
+							if (block.type === 'paragraph' && block.data?.text) {
+								return block.data.text
+							}
+							return ''
+						})
+						.filter(Boolean)
+						.join('\n\n')
+				} else {
+					contentToSave = JSON.stringify(noteContent)
+				}
+			}
+			
+			formData.append('content', contentToSave || '')
 			
 			await createBasicTextContent(formData)
 			
@@ -104,7 +129,7 @@ export default function HomePage() {
 			}
 		} catch (error) {
 			console.error('Error saving note:', error)
-			// TODO: Mostrar toast de error
+			alert('Error al guardar la nota. Por favor, inténtalo de nuevo.')
 		} finally {
 			setIsSaving(false)
 		}
@@ -157,19 +182,14 @@ export default function HomePage() {
 					</div>
 
 					<div className="px-4 space-y-6">
-						{/* Búsqueda rápida con glassmorphism */}
-						<div className="relative group">
-							<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
-							<Input 
-								placeholder="Buscar o crear algo nuevo..." 
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								className="pl-9 h-12 bg-card/50 backdrop-blur-sm border-border/50 focus:border-primary/50 focus:bg-card transition-all"
-							/>
-							<div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-								⌘K
-							</div>
-						</div>
+						{/* Búsqueda rápida con sugerencias */}
+						<SearchInput 
+							placeholder="Buscar o crear algo nuevo..." 
+							onSearch={(query) => {
+								console.log('Búsqueda global:', query)
+								// Aquí implementarías la búsqueda global
+							}}
+						/>
 
 						{/* Quick Actions Grid Moderno */}
 						<div>
@@ -334,6 +354,7 @@ export default function HomePage() {
 						quickNoteModal.closeModal()
 						setNoteTitle("")
 						setNoteContent("")
+						setAttachedFiles([])
 					}}
 					title="Nueva Nota"
 					headerActions={
@@ -345,7 +366,7 @@ export default function HomePage() {
 						</Button>
 					}
 				>
-					<div className="p-4 space-y-3">
+					<div className="p-4 space-y-4">
 						<Input
 							placeholder="Título de la nota"
 							value={noteTitle}
@@ -354,9 +375,29 @@ export default function HomePage() {
 							autoFocus
 						/>
 						<Separator />
+						
+						{/* Carga de archivos */}
+						<FileUpload
+							onFilesUploaded={(files) => setAttachedFiles(prev => [...prev, ...files])}
+							onFileRemove={(fileId) => setAttachedFiles(prev => prev.filter(f => f.id !== fileId))}
+							maxFiles={3}
+							maxSize={5}
+							className="mb-4"
+						/>
+						
+						{/* Grabación de voz */}
+						<VoiceRecorder
+							onTranscription={(text) => {
+								// Agregar la transcripción al contenido existente
+								const currentContent = typeof noteContent === 'string' ? noteContent : ''
+								setNoteContent(currentContent + (currentContent ? '\n\n' : '') + text)
+							}}
+							className="mb-4"
+						/>
+						
 						<div className="min-h-[300px] max-h-[50vh] overflow-y-auto">
-							<BlockEditor
-								content={noteContent}
+							<SimpleBlockEditor
+								content={typeof noteContent === 'string' ? noteContent : ''}
 								onUpdate={(data) => setNoteContent(data)}
 								onSave={(data) => setNoteContent(data)}
 								placeholder="Comienza a escribir..."
