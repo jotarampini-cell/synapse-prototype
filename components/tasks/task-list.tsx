@@ -130,8 +130,8 @@ export function TaskList({ selectedList, onTasksChange }: TaskListProps) {
 			return matchesSearch && matchesCompleted
 		})
 		.sort((a, b) => {
-			let aValue: any = a[sortField]
-			let bValue: any = b[sortField]
+			let aValue: string | number | Date | null = a[sortField as keyof typeof a]
+			let bValue: string | number | Date | null = b[sortField as keyof typeof b]
 
 			// Manejar valores especiales
 			if (sortField === "priority") {
@@ -425,7 +425,7 @@ export function TaskList({ selectedList, onTasksChange }: TaskListProps) {
 								ref={inputRef}
 								placeholder="Título de la tarea..."
 								value={newTaskTitle}
-								className="h-10 md:h-9"
+								className="h-10 md:h-9 border-0 shadow-none focus-visible:ring-0 min-w-0"
 								onChange={(e) => {
 									const value = e.target.value
 									setNewTaskTitle(value)
@@ -456,7 +456,6 @@ export function TaskList({ selectedList, onTasksChange }: TaskListProps) {
 										setNewTaskDescription("")
 									}
 								}}
-								className="border-0 shadow-none focus-visible:ring-0 min-w-0"
 								autoFocus
 							/>
 							{/* Indicador de guardado automático */}
@@ -471,7 +470,7 @@ export function TaskList({ selectedList, onTasksChange }: TaskListProps) {
 							placeholder="Detalles (opcional)..."
 							value={newTaskDescription}
 							onChange={(e) => setNewTaskDescription(e.target.value)}
-							className="min-h-[60px] md:min-h-[50px]"
+							className="min-h-[60px] md:min-h-[50px] border-0 shadow-none focus-visible:ring-0 resize-none ml-8 min-w-0"
 							onKeyDown={(e) => {
 								if (e.key === "Enter" && e.ctrlKey) {
 									e.preventDefault()
@@ -482,7 +481,6 @@ export function TaskList({ selectedList, onTasksChange }: TaskListProps) {
 									setNewTaskDescription("")
 								}
 							}}
-							className="border-0 shadow-none focus-visible:ring-0 resize-none ml-8 min-w-0"
 							rows={2}
 						/>
 						{/* Mensaje de ayuda */}

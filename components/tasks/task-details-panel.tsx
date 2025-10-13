@@ -255,7 +255,7 @@ export function TaskDetailsPanel({ task, isOpen, onClose, onTaskUpdate }: TaskDe
 									<label className="text-sm font-medium mb-2 block">Estado</label>
 									<Select 
 										value={editedTask.status} 
-										onValueChange={(value) => setEditedTask({ ...editedTask, status: value as any })}
+										onValueChange={(value) => setEditedTask({ ...editedTask, status: value as "pending" | "in_progress" | "completed" })}
 									>
 										<SelectTrigger>
 											<SelectValue />
@@ -277,7 +277,7 @@ export function TaskDetailsPanel({ task, isOpen, onClose, onTaskUpdate }: TaskDe
 									<label className="text-sm font-medium mb-2 block">Prioridad</label>
 									<Select 
 										value={editedTask.priority} 
-										onValueChange={(value) => setEditedTask({ ...editedTask, priority: value as any })}
+										onValueChange={(value) => setEditedTask({ ...editedTask, priority: value as "low" | "medium" | "high" })}
 									>
 										<SelectTrigger>
 											<SelectValue />

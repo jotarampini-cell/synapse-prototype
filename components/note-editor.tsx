@@ -256,9 +256,10 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 						const headerText = block.data?.text || ''
 						return '#'.repeat(level) + ' ' + headerText
 					}
-					case 'list':
+					case 'list': {
 						const items = Array.isArray(block.data?.items) ? block.data.items : []
 						return items.map((item: string) => `- ${item}`).join('\n')
+					}
 					case 'quote':
 						return `> ${block.data?.text || ''}`
 					case 'code':

@@ -170,7 +170,7 @@ export function SubtaskList({ parentTaskId, onSubtasksChange }: SubtaskListProps
 										ref={inputRef}
 										placeholder="Título de la subtarea..."
 										value={newSubtaskTitle}
-										className="h-9 md:h-8"
+										className="h-9 md:h-8 border-0 shadow-none focus-visible:ring-0 text-sm min-w-0"
 										onChange={(e) => {
 											const value = e.target.value
 											setNewSubtaskTitle(value)
@@ -201,7 +201,6 @@ export function SubtaskList({ parentTaskId, onSubtasksChange }: SubtaskListProps
 												setNewSubtaskDescription("")
 											}
 										}}
-										className="border-0 shadow-none focus-visible:ring-0 text-sm min-w-0"
 										autoFocus
 									/>
 									{/* Indicador de guardado automático */}

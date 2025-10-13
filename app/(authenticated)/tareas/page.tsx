@@ -3,15 +3,7 @@
 import { useState, useEffect } from "react"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
-import { MobileDrawer, useMobileDrawer } from "@/components/mobile-drawer"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
 import { 
-	Search,
-	Plus,
 	Filter,
 	CheckSquare,
 	Clock,

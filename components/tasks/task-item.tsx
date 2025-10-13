@@ -44,7 +44,7 @@ interface TaskItemProps {
 	showSubtasks?: boolean
 	level?: number
 	onOpenDetails?: (task: Task) => void
-	dragHandleProps?: any
+	dragHandleProps?: Record<string, unknown>
 	onSelect?: () => void
 }
 

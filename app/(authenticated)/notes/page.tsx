@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useAppKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
@@ -80,7 +80,6 @@ import { toast } from "sonner"
 
 export default function NotesPage() {
 	const { user, loading } = useAuth()
-	const router = useRouter()
 	const searchParams = useSearchParams()
 	
 	// State
@@ -179,7 +178,6 @@ export default function NotesPage() {
 				setAiPanelOpen(false)
 			}
 		},
-		enabled: !loading // Solo habilitar cuando no esté cargando (TEMPORALMENTE SIN VERIFICACIÓN DE USUARIO)
 	})
 
 	// Atajos de teclado adicionales (TEMPORALMENTE SIN VERIFICACIÓN DE USUARIO)
@@ -390,7 +388,7 @@ export default function NotesPage() {
 				{/* FAB para crear nueva nota */}
 				{!isFocusMode && !selectedNote && (
 					<Button
-						onClick={handleCreateNote}
+						onClick={() => handleCreateNote('Nueva Nota', '')}
 						className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-40 touch-target"
 						size="icon"
 					>
