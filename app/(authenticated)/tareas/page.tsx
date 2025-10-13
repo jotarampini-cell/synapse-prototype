@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
+import { useSearchParams } from "next/navigation"
 import { 
 	getTasks, 
 	getTaskLists, 
@@ -159,13 +160,31 @@ const statusColors = {
 
 export default function TareasPage() {
 	const { isMobile } = useMobileDetection()
+	const searchParams = useSearchParams()
+	const shouldCreate = searchParams.get('create') === 'true'
 	const [selectedList, setSelectedList] = useState<string>("")
 	const [taskLists, setTaskLists] = useState<TaskListWithStats[]>([])
+	const [isAddingTask, setIsAddingTask] = useState(false)
 
 	// Cargar listas de tareas
 	useEffect(() => {
 		loadTaskLists()
 	}, [])
+
+	// Detectar parámetro create=true para abrir formulario automáticamente
+	useEffect(() => {
+		if (shouldCreate && !isAddingTask) {
+			setIsAddingTask(true)
+			// Scroll al formulario después de un breve delay
+			setTimeout(() => {
+				const input = document.querySelector('input[placeholder*="Título"]')
+				if (input instanceof HTMLElement) {
+					input.scrollIntoView({ behavior: 'smooth', block: 'center' })
+					input.focus()
+				}
+			}, 300)
+		}
+	}, [shouldCreate, isAddingTask])
 
 	const loadTaskLists = async () => {
 		try {

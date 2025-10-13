@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { MobileModal, useMobileModal } from "@/components/mobile-modal"
@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { BlockEditor } from "@/components/block-editor"
+import { createBasicTextContent } from "@/app/actions/content"
+import { getRecentActivity } from "@/app/actions/activity"
+import { Separator } from "@/components/ui/separator"
+import { cn } from "@/lib/utils"
+import { WelcomeBanner } from "@/components/responsive-banner"
+import { AppFooter } from "@/components/app-footer"
 import { 
 	Search,
 	Plus,
@@ -47,207 +54,362 @@ export default function HomePage() {
 	const templatesModal = useMobileModal()
 	const [searchQuery, setSearchQuery] = useState("")
 
+	// Estados para la nota rápida
+	const [noteTitle, setNoteTitle] = useState("")
+	const [noteContent, setNoteContent] = useState("")
+	const [isSaving, setIsSaving] = useState(false)
+
+	// Estados para actividad reciente
+	const [recentActivities, setRecentActivities] = useState([])
+	const [isLoadingRecent, setIsLoadingRecent] = useState(true)
+
+	// Cargar actividad reciente
+	useEffect(() => {
+		async function loadRecentActivity() {
+			try {
+				const result = await getRecentActivity()
+				if (result.success && result.activities) {
+					setRecentActivities(result.activities)
+				}
+			} catch (error) {
+				console.error('Error loading recent activity:', error)
+			} finally {
+				setIsLoadingRecent(false)
+			}
+		}
+		loadRecentActivity()
+	}, [])
+
+	// Función para guardar nota
+	const handleSaveNote = async () => {
+		if (!noteTitle.trim()) return
+		
+		setIsSaving(true)
+		try {
+			const formData = new FormData()
+			formData.append('title', noteTitle)
+			formData.append('content', typeof noteContent === 'string' ? noteContent : JSON.stringify(noteContent))
+			
+			await createBasicTextContent(formData)
+			
+			// Limpiar y cerrar
+			setNoteTitle("")
+			setNoteContent("")
+			quickNoteModal.closeModal()
+			
+			// Recargar actividad reciente
+			const result = await getRecentActivity()
+			if (result.success && result.activities) {
+				setRecentActivities(result.activities)
+			}
+		} catch (error) {
+			console.error('Error saving note:', error)
+			// TODO: Mostrar toast de error
+		} finally {
+			setIsSaving(false)
+		}
+	}
+
+	// Función para formatear timestamp
+	function formatTimestamp(timestamp: string) {
+		const date = new Date(timestamp)
+		const now = new Date()
+		const diffMs = now.getTime() - date.getTime()
+		const diffMins = Math.floor(diffMs / 60000)
+		const diffHours = Math.floor(diffMins / 60)
+		const diffDays = Math.floor(diffHours / 24)
+		
+		if (diffMins < 1) return 'Ahora'
+		if (diffMins < 60) return `Hace ${diffMins}m`
+		if (diffHours < 24) return `Hace ${diffHours}h`
+		if (diffDays < 7) return `Hace ${diffDays}d`
+		return date.toLocaleDateString()
+	}
+
 	// Layout móvil
 	if (isMobile) {
 		return (
-			<div className="h-screen flex flex-col bg-background">
-				{/* Header */}
-				<header className="h-14 px-4 flex items-center border-b border-border bg-background/95 backdrop-blur-sm safe-area-top safe-area-left safe-area-right">
-					<div className="flex-1">
-						<h1 className="text-xl font-bold text-foreground">Synapse</h1>
+			<div className="h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
+				{/* Header simplificado */}
+				<header className="h-16 px-4 flex items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl safe-area-top">
+					<div>
+						<h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+							Inicio
+						</h1>
+						<p className="text-xs text-muted-foreground">
+							{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+						</p>
 					</div>
 					<Button 
 						variant="ghost" 
-						size="icon-mobile"
-						className="touch-target active:scale-95"
+						size="icon"
+						className="touch-target active:scale-95 transition-transform"
 					>
 						<Bell className="h-5 w-5" />
 					</Button>
 				</header>
 
-				{/* Contenido principal */}
+				{/* Contenido principal con scroll unificado */}
 				<main className="flex-1 overflow-y-auto pb-20 safe-area-left safe-area-right">
-					<div className="p-4 space-y-6">
-						{/* Búsqueda */}
-						<div className="relative">
-							<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+					{/* Banner integrado */}
+					<div className="p-4">
+						<WelcomeBanner />
+					</div>
+
+					<div className="px-4 space-y-6">
+						{/* Búsqueda rápida con glassmorphism */}
+						<div className="relative group">
+							<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
 							<Input 
-								placeholder="Buscar en todo..." 
+								placeholder="Buscar o crear algo nuevo..." 
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
-								className="pl-9 mobile-input"
+								className="pl-9 h-12 bg-card/50 backdrop-blur-sm border-border/50 focus:border-primary/50 focus:bg-card transition-all"
 							/>
-						</div>
-
-						{/* Stats Cards */}
-						<div className="mobile-grid-2">
-							{stats.map((stat) => {
-								const Icon = stat.icon
-								return (
-									<Card key={stat.label} className="mobile-card active:scale-95 transition-transform">
-										<div className="flex items-center justify-between mb-2">
-											<Icon className="h-5 w-5 text-muted-foreground" />
-											<Badge variant="secondary" className="text-xs">
-												{stat.change}
-											</Badge>
-										</div>
-										<div className="text-2xl font-bold text-foreground">{stat.value}</div>
-										<div className="mobile-text-sm text-muted-foreground">{stat.label}</div>
-									</Card>
-								)
-							})}
-						</div>
-
-						{/* Quick Actions */}
-						<div>
-							<h2 className="text-lg font-semibold mb-3 text-foreground">Acciones Rápidas</h2>
-							<div className="mobile-grid-2">
-								{quickActions.map((action) => {
-									const Icon = action.icon
-									return (
-										<Button
-											key={action.label}
-											variant="outline"
-											className="h-20 flex flex-col items-center justify-center gap-2 touch-target active:scale-95 transition-all"
-											onClick={() => {
-												if (action.label === "Nueva Nota") {
-													quickNoteModal.openModal()
-												}
-											}}
-										>
-											<div className={`p-2 rounded-full ${action.color} transition-transform`}>
-												<Icon className="h-5 w-5 text-white" />
-											</div>
-											<span className="mobile-text-sm text-foreground">{action.label}</span>
-										</Button>
-									)
-								})}
+							<div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+								⌘K
 							</div>
 						</div>
 
-						{/* Notas Recientes */}
+						{/* Quick Actions Grid Moderno */}
+						<div>
+							<h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+								Crear nuevo
+							</h2>
+							<div className="grid grid-cols-2 gap-3">
+								{/* Nueva Nota */}
+								<button
+									onClick={() => quickNoteModal.openModal()}
+									className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 p-4 text-left transition-all active:scale-95 hover:shadow-lg hover:shadow-blue-500/20"
+								>
+									<div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500" />
+									<div className="relative">
+										<div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+											<FileText className="h-5 w-5 text-blue-600" />
+										</div>
+										<div className="font-semibold text-sm mb-1">Nueva Nota</div>
+										<div className="text-xs text-muted-foreground">Captura tus ideas</div>
+									</div>
+								</button>
+
+								{/* Nueva Tarea */}
+								<button
+									onClick={() => window.location.href = '/tareas?create=true'}
+									className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-500/10 to-green-600/5 p-4 text-left transition-all active:scale-95 hover:shadow-lg hover:shadow-green-500/20"
+								>
+									<div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500" />
+									<div className="relative">
+										<div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+											<CheckSquare className="h-5 w-5 text-green-600" />
+										</div>
+										<div className="font-semibold text-sm mb-1">Nueva Tarea</div>
+										<div className="text-xs text-muted-foreground">Organiza tu día</div>
+									</div>
+								</button>
+
+								{/* Nueva Fuente - Preparada para futuro */}
+								<button
+									onClick={() => console.log('Fuentes - próximamente')}
+									className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500/10 to-purple-600/5 p-4 text-left transition-all active:scale-95 opacity-60"
+								>
+									<div className="relative">
+										<div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center mb-3">
+											<Link className="h-5 w-5 text-purple-600" />
+										</div>
+										<div className="font-semibold text-sm mb-1">Nueva Fuente</div>
+										<div className="text-xs text-muted-foreground">Próximamente</div>
+									</div>
+								</button>
+
+								{/* Nuevo Proyecto - Preparado para futuro */}
+								<button
+									onClick={() => console.log('Proyectos - próximamente')}
+									className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500/10 to-orange-600/5 p-4 text-left transition-all active:scale-95 opacity-60"
+								>
+									<div className="relative">
+										<div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center mb-3">
+											<Briefcase className="h-5 w-5 text-orange-600" />
+										</div>
+										<div className="font-semibold text-sm mb-1">Nuevo Proyecto</div>
+										<div className="text-xs text-muted-foreground">Próximamente</div>
+									</div>
+								</button>
+							</div>
+						</div>
+
+						{/* Actividad Reciente con datos reales */}
 						<div>
 							<div className="flex items-center justify-between mb-3">
-								<h2 className="text-lg font-semibold">Recientes</h2>
-								<Button variant="ghost" size="sm">
-									Ver todas
+								<h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+									Actividad Reciente
+								</h2>
+								<Button variant="ghost" size="sm" className="h-8 text-xs">
+									Ver todo
 								</Button>
 							</div>
-							<div className="space-y-2">
-								{recentNotes.map((note) => (
-									<Card key={note.id} className="p-3 cursor-pointer hover:bg-muted/50 transition-colors touch-target">
-										<div className="flex items-start justify-between">
-											<div className="flex-1">
-												<h3 className="font-medium text-sm mb-1">{note.title}</h3>
-												<div className="flex items-center gap-2 text-xs text-muted-foreground">
-													<Clock className="h-3 w-3" />
-													<span>{note.updated}</span>
+							
+							{isLoadingRecent ? (
+								<div className="space-y-2">
+									{[1, 2, 3].map((i) => (
+										<div key={i} className="h-16 bg-muted/50 rounded-xl animate-pulse" />
+									))}
+								</div>
+							) : recentActivities.length === 0 ? (
+								<div className="text-center py-8 px-4 bg-card/30 rounded-2xl border border-dashed border-border">
+									<Clock className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+									<p className="text-sm text-muted-foreground">Aún no tienes actividad</p>
+									<p className="text-xs text-muted-foreground/70 mt-1">Crea tu primera nota o tarea</p>
+								</div>
+							) : (
+								<div className="space-y-2">
+									{recentActivities.map((activity) => (
+										<button
+											key={activity.id}
+											onClick={() => {
+												if (activity.type === 'task') {
+													window.location.href = '/tareas'
+												} else {
+													window.location.href = `/notes?note=${activity.id}`
+												}
+											}}
+											className="w-full group bg-card/50 backdrop-blur-sm rounded-xl p-3 text-left transition-all active:scale-98 hover:bg-card hover:shadow-md border border-border/50"
+										>
+											<div className="flex items-start gap-3">
+												<div className={cn(
+													"w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
+													activity.type === 'task' && "bg-green-500/20",
+													activity.type === 'note' && "bg-blue-500/20"
+												)}>
+													{activity.type === 'task' ? (
+														<CheckSquare className="h-5 w-5 text-green-600" />
+													) : (
+														<FileText className="h-5 w-5 text-blue-600" />
+													)}
 												</div>
+												<div className="flex-1 min-w-0">
+													<h3 className="font-medium text-sm mb-1 truncate group-hover:text-primary transition-colors">
+														{activity.title}
+													</h3>
+													<div className="flex items-center gap-2 text-xs text-muted-foreground">
+														<span className="capitalize">{activity.action}</span>
+														<span>•</span>
+														<span>{formatTimestamp(activity.timestamp)}</span>
+													</div>
+												</div>
+												<Badge 
+													variant="secondary" 
+													className="text-xs flex-shrink-0"
+												>
+													{activity.type}
+												</Badge>
 											</div>
-											<Badge variant="outline" className="text-xs">
-												{note.type}
-											</Badge>
-										</div>
-									</Card>
-								))}
-							</div>
+										</button>
+									))}
+								</div>
+							)}
 						</div>
 
-						{/* Trending */}
-						<div>
-							<div className="flex items-center gap-2 mb-3">
-								<TrendingUp className="h-5 w-5" />
-								<h2 className="text-lg font-semibold">Tendencias</h2>
-							</div>
-							<div className="space-y-2">
-								{["Inteligencia Artificial", "Productividad", "Notas", "Organización"].map((trend) => (
-									<Badge key={trend} variant="secondary" className="mr-2 mb-2">
-										{trend}
-									</Badge>
-								))}
-							</div>
-						</div>
+						{/* Espaciador para el bottom nav */}
+						<div className="h-4" />
 					</div>
 				</main>
 
 				{/* Bottom Navigation */}
 				<MobileBottomNav />
 
-				{/* FAB */}
+				{/* FAB con animación */}
 				<Button
 					onClick={templatesModal.openModal}
-					className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-40 touch-target"
+					className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl shadow-primary/30 z-40 touch-target hover:scale-110 active:scale-95 transition-transform"
 					size="icon"
 				>
 					<Plus className="h-6 w-6" />
 				</Button>
 
 				{/* Modals */}
+				{/* Modal de Nota Rápida con BlockEditor */}
 				<MobileModal
 					isOpen={quickNoteModal.isOpen}
-					onClose={quickNoteModal.closeModal}
-					title="Nota Rápida"
+					onClose={() => {
+						quickNoteModal.closeModal()
+						setNoteTitle("")
+						setNoteContent("")
+					}}
+					title="Nueva Nota"
 					headerActions={
-						<Button onClick={() => quickNoteModal.closeModal()}>
-							Guardar
+						<Button 
+							onClick={handleSaveNote}
+							disabled={isSaving || !noteTitle.trim()}
+						>
+							{isSaving ? "Guardando..." : "Guardar"}
 						</Button>
 					}
 				>
-					<div className="p-4">
-						<textarea
-							placeholder="Escribe tu nota rápida aquí..."
-							className="w-full h-64 p-4 border border-input rounded-lg resize-none text-base focus:outline-none focus:ring-2 focus:ring-primary"
+					<div className="p-4 space-y-3">
+						<Input
+							placeholder="Título de la nota"
+							value={noteTitle}
+							onChange={(e) => setNoteTitle(e.target.value)}
+							className="text-base font-medium border-0 shadow-none focus-visible:ring-0 px-0"
 							autoFocus
 						/>
+						<Separator />
+						<div className="min-h-[300px] max-h-[50vh] overflow-y-auto">
+							<BlockEditor
+								content={noteContent}
+								onUpdate={(data) => setNoteContent(data)}
+								onSave={(data) => setNoteContent(data)}
+								placeholder="Comienza a escribir..."
+							/>
+						</div>
 					</div>
 				</MobileModal>
 
+				{/* Modal de Templates */}
 				<MobileModal
 					isOpen={templatesModal.isOpen}
 					onClose={templatesModal.closeModal}
 					title="Crear Nuevo"
 				>
-					<div className="p-4">
-						<div className="space-y-3">
-							<Button 
-								variant="outline" 
-								className="w-full h-16 justify-start touch-target"
-								onClick={() => {
-									quickNoteModal.openModal()
-									templatesModal.closeModal()
-								}}
-							>
-								<FileText className="h-5 w-5 mr-3" />
-								<div className="text-left">
-									<div className="font-medium">Nueva Nota</div>
-									<div className="text-sm text-muted-foreground">Crear una nota en blanco</div>
-								</div>
-							</Button>
-							
-							<Button 
-								variant="outline" 
-								className="w-full h-16 justify-start touch-target"
-							>
-								<CheckSquare className="h-5 w-5 mr-3" />
-								<div className="text-left">
-									<div className="font-medium">Nueva Tarea</div>
-									<div className="text-sm text-muted-foreground">Crear una lista de tareas</div>
-								</div>
-							</Button>
-							
-							<Button 
-								variant="outline" 
-								className="w-full h-16 justify-start touch-target"
-							>
-								<Briefcase className="h-5 w-5 mr-3" />
-								<div className="text-left">
-									<div className="font-medium">Nuevo Proyecto</div>
-									<div className="text-sm text-muted-foreground">Organizar trabajo en proyectos</div>
-								</div>
-							</Button>
-						</div>
+					<div className="p-4 space-y-2">
+						<Button 
+							variant="outline" 
+							className="w-full h-16 justify-start gap-3 touch-target hover:bg-accent active:scale-98 transition-all"
+							onClick={() => {
+								quickNoteModal.openModal()
+								templatesModal.closeModal()
+							}}
+						>
+							<div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+								<FileText className="h-5 w-5 text-blue-600" />
+							</div>
+							<div className="text-left">
+								<div className="font-medium">Nueva Nota</div>
+								<div className="text-sm text-muted-foreground">Captura tus ideas rápidamente</div>
+							</div>
+						</Button>
+						
+						<Button 
+							variant="outline" 
+							className="w-full h-16 justify-start gap-3 touch-target hover:bg-accent active:scale-98 transition-all"
+							onClick={() => {
+								window.location.href = '/tareas?create=true'
+								templatesModal.closeModal()
+							}}
+						>
+							<div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+								<CheckSquare className="h-5 w-5 text-green-600" />
+							</div>
+							<div className="text-left">
+								<div className="font-medium">Nueva Tarea</div>
+								<div className="text-sm text-muted-foreground">Organiza tu trabajo</div>
+							</div>
+						</Button>
 					</div>
 				</MobileModal>
+
+				{/* Footer */}
+				<AppFooter />
 			</div>
 		)
 	}

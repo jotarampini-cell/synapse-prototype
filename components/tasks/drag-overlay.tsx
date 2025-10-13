@@ -20,3 +20,4 @@ export function TaskDragOverlay({ activeTask }: DragOverlayProps) {
 		</div>
 	)
 }
+

@@ -7,6 +7,7 @@ import { useMobileEditor } from "@/hooks/use-editor-selection"
 import { Button } from "@/components/ui/button"
 import { Save, Undo2, Redo2 } from "lucide-react"
 import { log } from "@/lib/logger"
+import { EditorToolbar } from "./editor-toolbar"
 
 // Dynamic imports para evitar SSR issues
 // import dynamic from "next/dynamic"
@@ -270,6 +271,26 @@ export function BlockEditor({
 		log.info("Redo not implemented for Editor.js yet.")
 	}
 
+	// Función para manejar comandos del toolbar
+	const handleToolbarCommand = async (command: string, value?: unknown) => {
+		if (!editorRef.current) return
+		
+		// Implementar según las capacidades de Editor.js
+		// Para inline tools (bold, italic, etc), necesitarás usar los inline tools de Editor.js
+		console.log('Toolbar command:', command, value)
+		
+		// Ejemplo para algunos comandos:
+		switch (command) {
+			case 'header':
+				// Agregar bloque de header
+				break
+			case 'list':
+				// Agregar bloque de lista
+				break
+			// etc...
+		}
+	}
+
 	// Handlers para el editor móvil
 	const handleMobileUpdate = (text: string) => {
 		const editorJSData = convertToEditorJSFormat(text)
@@ -303,42 +324,13 @@ export function BlockEditor({
 	// Renderizar Editor.js para desktop
 	return (
 		<div className="relative">
-			{/* Toolbar */}
-			<div className="flex items-center justify-between p-2 border-b border-border bg-muted/30 rounded-t-lg">
-				<div className="flex items-center gap-1">
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={handleSave}
-						className="h-8 px-2"
-					>
-						<Save className="h-4 w-4 mr-1" /> Guardar
-					</Button>
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={handleUndo}
-						disabled={!canUndo}
-						className="h-8 px-2"
-					>
-						<Undo2 className="h-4 w-4" />
-					</Button>
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={handleRedo}
-						disabled={!canRedo}
-						className="h-8 px-2"
-					>
-						<Redo2 className="h-4 w-4" />
-					</Button>
-				</div>
-			</div>
+			{/* Nuevo toolbar horizontal */}
+			<EditorToolbar onCommand={handleToolbarCommand} />
 
 			{/* Editor Container */}
 			<div
 				id="editorjs-container"
-				className="min-h-[200px] border border-t-0 rounded-b-lg focus-within:ring-2 focus-within:ring-primary focus-within:border-primary"
+				className="min-h-[200px] border border-t-0 rounded-b-lg focus-within:ring-2 focus-within:ring-primary focus-within:border-primary p-4"
 			/>
 		</div>
 	)

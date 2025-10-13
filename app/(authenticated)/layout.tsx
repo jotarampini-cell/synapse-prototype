@@ -32,12 +32,6 @@ export default function AuthenticatedLayout({
 		<div className="min-h-screen bg-background overflow-x-hidden">
 			<UnifiedNavigation />
 			
-			{/* Banner responsive - solo en home */}
-			{isHomePage && (
-				<div className="px-4 py-2 md:px-6">
-					<WelcomeBanner />
-				</div>
-			)}
 			
 			<main>
 				{children}
