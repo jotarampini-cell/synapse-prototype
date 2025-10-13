@@ -39,6 +39,7 @@ export function SubtaskList({ parentTaskId, onSubtasksChange }: SubtaskListProps
 	const [newSubtaskDescription, setNewSubtaskDescription] = useState("")
 	const [isLoading, setIsLoading] = useState(false)
 	const [isAutoSaving, setIsAutoSaving] = useState(false)
+	const [isTyping, setIsTyping] = useState(false)
 	const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const inputRef = useRef<HTMLInputElement>(null)
 
@@ -174,21 +175,26 @@ export function SubtaskList({ parentTaskId, onSubtasksChange }: SubtaskListProps
 										onChange={(e) => {
 											const value = e.target.value
 											setNewSubtaskTitle(value)
+											setIsTyping(true)
 											
 											// Limpiar timeout anterior
 											if (autoSaveTimeoutRef.current) {
 												clearTimeout(autoSaveTimeoutRef.current)
 											}
 											
-											// Solo configurar auto-save si hay contenido
-											if (value.trim()) {
+											// Solo configurar auto-save si hay contenido y no es muy corto
+											if (value.trim() && value.trim().length >= 3) {
+												// Tiempo más largo en móvil para evitar guardado prematuro
+												const timeoutDuration = window.innerWidth < 768 ? 5000 : 4000
+												
 												autoSaveTimeoutRef.current = setTimeout(() => {
 													// Verificar que el valor actual del input coincida con el valor del timeout
 													const currentValue = inputRef.current?.value || ""
-													if (currentValue.trim() === value.trim() && currentValue.trim()) {
+													if (currentValue.trim() === value.trim() && currentValue.trim().length >= 3) {
+														setIsTyping(false)
 														handleAddSubtask()
 													}
-												}, 2000)
+												}, timeoutDuration)
 											}
 										}}
 										onKeyDown={(e) => {
@@ -203,10 +209,14 @@ export function SubtaskList({ parentTaskId, onSubtasksChange }: SubtaskListProps
 										}}
 										autoFocus
 									/>
-									{/* Indicador de guardado automático */}
-									{isAutoSaving && (
+									{/* Indicador de estado */}
+									{(isTyping || isAutoSaving) && (
 										<div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-											<div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
+											{isTyping ? (
+												<div className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></div>
+											) : (
+												<div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
+											)}
 										</div>
 									)}
 								</div>
@@ -230,7 +240,7 @@ export function SubtaskList({ parentTaskId, onSubtasksChange }: SubtaskListProps
 							/>
 							{/* Mensaje de ayuda */}
 							<div className="text-xs text-muted-foreground ml-6 flex items-center gap-1">
-								<span>Enter para guardar • Se guarda automáticamente</span>
+								<span>Enter para guardar • Se guarda automáticamente después de 5s de inactividad</span>
 							</div>
 						</div>
 					)}
