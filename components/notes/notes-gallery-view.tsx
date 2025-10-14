@@ -95,9 +95,10 @@ export function NotesGalleryView({
 			
 			if (result.success && result.contents) {
 				console.log('Notes loaded successfully:', result.contents.length, 'notes')
+				console.log('Raw contents:', result.contents)
 				// Convertir contenido a formato Note
 				const notes: Note[] = result.contents.map(content => {
-					console.log('Processing note:', content.title, 'Content:', content.content?.substring(0, 50))
+					console.log('Processing note:', content.title, 'Content type:', content.content_type, 'Content length:', content.content?.length, 'Content preview:', content.content?.substring(0, 100))
 					return {
 						id: content.id,
 						title: content.title,

@@ -17,9 +17,9 @@ export function formatRelativeDate(date: string): string {
 
 export function extractTextPreview(content: string): string {
 	// Extraer texto plano del contenido (puede ser HTML o JSON)
-	if (!content) {
-		console.log('extractTextPreview: No content provided')
-		return ''
+	if (!content || content.trim() === '') {
+		console.log('extractTextPreview: No content provided or empty content')
+		return 'Sin contenido'
 	}
 	
 	console.log('extractTextPreview: Processing content:', content.substring(0, 100))
@@ -32,20 +32,22 @@ export function extractTextPreview(content: string): string {
 				.map((block: any) => block.data?.text || '')
 				.join(' ')
 				.replace(/<[^>]*>/g, '') // Remover HTML tags
+				.trim()
 				.substring(0, 100)
 			console.log('extractTextPreview: JSON result:', result)
-			return result
+			return result || 'Sin contenido'
 		}
 	} catch {
 		// Si no es JSON, tratar como texto plano
 		const result = content
 			.replace(/<[^>]*>/g, '') // Remover HTML tags
+			.trim()
 			.substring(0, 100)
 		console.log('extractTextPreview: Plain text result:', result)
-		return result
+		return result || 'Sin contenido'
 	}
 	
-	const result = content.substring(0, 100)
+	const result = content.trim().substring(0, 100)
 	console.log('extractTextPreview: Fallback result:', result)
-	return result
+	return result || 'Sin contenido'
 }
