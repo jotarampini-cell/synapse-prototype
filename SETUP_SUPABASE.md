@@ -110,3 +110,4 @@ Código disponible en: https://github.com/jotarampini-cell/SynapseAI.git
 
 
 
+

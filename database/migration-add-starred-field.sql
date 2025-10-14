@@ -53,3 +53,4 @@ AND indexname = 'idx_tasks_starred';
 -- ALTER TABLE tasks DROP COLUMN IF EXISTS is_starred;
 -- =====================================================
 
+
