@@ -23,7 +23,8 @@ import {
 	Star,
 	Clock,
 	FolderOpen,
-	Brain
+	Brain,
+	FolderPlus
 } from "lucide-react"
 import { 
 	Collapsible,
@@ -392,6 +393,7 @@ export default function NotesPage() {
 								setCurrentView('editor')
 							}}
 							searchQuery={searchQuery}
+							viewMode={viewMode === 'grid' ? 'gallery' : 'list'}
 						/>
 					)}
 					
@@ -413,21 +415,47 @@ export default function NotesPage() {
 				{/* MobileBottomNav siempre visible */}
 				<MobileBottomNav />
 				
-				{/* FAB condicional */}
-				<NotesFabMenu
-					onCreateNote={() => {
-						if (currentView === 'folders') {
+				{/* FAB Izquierdo - Crear Carpeta (solo en vista folders) */}
+				{currentView === 'folders' && (
+					<Button
+						onClick={() => {
 							// Crear carpeta - manejado por FoldersGalleryView
-						} else {
+							console.log('Crear nueva carpeta')
+						}}
+						className="fixed bottom-20 left-4 h-14 w-14 rounded-full shadow-2xl shadow-primary/30 z-50 touch-target hover:scale-110 active:scale-95 transition-transform"
+						size="icon"
+					>
+						<FolderPlus className="h-6 w-6" />
+					</Button>
+				)}
+				
+				{/* FAB Derecho - Crear Nota (visible en folders y notes, oculto en editor) */}
+				{(currentView === 'folders' || currentView === 'notes') && (
+					<Button
+						onClick={() => {
 							// Crear nota
 							handleCreateNote('Nueva Nota', 'Contenido de la nota...')
-						}
-					}}
-					currentView={currentView}
-					onFilterChange={(filter) => setFilterBy(filter as any)}
-					onSortChange={(sort) => setSortBy(sort as any)}
-					onViewModeChange={(mode) => setViewMode(mode as any)}
-				/>
+						}}
+						className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl shadow-primary/30 z-50 touch-target hover:scale-110 active:scale-95 transition-transform"
+						size="icon"
+					>
+						<Plus className="h-6 w-6" />
+					</Button>
+				)}
+				
+				{/* FAB condicional - Solo chevron y acciones en vista notes */}
+				{currentView === 'notes' && (
+					<NotesFabMenu
+						onCreateNote={() => {
+							// Crear nota
+							handleCreateNote('Nueva Nota', 'Contenido de la nota...')
+						}}
+						currentView={currentView}
+						onFilterChange={(filter) => setFilterBy(filter as any)}
+						onSortChange={(sort) => setSortBy(sort as any)}
+						onViewModeChange={(mode) => setViewMode(mode as any)}
+					/>
+				)}
 
 				{/* AI Panel móvil */}
 				{aiPanelOpen && (

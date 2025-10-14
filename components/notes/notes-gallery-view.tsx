@@ -48,12 +48,14 @@ interface NotesGalleryViewProps {
 	folderId: string | null
 	onNoteSelect: (noteId: string) => void
 	searchQuery?: string
+	viewMode?: 'gallery' | 'list'
 }
 
 export function NotesGalleryView({ 
 	folderId, 
 	onNoteSelect,
-	searchQuery = ""
+	searchQuery = "",
+	viewMode = 'gallery'
 }: NotesGalleryViewProps) {
 	const [notes, setNotes] = useState<Note[]>([])
 	const [isLoading, setIsLoading] = useState(true)
@@ -231,22 +233,110 @@ export function NotesGalleryView({
 		)
 	}
 
+	// Renderizado condicional basado en viewMode
+	if (viewMode === 'list') {
+		return (
+			<div className="p-4 space-y-2">
+				{sortedNotes.map((note) => (
+					<Card 
+						key={note.id}
+						className="p-4 cursor-pointer hover:shadow-md transition-shadow h-20 flex items-center"
+						onClick={() => onNoteSelect(note.id)}
+					>
+						<div className="flex-1 min-w-0">
+							{/* Título en negrita */}
+							<h3 className="font-semibold text-base truncate mb-1">
+								{note.title}
+							</h3>
+							
+							{/* Preview del contenido (1 línea) */}
+							<p className="text-sm text-muted-foreground line-clamp-1">
+								{extractTextPreview(note.content)}
+							</p>
+							
+							{/* Fecha relativa abajo */}
+							<p className="text-xs text-muted-foreground mt-1">
+								{formatRelativeDate(note.updated_at)}
+							</p>
+						</div>
+						
+						{/* Menú opciones y badges */}
+						<div className="flex items-center gap-2 ml-3">
+							{/* Badges para estado */}
+							<div className="flex gap-1">
+								{note.is_pinned && (
+									<Badge variant="secondary" className="text-xs px-1 py-0">
+										Fijada
+									</Badge>
+								)}
+								{note.is_archived && (
+									<Badge variant="outline" className="text-xs px-1 py-0">
+										Archivada
+									</Badge>
+								)}
+							</div>
+							
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button 
+										variant="ghost" 
+										size="icon"
+										className="h-8 w-8"
+										onClick={(e) => e.stopPropagation()}
+									>
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem
+										onClick={() => handleTogglePin(note.id, note.is_pinned)}
+									>
+										{note.is_pinned ? (
+											<PinOff className="h-4 w-4 mr-2" />
+										) : (
+											<Pin className="h-4 w-4 mr-2" />
+										)}
+										{note.is_pinned ? 'Desfijar' : 'Fijar'}
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										onClick={() => handleToggleArchive(note.id, note.is_archived)}
+									>
+										{note.is_archived ? (
+											<ArchiveRestore className="h-4 w-4 mr-2" />
+										) : (
+											<Archive className="h-4 w-4 mr-2" />
+										)}
+										{note.is_archived ? 'Desarchivar' : 'Archivar'}
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem 
+										className="text-destructive"
+										onClick={() => handleDeleteNote(note.id)}
+									>
+										<Trash2 className="h-4 w-4 mr-2" />
+										Eliminar
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					</Card>
+				))}
+			</div>
+		)
+	}
+
+	// Vista galería (mejorada)
 	return (
 		<div className="p-4 grid grid-cols-2 gap-4">
 			{sortedNotes.map((note) => (
 				<Card 
 					key={note.id}
-					className="p-3 cursor-pointer hover:shadow-md transition-shadow"
+					className="p-3 cursor-pointer hover:shadow-md transition-shadow h-32 flex flex-col"
 					onClick={() => onNoteSelect(note.id)}
 				>
-					{/* Preview del contenido (3-4 líneas) */}
-					<div className="text-sm text-muted-foreground line-clamp-3 mb-2 min-h-[3rem]">
-						{extractTextPreview(note.content)}
-					</div>
-					
-					{/* Título fuera del preview */}
-					<div className="flex items-start justify-between mb-1">
-						<h3 className="font-semibold text-sm truncate flex-1">
+					{/* Título arriba */}
+					<div className="flex items-start justify-between mb-2">
+						<h3 className="font-semibold text-base truncate flex-1">
 							{note.title}
 						</h3>
 						
@@ -294,23 +384,30 @@ export function NotesGalleryView({
 						</DropdownMenu>
 					</div>
 					
-					{/* Fecha relativa */}
-					<p className="text-xs text-muted-foreground">
-						{formatRelativeDate(note.updated_at)}
-					</p>
+					{/* Preview del contenido (2 líneas máximo) */}
+					<div className="text-sm text-muted-foreground line-clamp-2 flex-1 mb-2">
+						{extractTextPreview(note.content)}
+					</div>
 					
-					{/* Badges para estado */}
-					<div className="flex gap-1 mt-2">
-						{note.is_pinned && (
-							<Badge variant="secondary" className="text-xs px-1 py-0">
-								Fijada
-							</Badge>
-						)}
-						{note.is_archived && (
-							<Badge variant="outline" className="text-xs px-1 py-0">
-								Archivada
-							</Badge>
-						)}
+					{/* Fecha relativa abajo izquierda */}
+					<div className="flex items-center justify-between">
+						<p className="text-xs text-muted-foreground">
+							{formatRelativeDate(note.updated_at)}
+						</p>
+						
+						{/* Badges para estado */}
+						<div className="flex gap-1">
+							{note.is_pinned && (
+								<Badge variant="secondary" className="text-xs px-1 py-0">
+									Fijada
+								</Badge>
+							)}
+							{note.is_archived && (
+								<Badge variant="outline" className="text-xs px-1 py-0">
+									Archivada
+								</Badge>
+							)}
+						</div>
 					</div>
 				</Card>
 			))}
