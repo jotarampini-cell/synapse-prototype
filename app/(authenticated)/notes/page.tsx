@@ -49,7 +49,7 @@ import { CommandPalette } from "@/components/command-palette"
 import { useCommandPalette } from "@/hooks/use-command-palette"
 import { log } from "@/lib/logger"
 import { createContent } from "@/app/actions/content"
-import { createDefaultFolders } from "@/app/actions/folders"
+import { createFolder, createDefaultFolders, getFolderTree } from "@/app/actions/folders"
 import { toast } from "sonner"
 // Nuevos componentes para UI móvil
 import { FoldersGalleryView } from "@/components/notes/folders-gallery-view"
@@ -250,6 +250,35 @@ export default function NotesPage() {
 		setSelectedNote(null) // Clear selected note when changing folders
 	}
 
+	// Función para obtener o crear carpeta "Notas" predeterminada
+	const getOrCreateDefaultNotesFolder = async (): Promise<string | null> => {
+		try {
+			// Buscar carpeta "Notas" existente
+			const result = await getFolderTree()
+			if (result.success && result.folders) {
+				const notesFolder = result.folders.find(folder => folder.name === 'Notas')
+				if (notesFolder) {
+					return notesFolder.id
+				}
+			}
+			
+			// Si no existe, crear carpeta "Notas"
+			const createResult = await createFolder({
+				name: 'Notas',
+				color: '#3b82f6'
+			})
+			
+			if (createResult.success && createResult.folderId) {
+				return createResult.folderId
+			}
+			
+			return null
+		} catch (error) {
+			console.error('Error getting/creating default notes folder:', error)
+			return null
+		}
+	}
+
 	// Handle note creation
 	const handleCreateNote = async (title: string, content: string) => {
 		try {
@@ -257,8 +286,16 @@ export default function NotesPage() {
 			formData.set('title', title)
 			formData.set('content', content)
 			formData.set('content_type', 'text')
-			if (selectedFolder) {
-				formData.set('folder_id', selectedFolder)
+			
+			// Usar carpeta seleccionada o crear/obtener carpeta "Notas" predeterminada
+			let folderId = selectedFolder
+			if (!folderId) {
+				// Buscar o crear carpeta "Notas" predeterminada
+				folderId = await getOrCreateDefaultNotesFolder()
+			}
+			
+			if (folderId) {
+				formData.set('folder_id', folderId)
 			}
 
 			const result = await createContent(formData)
@@ -418,9 +455,23 @@ export default function NotesPage() {
 				{/* FAB Izquierdo - Crear Carpeta (solo en vista folders) */}
 				{currentView === 'folders' && (
 					<Button
-						onClick={() => {
-							// Crear carpeta - manejado por FoldersGalleryView
-							console.log('Crear nueva carpeta')
+						onClick={async () => {
+							try {
+								const result = await createFolder({
+									name: 'Nueva Carpeta',
+									color: '#3b82f6'
+								})
+								
+								if (result.success) {
+									toast.success('Carpeta creada')
+									// Recargar carpetas si es necesario
+								} else {
+									toast.error('Error al crear la carpeta')
+								}
+							} catch (error) {
+								console.error('Error creating folder:', error)
+								toast.error('Error al crear la carpeta')
+							}
 						}}
 						className="fixed bottom-20 left-4 h-14 w-14 rounded-full shadow-2xl shadow-primary/30 z-50 touch-target hover:scale-110 active:scale-95 transition-transform"
 						size="icon"

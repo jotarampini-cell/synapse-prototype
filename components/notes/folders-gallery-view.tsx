@@ -57,47 +57,74 @@ export function FoldersGalleryView({
 	const loadFolders = async () => {
 		try {
 			setIsLoading(true)
-			// TEMPORAL: Usar datos mock hasta resolver problemas con Server Actions
-			console.log('Loading folders with mock data')
+			console.log('Loading folders with real data')
+			
+			// Usar datos reales
+			const result = await getFolderTree()
+			if (result.success && result.folders) {
+				// Convertir folders a FolderWithNotes agregando conteo de notas
+				const foldersWithNotes: FolderWithNotes[] = await Promise.all(
+					result.folders.map(async (folder) => {
+						try {
+							// Obtener contenido de la carpeta para contar notas
+							const contentResult = await getUserContents({
+								folder_id: folder.id,
+								limit: 100
+							})
+							
+							const notesCount = contentResult.success && contentResult.contents 
+								? contentResult.contents.length 
+								: 0
+							
+							const recentNotes = contentResult.success && contentResult.contents
+								? contentResult.contents.slice(0, 3).map(note => ({
+									id: note.id,
+									title: note.title,
+									updated_at: note.updated_at
+								}))
+								: []
+							
+							return {
+								...folder,
+								notesCount,
+								recentNotes
+							}
+						} catch (error) {
+							console.error(`Error loading notes for folder ${folder.id}:`, error)
+							return {
+								...folder,
+								notesCount: 0,
+								recentNotes: []
+							}
+						}
+					})
+				)
+				
+				setFolders(foldersWithNotes)
+			} else {
+				console.log('No folders found, using empty array')
+				setFolders([])
+			}
+		} catch (error) {
+			console.error('Error loading folders:', error)
+			toast.error('Error al cargar las carpetas')
+			// Fallback a datos mock en caso de error
 			const mockFolders: FolderWithNotes[] = [
 				{
 					id: '1',
 					user_id: 'user1',
-					name: 'Personal',
+					name: 'Notas',
 					parent_id: null,
 					color: '#3b82f6',
 					icon: 'folder',
 					position: 0,
 					created_at: new Date().toISOString(),
 					updated_at: new Date().toISOString(),
-					notesCount: 5,
-					recentNotes: [
-						{ id: '1', title: 'Nota personal 1', updated_at: new Date().toISOString() },
-						{ id: '2', title: 'Nota personal 2', updated_at: new Date().toISOString() },
-						{ id: '3', title: 'Nota personal 3', updated_at: new Date().toISOString() }
-					]
-				},
-				{
-					id: '2',
-					user_id: 'user1',
-					name: 'Trabajo',
-					parent_id: null,
-					color: '#10b981',
-					icon: 'folder',
-					position: 1,
-					created_at: new Date().toISOString(),
-					updated_at: new Date().toISOString(),
-					notesCount: 3,
-					recentNotes: [
-						{ id: '4', title: 'Reunión de equipo', updated_at: new Date().toISOString() },
-						{ id: '5', title: 'Proyecto nuevo', updated_at: new Date().toISOString() }
-					]
+					notesCount: 0,
+					recentNotes: []
 				}
 			]
 			setFolders(mockFolders)
-		} catch (error) {
-			console.error('Error loading folders:', error)
-			toast.error('Error al cargar las carpetas')
 		} finally {
 			setIsLoading(false)
 		}

@@ -87,8 +87,37 @@ export function NotesGalleryView({
 			setIsLoading(true)
 			console.log('Loading notes for folder:', folderId)
 			
-			// TEMPORAL: Usar datos mock hasta resolver problemas con Server Actions
-			console.log('Using mock data for notes')
+			// Usar datos reales
+			const result = await getUserContents({
+				folder_id: folderId,
+				limit: 100
+			})
+			
+			if (result.success && result.contents) {
+				// Convertir contenido a formato Note
+				const notes: Note[] = result.contents.map(content => ({
+					id: content.id,
+					title: content.title,
+					content: content.content,
+					content_type: content.content_type,
+					tags: content.tags || [],
+					created_at: content.created_at,
+					updated_at: content.updated_at,
+					folder_id: content.folder_id,
+					is_pinned: content.is_pinned || false,
+					is_archived: content.is_archived || false,
+					word_count: content.word_count || 0,
+					reading_time: content.reading_time || 1
+				}))
+				setNotes(notes)
+			} else {
+				console.log('No notes found for folder:', folderId)
+				setNotes([])
+			}
+		} catch (error) {
+			console.error('Error loading notes:', error)
+			toast.error('Error al cargar las notas')
+			// Fallback a datos mock en caso de error
 			const mockNotes: Note[] = [
 				{
 					id: '1',
@@ -97,59 +126,15 @@ export function NotesGalleryView({
 					content_type: 'text',
 					tags: [],
 					created_at: new Date().toISOString(),
-					updated_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 min ago
+					updated_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
 					folder_id: folderId,
 					is_pinned: false,
 					is_archived: false,
 					word_count: 20,
 					reading_time: 1
-				},
-				{
-					id: '2',
-					title: 'Nota de ejemplo 2',
-					content: 'Otra nota de ejemplo con más contenido para probar el preview en las tarjetas de la galería.',
-					content_type: 'text',
-					tags: [],
-					created_at: new Date().toISOString(),
-					updated_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-					folder_id: folderId,
-					is_pinned: true,
-					is_archived: false,
-					word_count: 25,
-					reading_time: 1
-				},
-				{
-					id: '3',
-					title: 'Nota de ejemplo 3',
-					content: 'Tercera nota de ejemplo para completar la vista de galería con múltiples elementos.',
-					content_type: 'text',
-					tags: [],
-					created_at: new Date().toISOString(),
-					updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-					folder_id: folderId,
-					is_pinned: false,
-					is_archived: false,
-					word_count: 18,
-					reading_time: 1
 				}
 			]
 			setNotes(mockNotes)
-			
-			// TODO: Restaurar cuando se resuelvan los problemas de Server Actions
-			// const result = await getUserContents({
-			// 	folder_id: folderId,
-			// 	limit: 100
-			// })
-			// 
-			// if (result.success && result.contents) {
-			// 	setNotes(result.contents)
-			// } else {
-			// 	setNotes([])
-			// }
-		} catch (error) {
-			console.error('Error loading notes:', error)
-			toast.error('Error al cargar las notas')
-			setNotes([])
 		} finally {
 			setIsLoading(false)
 		}
@@ -325,18 +310,18 @@ export function NotesGalleryView({
 		)
 	}
 
-	// Vista galería (mejorada)
+	// Vista galería (mejorada y más pequeña)
 	return (
-		<div className="p-4 grid grid-cols-2 gap-4">
+		<div className="p-3 grid grid-cols-2 gap-3">
 			{sortedNotes.map((note) => (
 				<Card 
 					key={note.id}
-					className="p-3 cursor-pointer hover:shadow-md transition-shadow h-32 flex flex-col"
+					className="p-2.5 cursor-pointer hover:shadow-sm transition-shadow h-24 flex flex-col overflow-hidden"
 					onClick={() => onNoteSelect(note.id)}
 				>
 					{/* Título arriba */}
-					<div className="flex items-start justify-between mb-2">
-						<h3 className="font-semibold text-base truncate flex-1">
+					<div className="flex items-start justify-between mb-1.5">
+						<h3 className="font-medium text-sm truncate flex-1 min-w-0">
 							{note.title}
 						</h3>
 						
@@ -345,7 +330,7 @@ export function NotesGalleryView({
 								<Button 
 									variant="ghost" 
 									size="icon"
-									className="h-6 w-6 ml-1"
+									className="h-5 w-5 ml-1 flex-shrink-0"
 									onClick={(e) => e.stopPropagation()}
 								>
 									<MoreHorizontal className="h-3 w-3" />
@@ -384,26 +369,26 @@ export function NotesGalleryView({
 						</DropdownMenu>
 					</div>
 					
-					{/* Preview del contenido (2 líneas máximo) */}
-					<div className="text-sm text-muted-foreground line-clamp-2 flex-1 mb-2">
+					{/* Preview del contenido (1 línea máximo) */}
+					<div className="text-xs text-muted-foreground line-clamp-1 flex-1 mb-1.5 min-w-0">
 						{extractTextPreview(note.content)}
 					</div>
 					
-					{/* Fecha relativa abajo izquierda */}
+					{/* Fecha relativa abajo */}
 					<div className="flex items-center justify-between">
-						<p className="text-xs text-muted-foreground">
+						<p className="text-xs text-muted-foreground truncate">
 							{formatRelativeDate(note.updated_at)}
 						</p>
 						
-						{/* Badges para estado */}
-						<div className="flex gap-1">
+						{/* Badges para estado - más pequeños */}
+						<div className="flex gap-0.5 flex-shrink-0">
 							{note.is_pinned && (
-								<Badge variant="secondary" className="text-xs px-1 py-0">
+								<Badge variant="secondary" className="text-xs px-1 py-0 h-4">
 									Fijada
 								</Badge>
 							)}
 							{note.is_archived && (
-								<Badge variant="outline" className="text-xs px-1 py-0">
+								<Badge variant="outline" className="text-xs px-1 py-0 h-4">
 									Archivada
 								</Badge>
 							)}
