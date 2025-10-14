@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
-import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { 
