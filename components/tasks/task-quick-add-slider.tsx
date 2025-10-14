@@ -72,7 +72,8 @@ export function TaskQuickAddSlider({
 				title: title.trim(),
 				description: description.trim() || undefined,
 				due_date: dueDate ? dueDate.toISOString().split('T')[0] : undefined,
-				list_id: listId
+				list_id: listId,
+				is_starred: isStarred
 			})
 
 			if (result.success) {
@@ -92,6 +93,14 @@ export function TaskQuickAddSlider({
 			handleSave()
 		} else if (e.key === "Escape") {
 			onClose()
+		} else if (e.key === "Tab" && showDescription && e.target === inputRef.current) {
+			// Si presiona Tab en el input principal y hay descripción, ir al textarea
+			e.preventDefault()
+			textareaRef.current?.focus()
+		} else if (e.key === "Tab" && e.shiftKey && e.target === textareaRef.current) {
+			// Si presiona Shift+Tab en el textarea, volver al input principal
+			e.preventDefault()
+			inputRef.current?.focus()
 		}
 	}
 
@@ -134,8 +143,14 @@ export function TaskQuickAddSlider({
 							value={title}
 							onChange={(e) => setTitle(e.target.value)}
 							onKeyDown={handleKeyDown}
-							className="text-base border-0 shadow-none focus-visible:ring-0 px-0"
+							className="text-lg border-0 shadow-none focus-visible:ring-0 px-0 py-3 font-medium"
 							disabled={isSaving}
+							autoComplete="off"
+							spellCheck="false"
+							style={{
+								fontSize: '18px', // Tamaño más grande para mejor usabilidad móvil
+								lineHeight: '1.4'
+							}}
 						/>
 					</div>
 
@@ -148,8 +163,14 @@ export function TaskQuickAddSlider({
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
 								onKeyDown={handleKeyDown}
-								className="min-h-[80px] border-0 shadow-none focus-visible:ring-0 px-0 resize-none"
+								className="min-h-[100px] border-0 shadow-none focus-visible:ring-0 px-0 resize-none text-base"
 								disabled={isSaving}
+								autoComplete="off"
+								spellCheck="false"
+								style={{
+									fontSize: '16px', // Tamaño estándar para mejor legibilidad
+									lineHeight: '1.5'
+								}}
 							/>
 						</div>
 					)}

@@ -19,6 +19,7 @@ import { TaskDetailsPanel } from "./task-details-panel"
 import { SortableTaskItem } from "./sortable-task-item"
 import { TaskDragOverlay } from "./drag-overlay"
 import { KeyboardShortcutsHelp } from "./keyboard-shortcuts-help"
+import { TaskCompletionCelebration } from "./task-completion-celebration"
 import { 
 	getTasks, 
 	createTask,
@@ -69,6 +70,7 @@ export function TaskList({ selectedList, onTasksChange }: TaskListProps) {
 	const [selectedTaskIndex, setSelectedTaskIndex] = useState<number>(-1)
 	const [isAutoSaving, setIsAutoSaving] = useState(false)
 	const [isTyping, setIsTyping] = useState(false)
+	const [showCelebration, setShowCelebration] = useState(false)
 	const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const inputRef = useRef<HTMLInputElement>(null)
 
@@ -162,6 +164,16 @@ export function TaskList({ selectedList, onTasksChange }: TaskListProps) {
 	const mainTasks = filteredAndSortedTasks.filter(task => !task.parent_task_id)
 	const completedTasks = filteredAndSortedTasks.filter(task => task.status === "completed" && !task.parent_task_id)
 	const pendingTasks = filteredAndSortedTasks.filter(task => task.status !== "completed" && !task.parent_task_id)
+	
+	// Detectar cuando todas las tareas están completadas
+	const allTasksCompleted = mainTasks.length > 0 && pendingTasks.length === 0 && completedTasks.length > 0
+	
+	// Mostrar celebración cuando se completen todas las tareas
+	useEffect(() => {
+		if (allTasksCompleted && !showCelebration) {
+			setShowCelebration(true)
+		}
+	}, [allTasksCompleted, showCelebration])
 
 	// Manejar agregar nueva tarea
 	const handleAddTask = async () => {
@@ -450,6 +462,12 @@ export function TaskList({ selectedList, onTasksChange }: TaskListProps) {
 			<DragOverlay>
 				{activeTask ? <TaskDragOverlay activeTask={activeTask} /> : null}
 			</DragOverlay>
+
+			{/* Celebración de completado */}
+			<TaskCompletionCelebration
+				show={showCelebration}
+				onAnimationComplete={() => setShowCelebration(false)}
+			/>
 		</DndContext>
 	)
 }

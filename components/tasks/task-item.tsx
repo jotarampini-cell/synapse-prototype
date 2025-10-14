@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import "./task-animations.css"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
@@ -175,29 +176,31 @@ export function TaskItem({
 				</div>
 			)}
 
-			{/* Checkbox personalizado con animación */}
+			{/* Checkbox circular con animación pop */}
 			<div 
-				className="relative flex-shrink-0 h-5 w-5 cursor-pointer"
+				className="relative flex-shrink-0 h-6 w-6 cursor-pointer"
 				onClick={handleToggleTask}
 			>
 				<div 
 					className={cn(
-						"relative w-full h-full rounded border-2 transition-all duration-300 ease-in-out",
+						"relative w-full h-full rounded-full border-2 transition-all duration-300 ease-in-out",
 						isCompleted 
-							? 'bg-green-500 border-green-500 scale-110 shadow-lg shadow-green-500/30' 
-							: 'bg-background border-muted-foreground hover:border-primary hover:scale-105 active:scale-110',
-						isLoading && 'opacity-50 cursor-not-allowed',
-						isCompleted && 'animate-pulse'
+							? 'bg-green-500 border-green-500 scale-125 shadow-lg shadow-green-500/40 animate-bounce' 
+							: 'bg-background border-muted-foreground hover:border-primary hover:scale-110 active:scale-125',
+						isLoading && 'opacity-50 cursor-not-allowed'
 					)}
 				>
-					{/* Checkmark animado */}
+					{/* Checkmark animado con pop */}
 					{isCompleted && (
 						<div className="absolute inset-0 flex items-center justify-center">
 							<svg 
-								className="w-3 h-3 text-white animate-in zoom-in-50 duration-200" 
+								className="w-4 h-4 text-white animate-in zoom-in-75 duration-300 ease-out" 
 								fill="none" 
 								stroke="currentColor" 
 								viewBox="0 0 24 24"
+								style={{
+									animation: 'checkmarkPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)'
+								}}
 							>
 								<path 
 									strokeLinecap="round" 
@@ -209,11 +212,19 @@ export function TaskItem({
 						</div>
 					)}
 					
-					{/* Efecto de ripple al hacer clic */}
+					{/* Efecto de ripple circular */}
 					{isCompleted && (
-						<div className="absolute inset-0 rounded bg-green-400 animate-in fade-in-0 zoom-in-75 duration-300" />
+						<div className="absolute inset-0 rounded-full bg-green-400 animate-in fade-in-0 zoom-in-100 duration-400" />
 					)}
 				</div>
+				
+				{/* Efecto de ondas concéntricas al completar */}
+				{isCompleted && (
+					<>
+						<div className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping opacity-75" />
+						<div className="absolute inset-0 rounded-full border border-green-300 animate-ping opacity-50" style={{ animationDelay: '0.1s' }} />
+					</>
+				)}
 			</div>
 
 			{/* Contenido de la tarea - Minimalista */}

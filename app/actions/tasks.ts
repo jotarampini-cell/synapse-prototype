@@ -64,6 +64,7 @@ export async function createTask(data: {
 	list_id?: string
 	parent_task_id?: string
 	notes?: string
+	is_starred?: boolean
 }): Promise<{ success: boolean; task?: Task; error?: string }> {
 	try {
 		const supabase = await createClient()
@@ -153,7 +154,8 @@ export async function createTask(data: {
 				list_id: listId,
 				parent_task_id: data.parent_task_id,
 				"position": nextPosition,
-				notes: data.notes
+				notes: data.notes,
+				is_starred: data.is_starred || false
 			})
 			.select()
 			.single()

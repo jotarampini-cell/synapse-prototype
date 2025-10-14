@@ -21,6 +21,7 @@ import { TaskSidebarMenu } from "@/components/tasks/task-sidebar-menu"
 import { TaskSortMenu } from "@/components/tasks/task-sort-menu"
 import { TaskQuickAddSlider } from "@/components/tasks/task-quick-add-slider"
 import { StarredTasksView } from "@/components/tasks/starred-tasks-view"
+import { TaskBottomBar } from "@/components/tasks/task-bottom-bar"
 import { AppFooter } from "@/components/app-footer"
 import { 
 	Menu, 
@@ -228,21 +229,11 @@ export default function TareasPage() {
 	if (isMobile) {
 		return (
 			<div className="h-screen flex flex-col bg-gradient-to-br from-blue-50/30 via-background to-purple-50/20 overflow-x-hidden">
-				{/* Header con estrella, título y + Nueva lista */}
+				{/* Header con título y + Nueva lista */}
 				<header className="h-16 px-4 flex items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl safe-area-top">
-					<div className="flex items-center gap-3">
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => setIsSidebarOpen(true)}
-							className="h-10 w-10"
-						>
-							<Menu className="h-5 w-5" />
-						</Button>
-						<div className="flex items-center gap-2">
-							<Star className="h-5 w-5 text-yellow-500" />
-							<h1 className="text-xl font-bold">Tareas</h1>
-						</div>
+					<div className="flex items-center gap-2">
+						<Star className="h-5 w-5 text-yellow-500" />
+						<h1 className="text-xl font-bold">Tareas</h1>
 					</div>
 					<Button
 						variant="ghost"
@@ -267,7 +258,7 @@ export default function TareasPage() {
 				</div>
 
 				{/* Contenido principal */}
-				<main className="flex-1 overflow-y-auto overflow-x-hidden pb-20">
+				<main className="flex-1 overflow-y-auto overflow-x-hidden pb-32">
 					<div className="p-4">
 						{/* Vista de tareas destacadas o lista normal */}
 						{showStarred ? (
@@ -285,41 +276,19 @@ export default function TareasPage() {
 					</div>
 				</main>
 
-				{/* Barra inferior fija */}
-				<div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-background/80 backdrop-blur-xl border-t border-border/50">
-					<div className="flex items-center justify-between">
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => setIsSidebarOpen(true)}
-							className="h-12 w-12 rounded-full"
-						>
-							<Menu className="h-6 w-6" />
-						</Button>
-						
-						<Button
-							onClick={() => setIsAddingTask(true)}
-							className="h-14 w-14 rounded-full shadow-2xl shadow-primary/30"
-							size="icon"
-						>
-							<Plus className="h-6 w-6" />
-						</Button>
-						
-						<TaskSortMenu
-							sortField={sortField}
-							sortOrder={sortOrder}
-							onSortChange={(field, order) => {
-								setSortField(field)
-								setSortOrder(order)
-							}}
-							showCompleted={showCompleted}
-							onToggleCompleted={() => setShowCompleted(!showCompleted)}
-						/>
-					</div>
-				</div>
-
-				{/* Bottom Navigation */}
-				<MobileBottomNav />
+				{/* Barra inferior integrada con navegación */}
+				<TaskBottomBar
+					onAddTask={() => setIsAddingTask(true)}
+					onOpenSidebar={() => setIsSidebarOpen(true)}
+					sortField={sortField}
+					sortOrder={sortOrder}
+					onSortChange={(field, order) => {
+						setSortField(field)
+						setSortOrder(order)
+					}}
+					showCompleted={showCompleted}
+					onToggleCompleted={() => setShowCompleted(!showCompleted)}
+				/>
 				
 				{/* Footer móvil */}
 				<AppFooter />
@@ -349,21 +318,11 @@ export default function TareasPage() {
 	// Layout desktop
 	return (
 		<div className="h-screen flex flex-col bg-gradient-to-br from-blue-50/30 via-background to-purple-50/20">
-			{/* Header con estrella, título y + Nueva lista */}
+			{/* Header con título y + Nueva lista */}
 			<header className="h-16 px-6 flex items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl">
-				<div className="flex items-center gap-4">
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={() => setIsSidebarOpen(true)}
-						className="h-10 w-10"
-					>
-						<Menu className="h-5 w-5" />
-					</Button>
-					<div className="flex items-center gap-2">
-						<Star className="h-6 w-6 text-yellow-500" />
-						<h1 className="text-2xl font-bold">Tareas</h1>
-					</div>
+				<div className="flex items-center gap-2">
+					<Star className="h-6 w-6 text-yellow-500" />
+					<h1 className="text-2xl font-bold">Tareas</h1>
 				</div>
 				<Button
 					variant="ghost"
