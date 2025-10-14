@@ -9,7 +9,8 @@ import {
 	FolderPlus,
 	MoreHorizontal,
 	Edit,
-	Trash2
+	Trash2,
+	GripVertical
 } from "lucide-react"
 import { 
 	DropdownMenu, 
@@ -23,11 +24,31 @@ import {
 	createFolder, 
 	updateFolder, 
 	deleteFolder,
+	reorderFolders,
 	type Folder as FolderType 
 } from "@/app/actions/folders"
 import { getUserContents } from "@/app/actions/content"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import {
+	DndContext,
+	closestCenter,
+	KeyboardSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
+	DragEndEvent,
+} from '@dnd-kit/core'
+import {
+	arrayMove,
+	SortableContext,
+	sortableKeyboardCoordinates,
+	verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import {
+	useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface FoldersGalleryViewProps {
 	onFolderSelect: (folderId: string | null) => void
@@ -43,12 +64,139 @@ interface FolderWithNotes extends FolderType {
 	}>
 }
 
+// Componente de carpeta arrastrable
+function SortableFolderItem({ 
+	folder, 
+	onFolderSelect, 
+	onEditFolder, 
+	onDeleteFolder 
+}: {
+	folder: FolderWithNotes
+	onFolderSelect: (folderId: string | null) => void
+	onEditFolder: (folder: FolderType) => void
+	onDeleteFolder: (folderId: string) => void
+}) {
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id: folder.id })
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+		opacity: isDragging ? 0.5 : 1,
+	}
+
+	return (
+		<div
+			ref={setNodeRef}
+			style={style}
+			className={cn(
+				"relative group",
+				isDragging && "z-50"
+			)}
+		>
+			<Card
+				className="p-4 cursor-pointer hover:shadow-md transition-all duration-200 bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card"
+				onClick={() => onFolderSelect(folder.id)}
+			>
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-3 flex-1 min-w-0">
+						{/* Handle de arrastre */}
+						<div
+							{...attributes}
+							{...listeners}
+							className="p-1 cursor-grab active:cursor-grabbing hover:bg-muted/50 rounded transition-colors"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<GripVertical className="h-4 w-4 text-muted-foreground" />
+						</div>
+
+						{/* Icono de carpeta */}
+						<div 
+							className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+							style={{ backgroundColor: `${folder.color}20` }}
+						>
+							<Folder 
+								className="h-5 w-5" 
+								style={{ color: folder.color }}
+							/>
+						</div>
+
+						{/* Información de la carpeta */}
+						<div className="flex-1 min-w-0">
+							<h3 className="font-medium text-sm truncate">
+								{folder.name}
+							</h3>
+							<p className="text-xs text-muted-foreground">
+								{folder.notesCount} {folder.notesCount === 1 ? 'nota' : 'notas'}
+							</p>
+						</div>
+					</div>
+
+					{/* Menú de opciones */}
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-6 w-6 flex-shrink-0"
+								onClick={(e) => e.stopPropagation()}
+							>
+								<MoreHorizontal className="h-3 w-3" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							<DropdownMenuItem
+								onClick={(e) => {
+									e.stopPropagation()
+									onEditFolder(folder)
+								}}
+							>
+								<Edit className="h-4 w-4 mr-2" />
+								Editar
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								className="text-destructive"
+								onClick={(e) => {
+									e.stopPropagation()
+									onDeleteFolder(folder.id)
+								}}
+							>
+								<Trash2 className="h-4 w-4 mr-2" />
+								Eliminar
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+			</Card>
+		</div>
+	)
+}
+
 export function FoldersGalleryView({ 
 	onFolderSelect, 
 	onCreateFolder 
 }: FoldersGalleryViewProps) {
 	const [folders, setFolders] = useState<FolderWithNotes[]>([])
 	const [isLoading, setIsLoading] = useState(true)
+
+	// Sensores para drag and drop
+	const sensors = useSensors(
+		useSensor(PointerSensor, {
+			activationConstraint: {
+				distance: 8,
+			},
+		}),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		})
+	)
 
 	useEffect(() => {
 		loadFolders()
@@ -162,6 +310,38 @@ export function FoldersGalleryView({
 		}
 	}
 
+	const handleDragEnd = async (event: DragEndEvent) => {
+		const { active, over } = event
+
+		if (over && active.id !== over.id) {
+			const oldIndex = folders.findIndex(folder => folder.id === active.id)
+			const newIndex = folders.findIndex(folder => folder.id === over.id)
+
+			// Actualizar estado local inmediatamente para feedback visual
+			const newFolders = arrayMove(folders, oldIndex, newIndex)
+			setFolders(newFolders)
+
+			// Actualizar en la base de datos
+			try {
+				const folderIds = newFolders.map(folder => folder.id)
+				const result = await reorderFolders(folderIds)
+				
+				if (!result.success) {
+					// Revertir cambios si falla
+					setFolders(folders)
+					toast.error(result.error || 'Error al reordenar carpetas')
+				} else {
+					toast.success('Orden de carpetas actualizado')
+				}
+			} catch (error) {
+				// Revertir cambios si falla
+				setFolders(folders)
+				console.error('Error reordering folders:', error)
+				toast.error('Error al reordenar carpetas')
+			}
+		}
+	}
+
 	if (isLoading) {
 		return (
 			<div className="p-4 grid grid-cols-2 gap-4">
@@ -176,69 +356,57 @@ export function FoldersGalleryView({
 		)
 	}
 
+	// Estado vacío
+	if (folders.length === 0) {
+		return (
+			<div className="p-4 flex flex-col items-center justify-center h-full min-h-[400px]">
+				<Folder className="w-16 h-16 text-muted-foreground/30 mb-4" />
+				<p className="text-lg font-medium text-muted-foreground mb-2">
+					No tienes carpetas
+				</p>
+				<p className="text-sm text-muted-foreground/70 mb-4 text-center">
+					Crea tu primera carpeta para organizar tus notas
+				</p>
+				<Button
+					onClick={onCreateFolder}
+					variant="outline"
+					size="sm"
+				>
+					<FolderPlus className="h-4 w-4 mr-2" />
+					Crear primera carpeta
+				</Button>
+			</div>
+		)
+	}
+
 	return (
 		<div className="p-4">
-			{/* Lista de carpetas */}
-			<div className="space-y-2">
-				{folders.map((folder) => (
-					<div 
-						key={folder.id}
-						className="flex items-center justify-between p-4 bg-card rounded-lg border cursor-pointer hover:bg-accent transition-colors"
-						onClick={() => onFolderSelect(folder.id)}
-					>
-						<div className="flex items-center gap-3">
-							<Folder 
-								className="h-5 w-5" 
-								style={{ color: folder.color }}
-							/>
-							<div>
-								<h3 className="font-semibold text-base">
-									{folder.name}
-								</h3>
-								<p className="text-sm text-muted-foreground">
-									{folder.notesCount} notas
-								</p>
-							</div>
-						</div>
-						
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button 
-									variant="ghost" 
-									size="icon"
-									className="h-8 w-8"
-									onClick={(e) => e.stopPropagation()}
-								>
-									<MoreHorizontal className="h-4 w-4" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								<DropdownMenuItem>
-									<Edit className="h-4 w-4 mr-2" />
-									Renombrar
-								</DropdownMenuItem>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem 
-									className="text-destructive"
-									onClick={() => handleDeleteFolder(folder.id)}
-								>
-									<Trash2 className="h-4 w-4 mr-2" />
-									Eliminar
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</div>
-				))}
-			</div>
-			
-			{/* FAB para crear carpeta */}
-			<Button
-				onClick={handleCreateFolder}
-				className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl shadow-primary/30 z-50 touch-target hover:scale-110 active:scale-95 transition-transform"
-				size="icon"
+			{/* Lista de carpetas con drag and drop */}
+			<DndContext
+				sensors={sensors}
+				collisionDetection={closestCenter}
+				onDragEnd={handleDragEnd}
 			>
-				<FolderPlus className="h-6 w-6" />
-			</Button>
+				<SortableContext
+					items={folders.map(f => f.id)}
+					strategy={verticalListSortingStrategy}
+				>
+					<div className="space-y-2">
+						{folders.map((folder) => (
+							<SortableFolderItem
+								key={folder.id}
+								folder={folder}
+								onFolderSelect={onFolderSelect}
+								onEditFolder={(folder) => {
+									// TODO: Implementar edición de carpeta
+									toast.info('Edición de carpeta próximamente')
+								}}
+								onDeleteFolder={handleDeleteFolder}
+							/>
+						))}
+					</div>
+				</SortableContext>
+			</DndContext>
 		</div>
 	)
 }

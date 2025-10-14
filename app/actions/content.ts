@@ -695,6 +695,77 @@ export async function createContent(formData: FormData) {
 	}
 }
 
+// Función específica para crear notas rápidas (acepta objeto JavaScript)
+export async function createQuickNote(data: {
+	title: string
+	content: string
+	folder_id?: string | null
+}) {
+	const supabase = await createClient()
+	
+	const { data: { user } } = await supabase.auth.getUser()
+	
+	if (!user) {
+		return { success: false, error: 'Usuario no autenticado' }
+	}
+
+	try {
+		// Asegurar que el perfil del usuario existe
+		await ensureUserProfile(supabase, user)
+
+		// Crear el contenido básico
+		const { data: content, error: contentError } = await supabase
+			.from('contents')
+			.insert({
+				user_id: user.id,
+				title: data.title,
+				content: data.content,
+				content_type: 'text',
+				folder_id: data.folder_id,
+				is_pinned: false,
+				is_archived: false
+			})
+			.select()
+			.single()
+
+		if (contentError) {
+			console.error('Error creating content:', contentError)
+			return { success: false, error: 'Error al crear la nota' }
+		}
+
+		// Generar embedding y resumen en background
+		try {
+			const embedding = await generateEmbedding(data.content)
+			const summary = await generateSummary(data.content)
+			
+			await supabase
+				.from('contents')
+				.update({
+					embedding: embedding,
+					summary: summary
+				})
+				.eq('id', content.id)
+		} catch (aiError) {
+			console.warn('Error generating AI features:', aiError)
+			// No fallar la creación por errores de AI
+		}
+
+		revalidatePath('/notes')
+		
+		return { 
+			success: true, 
+			content,
+			message: 'Nota creada exitosamente'
+		}
+	} catch (error) {
+		console.error('Error creating quick note:', error)
+		return { 
+			success: false, 
+			error: error instanceof Error ? error.message : 'Error al crear la nota'
+		}
+	}
+}
+
 // Función getUserContents
 export async function getUserContents(params?: { folder_id?: string | null; limit?: number }) {
 	const supabase = await createClient()
@@ -851,6 +922,102 @@ export async function createAudioAttachment(data: {
 	} catch (error) {
 		console.error('Error in createAudioAttachment:', error)
 		return { success: false, error: 'Error interno del servidor' }
+	}
+}
+
+// =====================================================
+// ACCIONES DE PIN Y ARCHIVE
+// =====================================================
+
+export async function togglePinContent(contentId: string) {
+	const supabase = await createClient()
+	
+	const { data: { user } } = await supabase.auth.getUser()
+	
+	if (!user) {
+		throw new Error('Usuario no autenticado')
+	}
+
+	try {
+		// Obtener el estado actual de is_pinned
+		const { data: content, error: fetchError } = await supabase
+			.from('contents')
+			.select('is_pinned')
+			.eq('id', contentId)
+			.eq('user_id', user.id)
+			.single()
+
+		if (fetchError || !content) {
+			throw new Error('Contenido no encontrado')
+		}
+
+		// Toggle el estado de is_pinned
+		const { error: updateError } = await supabase
+			.from('contents')
+			.update({ is_pinned: !content.is_pinned })
+			.eq('id', contentId)
+			.eq('user_id', user.id)
+
+		if (updateError) {
+			throw new Error('Error al actualizar el estado de fijado')
+		}
+
+		revalidatePath('/notes')
+		
+		return { 
+			success: true, 
+			is_pinned: !content.is_pinned,
+			message: !content.is_pinned ? 'Nota fijada' : 'Nota desfijada'
+		}
+	} catch (error) {
+		console.error('Error toggling pin:', error)
+		return { success: false, error: 'Error al actualizar el estado de fijado' }
+	}
+}
+
+export async function toggleArchiveContent(contentId: string) {
+	const supabase = await createClient()
+	
+	const { data: { user } } = await supabase.auth.getUser()
+	
+	if (!user) {
+		throw new Error('Usuario no autenticado')
+	}
+
+	try {
+		// Obtener el estado actual de is_archived
+		const { data: content, error: fetchError } = await supabase
+			.from('contents')
+			.select('is_archived')
+			.eq('id', contentId)
+			.eq('user_id', user.id)
+			.single()
+
+		if (fetchError || !content) {
+			throw new Error('Contenido no encontrado')
+		}
+
+		// Toggle el estado de is_archived
+		const { error: updateError } = await supabase
+			.from('contents')
+			.update({ is_archived: !content.is_archived })
+			.eq('id', contentId)
+			.eq('user_id', user.id)
+
+		if (updateError) {
+			throw new Error('Error al actualizar el estado de archivado')
+		}
+
+		revalidatePath('/notes')
+		
+		return { 
+			success: true, 
+			is_archived: !content.is_archived,
+			message: !content.is_archived ? 'Nota archivada' : 'Nota desarchivada'
+		}
+	} catch (error) {
+		console.error('Error toggling archive:', error)
+		return { success: false, error: 'Error al actualizar el estado de archivado' }
 	}
 }
 

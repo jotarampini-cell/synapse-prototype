@@ -882,3 +882,66 @@ export async function resetToDefaultFolders() {
 		throw new Error('Error al restablecer carpetas predeterminadas')
 	}
 }
+
+// =====================================================
+// REORDENAMIENTO DE CARPETAS
+// =====================================================
+
+export async function reorderFolders(folderIds: string[]) {
+	const supabase = await createClient()
+	
+	const { data: { user } } = await supabase.auth.getUser()
+	
+	if (!user) {
+		throw new Error('Usuario no autenticado')
+	}
+
+	try {
+		// Actualizar las posiciones de las carpetas en batch
+		const updates = folderIds.map((folderId, index) => ({
+			id: folderId,
+			position: index + 1
+		}))
+
+		// Verificar que todas las carpetas pertenecen al usuario
+		const { data: userFolders, error: fetchError } = await supabase
+			.from('folders')
+			.select('id')
+			.eq('user_id', user.id)
+			.in('id', folderIds)
+
+		if (fetchError) {
+			throw new Error('Error al verificar carpetas')
+		}
+
+		if (userFolders.length !== folderIds.length) {
+			throw new Error('Algunas carpetas no pertenecen al usuario')
+		}
+
+		// Actualizar posiciones una por una
+		for (const update of updates) {
+			const { error: updateError } = await supabase
+				.from('folders')
+				.update({ position: update.position })
+				.eq('id', update.id)
+				.eq('user_id', user.id)
+
+			if (updateError) {
+				throw new Error(`Error al actualizar posición de carpeta ${update.id}`)
+			}
+		}
+
+		revalidatePath('/notes')
+		
+		return { 
+			success: true, 
+			message: 'Orden de carpetas actualizado'
+		}
+	} catch (error) {
+		console.error('Error reordering folders:', error)
+		return { 
+			success: false, 
+			error: error instanceof Error ? error.message : 'Error al reordenar carpetas'
+		}
+	}
+}

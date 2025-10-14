@@ -25,7 +25,9 @@ import {
 import { 
 	getUserContents, 
 	updateContent, 
-	deleteContent 
+	deleteContent,
+	togglePinContent,
+	toggleArchiveContent
 } from "@/app/actions/content"
 import { formatRelativeDate, extractTextPreview } from "@/lib/date-grouping"
 import { toast } from "sonner"
@@ -53,13 +55,19 @@ interface NotesGalleryViewProps {
 	onNoteSelect: (noteId: string) => void
 	searchQuery?: string
 	viewMode?: 'gallery' | 'list'
+	filterBy?: 'all' | 'pinned' | 'archived'
+	sortBy?: 'updated_at' | 'created_at' | 'title'
+	onCreateNote?: (folderId: string | null) => void
 }
 
 export function NotesGalleryView({ 
 	folderId, 
 	onNoteSelect,
 	searchQuery = "",
-	viewMode = 'gallery'
+	viewMode = 'gallery',
+	filterBy = 'all',
+	sortBy = 'updated_at',
+	onCreateNote
 }: NotesGalleryViewProps) {
 	const [notes, setNotes] = useState<Note[]>([])
 	const [isLoading, setIsLoading] = useState(true)
@@ -80,11 +88,26 @@ export function NotesGalleryView({
 			)
 		}
 		
-		// Ordenar por fecha de actualización (más recientes primero)
-		return filtered.sort((a, b) => 
-			new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-		)
-	}, [notes, searchQuery])
+		// Filtrar por estado (pin/archive)
+		if (filterBy === 'pinned') {
+			filtered = filtered.filter(note => note.is_pinned)
+		} else if (filterBy === 'archived') {
+			filtered = filtered.filter(note => note.is_archived)
+		}
+		
+		// Ordenar según sortBy
+		return filtered.sort((a, b) => {
+			switch (sortBy) {
+				case 'title':
+					return a.title.localeCompare(b.title)
+				case 'created_at':
+					return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+				case 'updated_at':
+				default:
+					return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+			}
+		})
+	}, [notes, searchQuery, filterBy, sortBy])
 
 	const loadNotes = async () => {
 		try {
@@ -134,17 +157,17 @@ export function NotesGalleryView({
 
 	const handleTogglePin = async (noteId: string, currentPin: boolean) => {
 		try {
-			const result = await updateContent(noteId, {
-				is_pinned: !currentPin
-			})
+			const result = await togglePinContent(noteId)
 			
 			if (result.success) {
 				setNotes(prev => prev.map(note => 
 					note.id === noteId 
-						? { ...note, is_pinned: !currentPin }
+						? { ...note, is_pinned: result.is_pinned }
 						: note
 				))
-				toast.success(currentPin ? 'Nota desfijada' : 'Nota fijada')
+				toast.success(result.message)
+			} else {
+				toast.error(result.error || 'Error al actualizar la nota')
 			}
 		} catch (error) {
 			console.error('Error toggling pin:', error)
@@ -154,17 +177,17 @@ export function NotesGalleryView({
 
 	const handleToggleArchive = async (noteId: string, currentArchive: boolean) => {
 		try {
-			const result = await updateContent(noteId, {
-				is_archived: !currentArchive
-			})
+			const result = await toggleArchiveContent(noteId)
 			
 			if (result.success) {
 				setNotes(prev => prev.map(note => 
 					note.id === noteId 
-						? { ...note, is_archived: !currentArchive }
+						? { ...note, is_archived: result.is_archived }
 						: note
 				))
-				toast.success(currentArchive ? 'Nota desarchivada' : 'Nota archivada')
+				toast.success(result.message)
+			} else {
+				toast.error(result.error || 'Error al actualizar la nota')
 			}
 		} catch (error) {
 			console.error('Error toggling archive:', error)
@@ -213,8 +236,26 @@ export function NotesGalleryView({
 			)
 		}
 		
-		// Si no hay búsqueda, mostrar notas de ejemplo
-		return <SampleNotes folderId={folderId} onNoteSelect={onNoteSelect} viewMode={viewMode} />
+		// Si no hay búsqueda, mostrar mensaje de estado vacío mejorado
+		return (
+			<div className="p-8 text-center">
+				<FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
+				<p className="text-lg font-medium text-muted-foreground mb-2">
+					No tienes notas
+				</p>
+				<p className="text-sm text-muted-foreground/70 mb-4">
+					{folderId ? 'No hay notas en esta carpeta' : 'Crea tu primera nota para comenzar'}
+				</p>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={() => onCreateNote?.(folderId)}
+					className="mt-2"
+				>
+					Crear primera nota
+				</Button>
+			</div>
+		)
 	}
 
 	// Renderizado condicional basado en viewMode

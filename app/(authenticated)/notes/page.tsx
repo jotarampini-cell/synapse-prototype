@@ -56,6 +56,8 @@ import { FoldersGalleryView } from "@/components/notes/folders-gallery-view"
 import { NotesGalleryView } from "@/components/notes/notes-gallery-view"
 import { HiddenSearchBar } from "@/components/notes/hidden-search-bar"
 import { NotesFabMenu } from "@/components/notes/notes-fab-menu"
+import { CreateFolderModal } from "@/components/notes/create-folder-modal"
+import { QuickNoteModal } from "@/components/notes/quick-note-modal"
 
 // interface Note {
 // 	id: string
@@ -107,6 +109,10 @@ export default function NotesPage() {
 	// Mobile navigation state
 	const [currentView, setCurrentView] = useState<'folders' | 'notes' | 'editor'>('folders')
 	const [selectedFolderName, setSelectedFolderName] = useState<string>('')
+	
+	// Modal states
+	const [createFolderModalOpen, setCreateFolderModalOpen] = useState(false)
+	const [quickNoteModalOpen, setQuickNoteModalOpen] = useState(false)
 	
 	// Mobile detection usando hook personalizado
 	const { isMobile, isLoading: isMobileLoading } = useMobileDetection()
@@ -376,7 +382,7 @@ export default function NotesPage() {
 	if (isMobile) {
 		console.log('Mobile layout - currentView:', currentView, 'viewMode:', viewMode, 'selectedFolder:', selectedFolder)
 		return (
-			<div className="h-screen flex flex-col bg-background">
+			<div key="mobile-view" className="h-screen flex flex-col bg-background">
 				{/* Header con breadcrumb condicional */}
 				{currentView !== 'folders' && (
 					<header className="h-12 flex items-center px-4 border-b border-border bg-background safe-area-top">
@@ -417,9 +423,9 @@ export default function NotesPage() {
 								setSelectedFolderName('Carpeta')
 								setCurrentView('notes')
 							}}
-							onCreateFolder={() => {
-								// El FAB maneja la creación
-							}}
+						onCreateFolder={() => {
+							setCreateFolderModalOpen(true)
+						}}
 						/>
 					)}
 					
@@ -432,6 +438,12 @@ export default function NotesPage() {
 							}}
 							searchQuery={searchQuery}
 							viewMode={viewMode === 'grid' ? 'gallery' : 'list'}
+							filterBy={filterBy}
+							sortBy={sortBy}
+							onCreateNote={(folderId) => {
+								// Crear nota vacía en la carpeta seleccionada
+								handleCreateNote(folderId)
+							}}
 						/>
 					)}
 					
@@ -459,24 +471,7 @@ export default function NotesPage() {
 				{/* FAB Izquierdo - Crear Carpeta (solo en vista folders) */}
 				{currentView === 'folders' && (
 					<Button
-						onClick={async () => {
-							try {
-								const result = await createFolder({
-									name: 'Nueva Carpeta',
-									color: '#3b82f6'
-								})
-								
-								if (result.success) {
-									toast.success('Carpeta creada')
-									// Recargar carpetas si es necesario
-								} else {
-									toast.error('Error al crear la carpeta')
-								}
-							} catch (error) {
-								console.error('Error creating folder:', error)
-								toast.error('Error al crear la carpeta')
-							}
-						}}
+						onClick={() => setCreateFolderModalOpen(true)}
 						className="fixed bottom-20 left-4 h-14 w-14 rounded-full shadow-2xl shadow-primary/30 z-50 touch-target hover:scale-110 active:scale-95 transition-transform"
 						size="icon"
 					>
@@ -484,30 +479,33 @@ export default function NotesPage() {
 					</Button>
 				)}
 				
-				{/* FAB Derecho - Crear Nota (visible en folders y notes, oculto en editor) */}
-				{(currentView === 'folders' || currentView === 'notes') && (
-					<Button
-						onClick={() => {
-							// Crear nota
-							handleCreateNote('Nueva Nota', 'Contenido de la nota...')
-						}}
-						className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl shadow-primary/30 z-50 touch-target hover:scale-110 active:scale-95 transition-transform"
-						size="icon"
-					>
-						<Plus className="h-6 w-6" />
-					</Button>
-				)}
+					{/* FAB Derecho - Crear Nota (visible en folders y notes, oculto en editor) */}
+					{(currentView === 'folders' || currentView === 'notes') && (
+						<Button
+							onClick={() => setQuickNoteModalOpen(true)}
+							className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl shadow-primary/30 z-50 touch-target hover:scale-110 active:scale-95 transition-transform"
+							size="icon"
+						>
+							<Plus className="h-6 w-6" />
+						</Button>
+					)}
 				
 				{/* FAB condicional - Solo chevron y acciones en vista notes */}
 				{currentView === 'notes' && (
 					<NotesFabMenu
-						onCreateNote={() => {
-							// Crear nota
-							handleCreateNote('Nueva Nota', 'Contenido de la nota...')
-						}}
+						onCreateNote={() => setQuickNoteModalOpen(true)}
 						currentView={currentView}
 						onFilterChange={(filter) => setFilterBy(filter as any)}
-						onSortChange={(sort) => setSortBy(sort as any)}
+						onSortChange={(sort) => {
+							// Mapear valores del menú a valores del estado
+							if (sort === 'updated_desc' || sort === 'updated_asc') {
+								setSortBy('updated_at')
+							} else if (sort === 'title_asc') {
+								setSortBy('title')
+							} else {
+								setSortBy('updated_at')
+							}
+						}}
 						onViewModeChange={(mode) => setViewMode(mode as any)}
 						currentViewMode={viewMode === 'grid' ? 'gallery' : 'list'}
 					/>
@@ -540,13 +538,35 @@ export default function NotesPage() {
 						</div>
 					</div>
 				)}
+
+				{/* Modal de creación de carpeta */}
+				<CreateFolderModal
+					isOpen={createFolderModalOpen}
+					onClose={() => setCreateFolderModalOpen(false)}
+					onFolderCreated={() => {
+						// Recargar la lista de carpetas
+						window.location.reload()
+					}}
+					parentId={null}
+				/>
+
+				{/* Modal de nota rápida */}
+				<QuickNoteModal
+					isOpen={quickNoteModalOpen}
+					onClose={() => setQuickNoteModalOpen(false)}
+					onNoteCreated={() => {
+						// Recargar la lista de notas
+						window.location.reload()
+					}}
+					defaultFolderId={selectedFolder}
+				/>
 			</div>
 		)
 	}
 
 	// Layout desktop (original)
 	return (
-		<div className={`h-screen flex flex-col bg-background ${isFocusMode ? 'fixed inset-0 z-50' : ''}`}>
+		<div key="desktop-view" className={`h-screen flex flex-col bg-background ${isFocusMode ? 'fixed inset-0 z-50' : ''}`}>
 			{/* Breadcrumbs cuando hay nota abierta */}
 			{!isFocusMode && selectedNote && (
 				<div className="border-b border-border bg-card/50 backdrop-blur-sm">
@@ -862,6 +882,28 @@ export default function NotesPage() {
 				isOpen={showTutorial}
 				onClose={closeTutorial}
 				onComplete={completeOnboarding}
+			/>
+
+			{/* Modal de creación de carpeta */}
+			<CreateFolderModal
+				isOpen={createFolderModalOpen}
+				onClose={() => setCreateFolderModalOpen(false)}
+				onFolderCreated={() => {
+					// Recargar la lista de carpetas
+					window.location.reload()
+				}}
+				parentId={null}
+			/>
+
+			{/* Modal de nota rápida */}
+			<QuickNoteModal
+				isOpen={quickNoteModalOpen}
+				onClose={() => setQuickNoteModalOpen(false)}
+				onNoteCreated={() => {
+					// Recargar la lista de notas
+					window.location.reload()
+				}}
+				defaultFolderId={selectedFolder}
 			/>
 		</div>
 	)
