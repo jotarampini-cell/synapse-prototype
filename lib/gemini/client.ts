@@ -93,11 +93,15 @@ export async function suggestConnections(
 	existingConcepts: string[]
 ): Promise<Array<{ source: string; target: string; reason: string; strength: number }>> {
 	try {
+		// Validar que los parámetros sean arrays
+		const validConcepts = Array.isArray(concepts) ? concepts : []
+		const validExistingConcepts = Array.isArray(existingConcepts) ? existingConcepts : []
+		
 		const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 		const prompt = `Analiza los siguientes conceptos y sugiere conexiones lógicas entre ellos. Considera también los conceptos existentes para encontrar relaciones.
 
-Conceptos nuevos: ${concepts.join(', ')}
-Conceptos existentes: ${existingConcepts.join(', ')}
+Conceptos nuevos: ${validConcepts.join(', ')}
+Conceptos existentes: ${validExistingConcepts.join(', ')}
 
 Para cada conexión, proporciona:
 - Concepto origen
