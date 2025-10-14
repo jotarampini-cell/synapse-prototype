@@ -17,24 +17,35 @@ export function formatRelativeDate(date: string): string {
 
 export function extractTextPreview(content: string): string {
 	// Extraer texto plano del contenido (puede ser HTML o JSON)
-	if (!content) return ''
+	if (!content) {
+		console.log('extractTextPreview: No content provided')
+		return ''
+	}
+	
+	console.log('extractTextPreview: Processing content:', content.substring(0, 100))
 	
 	try {
 		// Si es JSON (BlockEditor)
 		const parsed = JSON.parse(content)
 		if (parsed.blocks && Array.isArray(parsed.blocks)) {
-			return parsed.blocks
+			const result = parsed.blocks
 				.map((block: any) => block.data?.text || '')
 				.join(' ')
 				.replace(/<[^>]*>/g, '') // Remover HTML tags
 				.substring(0, 100)
+			console.log('extractTextPreview: JSON result:', result)
+			return result
 		}
 	} catch {
 		// Si no es JSON, tratar como texto plano
-		return content
+		const result = content
 			.replace(/<[^>]*>/g, '') // Remover HTML tags
 			.substring(0, 100)
+		console.log('extractTextPreview: Plain text result:', result)
+		return result
 	}
 	
-	return content.substring(0, 100)
+	const result = content.substring(0, 100)
+	console.log('extractTextPreview: Fallback result:', result)
+	return result
 }

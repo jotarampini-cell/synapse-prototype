@@ -94,21 +94,25 @@ export function NotesGalleryView({
 			})
 			
 			if (result.success && result.contents) {
+				console.log('Notes loaded successfully:', result.contents.length, 'notes')
 				// Convertir contenido a formato Note
-				const notes: Note[] = result.contents.map(content => ({
-					id: content.id,
-					title: content.title,
-					content: content.content,
-					content_type: content.content_type,
-					tags: content.tags || [],
-					created_at: content.created_at,
+				const notes: Note[] = result.contents.map(content => {
+					console.log('Processing note:', content.title, 'Content:', content.content?.substring(0, 50))
+					return {
+						id: content.id,
+						title: content.title,
+						content: content.content,
+						content_type: content.content_type,
+						tags: content.tags || [],
+						created_at: content.created_at,
 					updated_at: content.updated_at,
 					folder_id: content.folder_id,
 					is_pinned: content.is_pinned || false,
 					is_archived: content.is_archived || false,
 					word_count: content.word_count || 0,
 					reading_time: content.reading_time || 1
-				}))
+				}
+				})
 				setNotes(notes)
 			} else {
 				console.log('No notes found for folder:', folderId)
@@ -235,7 +239,7 @@ export function NotesGalleryView({
 							</h3>
 							
 							{/* Preview del contenido (1 línea) */}
-							<p className="text-xs text-muted-foreground line-clamp-1 truncate">
+							<p className="text-sm text-muted-foreground line-clamp-1 truncate">
 								{extractTextPreview(note.content)}
 							</p>
 							
@@ -370,7 +374,7 @@ export function NotesGalleryView({
 					</div>
 					
 					{/* Preview del contenido - Altura fija con overflow controlado */}
-					<div className="text-xs text-muted-foreground line-clamp-2 flex-1 mb-1.5 min-w-0 overflow-hidden">
+					<div className="text-sm text-muted-foreground line-clamp-2 flex-1 mb-1.5 min-w-0 overflow-hidden">
 						{extractTextPreview(note.content)}
 					</div>
 					

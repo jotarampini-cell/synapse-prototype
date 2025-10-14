@@ -96,7 +96,7 @@ export function NotesFabMenu({
 					<Button
 						onClick={() => {
 							// Toggle entre galería y lista
-							const newMode = currentViewMode === 'gallery' ? 'list' : 'gallery'
+							const newMode = currentViewMode === 'gallery' ? 'list' : 'grid'
 							onViewModeChange?.(newMode)
 						}}
 						className="h-10 w-10 rounded-full shadow-lg shadow-primary/20 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50"

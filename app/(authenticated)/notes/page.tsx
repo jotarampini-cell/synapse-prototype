@@ -92,7 +92,7 @@ export default function NotesPage() {
 	const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
 	const [selectedNote, setSelectedNote] = useState<string | null>(null)
 	const [searchQuery, setSearchQuery] = useState("")
-	const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+	const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
 	const [sortBy, setSortBy] = useState<'updated_at' | 'created_at' | 'title'>('updated_at')
 	// const [sortOrder] = useState<'asc' | 'desc'>('desc')
 	const [filterBy, setFilterBy] = useState<'all' | 'pinned' | 'archived'>('all')
