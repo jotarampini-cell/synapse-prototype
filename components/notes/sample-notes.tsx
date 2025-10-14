@@ -124,6 +124,8 @@ export function SampleNotes({ folderId, onNoteSelect, viewMode = 'gallery' }: Sa
 	}
 
 	if (viewMode === 'list') {
+		console.log('SampleNotes rendering list view with', notes.length, 'notes')
+		console.log('SampleNotes list data:', notes)
 		return (
 			<div className="p-4 space-y-2">
 				{notes.map((note) => (
@@ -153,7 +155,7 @@ export function SampleNotes({ folderId, onNoteSelect, viewMode = 'gallery' }: Sa
 							
 							{/* Preview del contenido (1 línea) */}
 							<p className="text-sm text-muted-foreground line-clamp-1 truncate mb-1">
-								{extractTextPreview(note.content)}
+								{note.content || 'Sin contenido'}
 							</p>
 							
 							{/* Fecha relativa abajo */}
@@ -249,7 +251,7 @@ export function SampleNotes({ folderId, onNoteSelect, viewMode = 'gallery' }: Sa
 					
 					{/* Preview del contenido - Altura fija con overflow controlado */}
 					<div className="text-sm text-muted-foreground line-clamp-3 flex-1 mb-2 min-w-0 overflow-hidden">
-						{extractTextPreview(note.content)}
+						{note.content || 'Sin contenido'}
 					</div>
 					
 					{/* Fecha y badges - Altura fija */}

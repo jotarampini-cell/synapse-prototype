@@ -221,6 +221,7 @@ export function NotesGalleryView({
 	
 	if (viewMode === 'list') {
 		console.log('Rendering list view with', sortedNotes.length, 'notes')
+		console.log('List view notes data:', sortedNotes)
 		return (
 			<div className="p-4 space-y-2">
 				{sortedNotes.map((note) => (
@@ -250,7 +251,7 @@ export function NotesGalleryView({
 							
 							{/* Preview del contenido (1 línea) */}
 							<p className="text-sm text-muted-foreground line-clamp-1 truncate mb-1">
-								{extractTextPreview(note.content)}
+								{extractTextPreview(note.content) || note.content || 'Sin contenido'}
 							</p>
 							
 							{/* Fecha relativa abajo */}
@@ -379,7 +380,7 @@ export function NotesGalleryView({
 					
 					{/* Preview del contenido - Altura fija con overflow controlado */}
 					<div className="text-sm text-muted-foreground line-clamp-3 flex-1 mb-2 min-w-0 overflow-hidden">
-						{extractTextPreview(note.content)}
+						{extractTextPreview(note.content) || note.content || 'Sin contenido'}
 					</div>
 					
 					{/* Fecha y badges - Altura fija */}
