@@ -31,6 +31,7 @@ import { formatRelativeDate, extractTextPreview } from "@/lib/date-grouping"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { SampleNotes } from "./sample-notes"
+import { DebugListView } from "./debug-list-view"
 
 interface Note {
 	id: string
@@ -222,6 +223,11 @@ export function NotesGalleryView({
 	if (viewMode === 'list') {
 		console.log('Rendering list view with', sortedNotes.length, 'notes')
 		console.log('List view notes data:', sortedNotes)
+		
+		// TEMPORAL: Usar debug view para verificar renderizado básico
+		return <DebugListView />
+		
+		/* ORIGINAL CODE - COMENTADO PARA DEBUG
 		return (
 			<div className="p-4 space-y-2">
 				{sortedNotes.map((note) => (
@@ -313,6 +319,7 @@ export function NotesGalleryView({
 				))}
 			</div>
 		)
+		*/
 	}
 
 	// Vista galería (mejorada y más pequeña con overflow controlado)
