@@ -224,71 +224,95 @@ export function NotesGalleryView({
 		console.log('Rendering list view with', sortedNotes.length, 'notes')
 		console.log('List view notes data:', sortedNotes)
 		
-		// NUEVA VISTA DE LISTA SIMPLIFICADA Y FUNCIONAL
+		// VISTA DE LISTA MEJORADA PARA DESKTOP Y MÓVIL
 		return (
-			<div style={{ padding: '16px' }}>
-				<h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: 'black' }}>
-					Vista de Lista - {sortedNotes.length} notas
-				</h2>
+			<div className="p-4 space-y-2">
 				{sortedNotes.map((note) => (
-					<div 
+					<Card 
 						key={note.id}
-						style={{ 
-							padding: '12px', 
-							border: '1px solid #e5e7eb', 
-							backgroundColor: 'white',
-							marginBottom: '8px',
-							borderRadius: '8px',
-							cursor: 'pointer',
-							boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-						}}
+						className="p-3 cursor-pointer hover:shadow-sm transition-all duration-200 flex items-center overflow-hidden rounded-xl border bg-card hover:bg-muted/50"
 						onClick={() => onNoteSelect(note.id)}
 					>
-						<div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-							<FileText style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-							<div style={{ flex: 1 }}>
-								<div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-									<h3 style={{ 
-										fontWeight: 'bold', 
-										fontSize: '14px', 
-										color: 'black',
-										margin: 0
-									}}>
-										{note.title || 'Sin título'}
-									</h3>
-									{note.is_pinned && (
-										<Pin style={{ width: '12px', height: '12px', color: '#3b82f6' }} />
-									)}
-									{note.is_archived && (
-										<Archive style={{ width: '12px', height: '12px', color: '#6b7280' }} />
-									)}
-								</div>
-								<p style={{ 
-									fontSize: '12px', 
-									color: '#6b7280',
-									margin: '0 0 4px 0',
-									overflow: 'hidden',
-									textOverflow: 'ellipsis',
-									whiteSpace: 'nowrap'
-								}}>
-									{note.content || 'Sin contenido'}
-								</p>
-								<div style={{ 
-									display: 'flex', 
-									alignItems: 'center', 
-									gap: '4px',
-									fontSize: '10px',
-									color: '#9ca3af'
-								}}>
-									<Clock style={{ width: '12px', height: '12px' }} />
-									<span>{formatRelativeDate(note.updated_at)}</span>
-									{note.word_count > 0 && (
-										<span>• {note.word_count} palabras</span>
-									)}
-								</div>
+						{/* Icono de tipo de contenido */}
+						<div className="flex-shrink-0 mr-3 text-muted-foreground">
+							<FileText className="h-4 w-4" />
+						</div>
+						
+						<div className="flex-1 min-w-0 overflow-hidden">
+							{/* Título en negrita */}
+							<div className="flex items-center gap-2 mb-1">
+								<h3 className="font-semibold text-sm truncate">
+									{note.title || 'Sin título'}
+								</h3>
+								{note.is_pinned && (
+									<Pin className="h-3 w-3 text-primary flex-shrink-0" />
+								)}
+								{note.is_archived && (
+									<Archive className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+								)}
+							</div>
+							
+							{/* Preview del contenido (1 línea) */}
+							<p className="text-sm text-muted-foreground line-clamp-1 truncate mb-1">
+								{extractTextPreview(note.content) || note.content || 'Sin contenido'}
+							</p>
+							
+							{/* Fecha relativa abajo */}
+							<div className="flex items-center gap-1 text-xs text-muted-foreground">
+								<Clock className="h-3 w-3" />
+								<span>{formatRelativeDate(note.updated_at)}</span>
+								{note.word_count > 0 && (
+									<span>• {note.word_count} palabras</span>
+								)}
 							</div>
 						</div>
-					</div>
+						
+						{/* Menú opciones */}
+						<div className="flex items-center gap-2 ml-3 flex-shrink-0">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button 
+										variant="ghost" 
+										size="icon"
+										className="h-6 w-6 flex-shrink-0"
+										onClick={(e) => e.stopPropagation()}
+									>
+										<MoreHorizontal className="h-3 w-3" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem
+										onClick={() => handleTogglePin(note.id, note.is_pinned)}
+									>
+										{note.is_pinned ? (
+											<PinOff className="h-4 w-4 mr-2" />
+										) : (
+											<Pin className="h-4 w-4 mr-2" />
+										)}
+										{note.is_pinned ? 'Desfijar' : 'Fijar'}
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										onClick={() => handleToggleArchive(note.id, note.is_archived)}
+									>
+										{note.is_archived ? (
+											<ArchiveRestore className="h-4 w-4 mr-2" />
+										) : (
+											<Archive className="h-4 w-4 mr-2" />
+										)}
+										{note.is_archived ? 'Desarchivar' : 'Archivar'}
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem 
+										className="text-destructive"
+										onClick={() => handleDeleteNote(note.id)}
+									>
+										<Trash2 className="h-4 w-4 mr-2" />
+										Eliminar
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					</Card>
 				))}
 			</div>
 		)

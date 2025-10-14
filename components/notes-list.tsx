@@ -109,7 +109,18 @@ export function NotesList({ selectedFolderId, selectedNoteId, onNoteSelect, onCr
 	const loadNotes = async () => {
 		try {
 			setIsLoading(true)
-			const allNotes = await getUserContents()
+			const result = await getUserContents()
+			
+			// Verificar que el resultado es válido
+			let allNotes = []
+			if (result && Array.isArray(result)) {
+				allNotes = result
+			} else if (result && result.contents && Array.isArray(result.contents)) {
+				allNotes = result.contents
+			} else {
+				console.warn('getUserContents returned invalid data:', result)
+				allNotes = []
+			}
 			
 			// Filtrar por carpeta si está seleccionada
 			let filteredNotes = allNotes
@@ -121,12 +132,20 @@ export function NotesList({ selectedFolderId, selectedNoteId, onNoteSelect, onCr
 		} catch (error) {
 			toast.error("Error al cargar notas")
 			console.error("Error loading notes:", error)
+			setNotes([]) // Asegurar que siempre sea un array
 		} finally {
 			setIsLoading(false)
 		}
 	}
 
 	const filterAndSortNotes = () => {
+		// Verificar que notes es un array antes de procesar
+		if (!Array.isArray(notes)) {
+			console.warn('Notes is not an array:', notes)
+			setFilteredNotes([])
+			return
+		}
+		
 		let filtered = [...notes]
 
 		// Aplicar filtro de búsqueda
