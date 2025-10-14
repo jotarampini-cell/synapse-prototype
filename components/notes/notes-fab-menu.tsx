@@ -8,6 +8,7 @@ import {
 	Filter,
 	SortAsc,
 	Grid3X3,
+	List,
 	MoreVertical
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -19,6 +20,7 @@ interface NotesFabMenuProps {
 	onFilterChange?: (filter: string) => void
 	onSortChange?: (sort: string) => void
 	onViewModeChange?: (mode: string) => void
+	currentViewMode?: 'gallery' | 'list'
 }
 
 export function NotesFabMenu({ 
@@ -26,7 +28,8 @@ export function NotesFabMenu({
 	currentView,
 	onFilterChange,
 	onSortChange,
-	onViewModeChange
+	onViewModeChange,
+	currentViewMode = 'gallery'
 }: NotesFabMenuProps) {
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [showActionsMenu, setShowActionsMenu] = useState(false)
@@ -92,14 +95,19 @@ export function NotesFabMenu({
 					{/* Botón Vista - Cambia directamente sin abrir menú */}
 					<Button
 						onClick={() => {
-							// Cambiar entre galería y lista directamente
-							onViewModeChange?.('list') // Por ahora alterna a lista, se puede mejorar
+							// Toggle entre galería y lista
+							const newMode = currentViewMode === 'gallery' ? 'list' : 'gallery'
+							onViewModeChange?.(newMode)
 						}}
 						className="h-10 w-10 rounded-full shadow-lg shadow-primary/20 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50"
 						size="icon"
 						variant="secondary"
 					>
-						<Grid3X3 className="h-4 w-4" />
+						{currentViewMode === 'gallery' ? (
+							<List className="h-4 w-4" />
+						) : (
+							<Grid3X3 className="h-4 w-4" />
+						)}
 					</Button>
 				</div>
 			)}

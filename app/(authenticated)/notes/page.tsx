@@ -505,6 +505,7 @@ export default function NotesPage() {
 						onFilterChange={(filter) => setFilterBy(filter as any)}
 						onSortChange={(sort) => setSortBy(sort as any)}
 						onViewModeChange={(mode) => setViewMode(mode as any)}
+						currentViewMode={viewMode === 'grid' ? 'gallery' : 'list'}
 					/>
 				)}
 

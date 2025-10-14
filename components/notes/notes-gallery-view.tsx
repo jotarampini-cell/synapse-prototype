@@ -225,37 +225,37 @@ export function NotesGalleryView({
 				{sortedNotes.map((note) => (
 					<Card 
 						key={note.id}
-						className="p-4 cursor-pointer hover:shadow-md transition-shadow h-20 flex items-center"
+						className="p-3 cursor-pointer hover:shadow-sm transition-shadow h-20 flex items-center overflow-hidden rounded-xl border-0 bg-card/50 backdrop-blur-sm"
 						onClick={() => onNoteSelect(note.id)}
 					>
-						<div className="flex-1 min-w-0">
+						<div className="flex-1 min-w-0 overflow-hidden">
 							{/* Título en negrita */}
-							<h3 className="font-semibold text-base truncate mb-1">
+							<h3 className="font-semibold text-sm truncate mb-1">
 								{note.title}
 							</h3>
 							
 							{/* Preview del contenido (1 línea) */}
-							<p className="text-sm text-muted-foreground line-clamp-1">
+							<p className="text-xs text-muted-foreground line-clamp-1 truncate">
 								{extractTextPreview(note.content)}
 							</p>
 							
 							{/* Fecha relativa abajo */}
-							<p className="text-xs text-muted-foreground mt-1">
+							<p className="text-xs text-muted-foreground mt-1 truncate">
 								{formatRelativeDate(note.updated_at)}
 							</p>
 						</div>
 						
 						{/* Menú opciones y badges */}
-						<div className="flex items-center gap-2 ml-3">
+						<div className="flex items-center gap-2 ml-3 flex-shrink-0">
 							{/* Badges para estado */}
 							<div className="flex gap-1">
 								{note.is_pinned && (
-									<Badge variant="secondary" className="text-xs px-1 py-0">
+									<Badge variant="secondary" className="text-xs px-1 py-0 h-4 text-[10px]">
 										Fijada
 									</Badge>
 								)}
 								{note.is_archived && (
-									<Badge variant="outline" className="text-xs px-1 py-0">
+									<Badge variant="outline" className="text-xs px-1 py-0 h-4 text-[10px]">
 										Archivada
 									</Badge>
 								)}
@@ -266,10 +266,10 @@ export function NotesGalleryView({
 									<Button 
 										variant="ghost" 
 										size="icon"
-										className="h-8 w-8"
+										className="h-6 w-6 flex-shrink-0"
 										onClick={(e) => e.stopPropagation()}
 									>
-										<MoreHorizontal className="h-4 w-4" />
+										<MoreHorizontal className="h-3 w-3" />
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
@@ -310,18 +310,18 @@ export function NotesGalleryView({
 		)
 	}
 
-	// Vista galería (mejorada y más pequeña)
+	// Vista galería (mejorada y más pequeña con overflow controlado)
 	return (
 		<div className="p-3 grid grid-cols-2 gap-3">
 			{sortedNotes.map((note) => (
 				<Card 
 					key={note.id}
-					className="p-2.5 cursor-pointer hover:shadow-sm transition-shadow h-24 flex flex-col overflow-hidden"
+					className="p-2.5 cursor-pointer hover:shadow-sm transition-shadow h-28 flex flex-col overflow-hidden rounded-xl border-0 bg-card/50 backdrop-blur-sm"
 					onClick={() => onNoteSelect(note.id)}
 				>
-					{/* Título arriba */}
-					<div className="flex items-start justify-between mb-1.5">
-						<h3 className="font-medium text-sm truncate flex-1 min-w-0">
+					{/* Título arriba - Altura fija */}
+					<div className="flex items-start justify-between mb-1.5 h-5 flex-shrink-0">
+						<h3 className="font-medium text-sm truncate flex-1 min-w-0 pr-1">
 							{note.title}
 						</h3>
 						
@@ -330,7 +330,7 @@ export function NotesGalleryView({
 								<Button 
 									variant="ghost" 
 									size="icon"
-									className="h-5 w-5 ml-1 flex-shrink-0"
+									className="h-5 w-5 flex-shrink-0 p-0"
 									onClick={(e) => e.stopPropagation()}
 								>
 									<MoreHorizontal className="h-3 w-3" />
@@ -369,26 +369,26 @@ export function NotesGalleryView({
 						</DropdownMenu>
 					</div>
 					
-					{/* Preview del contenido (1 línea máximo) */}
-					<div className="text-xs text-muted-foreground line-clamp-1 flex-1 mb-1.5 min-w-0">
+					{/* Preview del contenido - Altura fija con overflow controlado */}
+					<div className="text-xs text-muted-foreground line-clamp-2 flex-1 mb-1.5 min-w-0 overflow-hidden">
 						{extractTextPreview(note.content)}
 					</div>
 					
-					{/* Fecha relativa abajo */}
-					<div className="flex items-center justify-between">
-						<p className="text-xs text-muted-foreground truncate">
+					{/* Fecha y badges - Altura fija */}
+					<div className="flex items-center justify-between h-4 flex-shrink-0">
+						<p className="text-xs text-muted-foreground truncate flex-1 min-w-0 pr-1">
 							{formatRelativeDate(note.updated_at)}
 						</p>
 						
 						{/* Badges para estado - más pequeños */}
 						<div className="flex gap-0.5 flex-shrink-0">
 							{note.is_pinned && (
-								<Badge variant="secondary" className="text-xs px-1 py-0 h-4">
+								<Badge variant="secondary" className="text-xs px-1 py-0 h-4 text-[10px]">
 									Fijada
 								</Badge>
 							)}
 							{note.is_archived && (
-								<Badge variant="outline" className="text-xs px-1 py-0 h-4">
+								<Badge variant="outline" className="text-xs px-1 py-0 h-4 text-[10px]">
 									Archivada
 								</Badge>
 							)}
