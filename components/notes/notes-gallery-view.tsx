@@ -90,10 +90,58 @@ export function NotesGalleryView({
 			
 			if (result.success && result.contents) {
 				setNotes(result.contents)
+			} else {
+				setNotes([])
 			}
 		} catch (error) {
 			console.error('Error loading notes:', error)
 			toast.error('Error al cargar las notas')
+			// En caso de error, mostrar datos mock como fallback
+			const mockNotes: Note[] = [
+				{
+					id: '1',
+					title: 'Nota de ejemplo 1',
+					content: 'Esta es una nota de ejemplo con contenido de prueba para mostrar en la vista de galería.',
+					content_type: 'text',
+					tags: [],
+					created_at: new Date().toISOString(),
+					updated_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 min ago
+					folder_id: folderId,
+					is_pinned: false,
+					is_archived: false,
+					word_count: 20,
+					reading_time: 1
+				},
+				{
+					id: '2',
+					title: 'Nota de ejemplo 2',
+					content: 'Otra nota de ejemplo con más contenido para probar el preview en las tarjetas de la galería.',
+					content_type: 'text',
+					tags: [],
+					created_at: new Date().toISOString(),
+					updated_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+					folder_id: folderId,
+					is_pinned: true,
+					is_archived: false,
+					word_count: 25,
+					reading_time: 1
+				},
+				{
+					id: '3',
+					title: 'Nota de ejemplo 3',
+					content: 'Tercera nota de ejemplo para completar la vista de galería con múltiples elementos.',
+					content_type: 'text',
+					tags: [],
+					created_at: new Date().toISOString(),
+					updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+					folder_id: folderId,
+					is_pinned: false,
+					is_archived: false,
+					word_count: 18,
+					reading_time: 1
+				}
+			]
+			setNotes(mockNotes)
 		} finally {
 			setIsLoading(false)
 		}

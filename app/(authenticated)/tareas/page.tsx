@@ -173,7 +173,13 @@ const statusColors = {
 }
 
 export default function TareasPage() {
-	const { isMobile } = useMobileDetection()
+	const { isMobile, isLoading: isMobileLoading } = useMobileDetection()
+	
+	// Debug: Log mobile detection
+	useEffect(() => {
+		console.log('Tasks page - isMobile:', isMobile)
+	}, [isMobile])
+	
 	const searchParams = useSearchParams()
 	const shouldCreate = searchParams.get('create') === 'true'
 	const [selectedList, setSelectedList] = useState<string>("")
@@ -227,20 +233,26 @@ export default function TareasPage() {
 
 	const currentList = taskLists.find(list => list.id === selectedList)
 
+	// Mostrar loading mientras se detecta el dispositivo
+	if (isMobileLoading) {
+		return (
+			<div className="h-screen flex items-center justify-center bg-background">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+					<p className="text-muted-foreground">Cargando...</p>
+				</div>
+			</div>
+		)
+	}
+
 	// Layout móvil
 	if (isMobile) {
+		console.log('Rendering mobile layout for tasks')
 		return (
 			<div className="h-screen flex flex-col bg-gradient-to-br from-blue-50/30 via-background to-purple-50/20 overflow-x-hidden">
-				{/* Tabs */}
+				{/* Header simple */}
 				<div className="px-4 py-2 border-b border-border/50 bg-background/50">
-					<TaskTabs
-						taskLists={taskLists}
-						selectedListId={selectedList}
-						onListSelect={setSelectedList}
-						onCreateNewList={() => console.log('Crear nueva lista')}
-						showStarred={showStarred}
-						onToggleStarred={() => setShowStarred(!showStarred)}
-					/>
+					<h1 className="text-lg font-semibold">Tareas</h1>
 				</div>
 
 				{/* Contenido principal */}

@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
  * Proporciona una detección robusta y manejo de cambios de tamaño
  */
 export function useMobileDetection(breakpoint: number = 768) {
+	// Inicializar siempre como false para evitar problemas de hidratación
 	const [isMobile, setIsMobile] = useState(false)
 	const [isLoading, setIsLoading] = useState(true)
 
@@ -12,6 +13,7 @@ export function useMobileDetection(breakpoint: number = 768) {
 		// Función para verificar si es móvil
 		const checkMobile = () => {
 			const mobile = window.innerWidth < breakpoint
+			console.log('Mobile detection:', { width: window.innerWidth, breakpoint, mobile })
 			setIsMobile(mobile)
 			setIsLoading(false)
 		}

@@ -108,7 +108,13 @@ export default function NotesPage() {
 	const [selectedFolderName, setSelectedFolderName] = useState<string>('')
 	
 	// Mobile detection usando hook personalizado
-	const { isMobile } = useMobileDetection()
+	const { isMobile, isLoading: isMobileLoading } = useMobileDetection()
+	
+	// Debug: Log mobile detection
+	useEffect(() => {
+		console.log('Notes page - isMobile:', isMobile)
+	}, [isMobile])
+	
 	
 	// Command palette
 	const { isOpen: isCommandPaletteOpen, closeCommandPalette, openCommandPalette } = useCommandPalette()
@@ -315,6 +321,18 @@ export default function NotesPage() {
 	}
 
 	log.info('Estado de la página:', { isFocusMode, selectedNote, aiPanelOpen })
+	
+	// Mostrar loading mientras se detecta el dispositivo
+	if (isMobileLoading) {
+		return (
+			<div className="h-screen flex items-center justify-center bg-background">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+					<p className="text-muted-foreground">Cargando...</p>
+				</div>
+			</div>
+		)
+	}
 	
 	// Layout móvil - Nuevo sistema estilo Apple Notes
 	if (isMobile) {
