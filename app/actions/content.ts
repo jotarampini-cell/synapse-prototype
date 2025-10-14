@@ -742,3 +742,96 @@ export async function getUserContents() {
 	})) || []
 }
 
+// ===== FUNCIÓN PARA ADJUNTAR AUDIO =====
+
+export async function createAudioAttachment(data: {
+	noteId: string
+	audioBlob: Blob
+	duration: number
+}) {
+	const supabase = await createClient()
+	
+	const { data: { user } } = await supabase.auth.getUser()
+	
+	if (!user) {
+		return { success: false, error: 'Usuario no autenticado' }
+	}
+
+	try {
+		// Crear un nombre único para el archivo de audio
+		const timestamp = Date.now()
+		const fileName = `audio-${timestamp}.wav`
+		const filePath = `audio-attachments/${user.id}/${fileName}`
+
+		// Subir el archivo de audio a Supabase Storage
+		const { error: uploadError } = await supabase.storage
+			.from('content-files')
+			.upload(filePath, data.audioBlob, {
+				contentType: 'audio/wav',
+				upsert: false
+			})
+
+		if (uploadError) {
+			console.error('Error uploading audio:', uploadError)
+			return { success: false, error: 'Error al subir el archivo de audio' }
+		}
+
+		// Obtener la URL pública del archivo
+		const { data: { publicUrl } } = supabase.storage
+			.from('content-files')
+			.getPublicUrl(filePath)
+
+		// Crear un registro de contenido para el audio adjunto
+		const { data: audioContent, error: contentError } = await supabase
+			.from('contents')
+			.insert({
+				user_id: user.id,
+				title: `Audio adjunto (${Math.floor(data.duration / 60)}:${(data.duration % 60).toString().padStart(2, '0')})`,
+				content: `[AUDIO_ATTACHMENT]${publicUrl}[/AUDIO_ATTACHMENT]`,
+				content_type: 'audio',
+				folder_id: null,
+				metadata: {
+					audio_url: publicUrl,
+					duration: data.duration,
+					file_path: filePath,
+					attached_to_note: data.noteId
+				}
+			})
+			.select()
+			.single()
+
+		if (contentError) {
+			console.error('Error creating audio content:', contentError)
+			return { success: false, error: 'Error al crear el registro de audio' }
+		}
+
+		// Actualizar la nota original para incluir referencia al audio
+		const { error: updateError } = await supabase
+			.from('contents')
+			.update({
+				metadata: {
+					audio_attachments: [audioContent.id]
+				}
+			})
+			.eq('id', data.noteId)
+
+		if (updateError) {
+			console.error('Error updating note with audio reference:', updateError)
+			// No es crítico, el audio ya está guardado
+		}
+
+		revalidatePath('/notes')
+		
+		return { 
+			success: true, 
+			contentId: audioContent.id,
+			audioUrl: publicUrl,
+			message: 'Audio adjuntado correctamente'
+		}
+
+	} catch (error) {
+		console.error('Error in createAudioAttachment:', error)
+		return { success: false, error: 'Error interno del servidor' }
+	}
+}
+

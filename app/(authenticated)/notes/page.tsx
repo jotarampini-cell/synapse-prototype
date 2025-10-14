@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useAppKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
-import { MobileBottomNav } from "@/components/mobile-bottom-nav"
+import { UniversalBottomBar } from "@/components/universal-bottom-bar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -311,17 +311,9 @@ export default function NotesPage() {
 	if (isMobile) {
 		return (
 			<div className="h-screen flex flex-col bg-background">
-				{/* Header compacto para móvil */}
+				{/* Header simplificado para móvil */}
 				{!isFocusMode && !selectedNote && (
 					<header className="h-14 px-4 flex items-center border-b border-border bg-background safe-area-top">
-						<Button 
-							variant="ghost" 
-							size="icon" 
-							onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-							className="touch-target"
-						>
-							<Menu className="h-5 w-5" />
-						</Button>
 						<div className="flex-1 mx-2">
 							<Input 
 								placeholder="Buscar notas..." 
@@ -330,14 +322,6 @@ export default function NotesPage() {
 								className="mobile-input"
 							/>
 						</div>
-						<Button 
-							variant="ghost" 
-							size="icon"
-							onClick={() => setAiPanelOpen(!aiPanelOpen)}
-							className="touch-target"
-						>
-							<Brain className="h-5 w-5" />
-						</Button>
 					</header>
 				)}
 
@@ -382,19 +366,10 @@ export default function NotesPage() {
 					)}
 				</main>
 
-				{/* Bottom Navigation */}
-				<MobileBottomNav />
-
-				{/* FAB para crear nueva nota */}
-				{!isFocusMode && !selectedNote && (
-					<Button
-						onClick={() => handleCreateNote('Nueva Nota', '')}
-						className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-40 touch-target"
-						size="icon"
-					>
-						<Plus className="h-6 w-6" />
-					</Button>
-				)}
+				{/* Barra inferior universal */}
+				<UniversalBottomBar 
+					onAddAction={() => handleCreateNote('Nueva Nota', 'Contenido de la nota...')}
+				/>
 
 				{/* Sidebar móvil */}
 				{sidebarCollapsed && (

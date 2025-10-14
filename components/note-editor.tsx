@@ -6,12 +6,16 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { BlockEditor } from "@/components/block-editor"
+import ContentEditable from "react-contenteditable"
+import "./note-editor.css"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
 import { AutoTagging } from "@/components/auto-tagging"
 import { AIEditorStatus } from "@/components/ai-status-indicator"
 import { ContentBlocksPanel } from "@/components/content-blocks-panel"
 import { AIInsightsPanel } from "@/components/ai-insights-panel"
 import { NoteLinkedTasks } from "@/components/notes/note-linked-tasks"
+import { NoteAttachmentsMenu } from "@/components/notes/note-attachments-menu"
+import { AudioRecorder } from "@/components/notes/audio-recorder"
 import { 
 	Save, 
 	Minimize2,
@@ -45,7 +49,8 @@ import {
 } from "@/components/ui/select"
 import { 
 	updateContent, 
-	getContentById 
+	getContentById,
+	createAudioAttachment
 } from "@/app/actions/content"
 import { getFolderTree } from "@/app/actions/folders"
 import { analyzeNote, analyzeNoteInBackground } from "@/app/actions/ai-analysis"
@@ -99,6 +104,14 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 	
 	const titleRef = useRef<HTMLInputElement>(null)
 	const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+	const unifiedEditorRef = useRef<HTMLElement>(null)
+	
+	// Estado para el editor unificado
+	const [unifiedContent, setUnifiedContent] = useState("")
+	
+	// Estado para el audio recorder
+	const [showAudioRecorder, setShowAudioRecorder] = useState(false)
+	const [audioMode, setAudioMode] = useState<'transcribe' | 'attach'>('transcribe')
 
 	// Auto-save timeout (3 seconds after last change)
 	const AUTO_SAVE_DELAY = 3000
@@ -165,9 +178,10 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 						name: folder.name,
 						color: folder.color
 					})
-					if (folder.children) {
-						result.push(...flattenFolders(folder.children))
-					}
+					// TODO: Implementar children si es necesario
+					// if (folder.children) {
+					// 	result.push(...flattenFolders(folder.children))
+					// }
 				})
 				return result
 			}
@@ -238,6 +252,84 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 		if (note) {
 			setNote({ ...note, title: value })
 			setHasUnsavedChanges(true)
+		}
+	}
+
+	// Funciones para el editor unificado
+	const handleUnifiedContentChange = (evt: any) => {
+		const newContent = evt.target.value
+		setUnifiedContent(newContent)
+		
+		if (!note) return
+		
+		// Extraer título (primera línea) y contenido (resto)
+		const lines = newContent.split('\n')
+		const title = lines[0] || ''
+		const content = lines.slice(1).join('\n')
+		
+		setNote({ 
+			...note, 
+			title: title,
+			content: content
+		})
+		setHasUnsavedChanges(true)
+	}
+
+	// Actualizar contenido unificado cuando cambie la nota
+	useEffect(() => {
+		if (note) {
+			const title = note.title || ''
+			const content = typeof note.content === 'string' ? note.content : ''
+			setUnifiedContent(`${title}\n${content}`)
+		}
+	}, [note])
+
+	// Funciones para manejar adjuntos
+	const handleDocumentUpload = () => {
+		// TODO: Implementar subida de documentos
+		toast.info("Funcionalidad de subida de documentos en desarrollo")
+	}
+
+	const handleTranscribe = () => {
+		setAudioMode('transcribe')
+		setShowAudioRecorder(true)
+	}
+
+	const handleAudioAttach = () => {
+		setAudioMode('attach')
+		setShowAudioRecorder(true)
+	}
+
+	const handleAudioSave = async (audioBlob: Blob, duration: number) => {
+		if (!note) return
+
+		try {
+			if (audioMode === 'transcribe') {
+				// TODO: Implementar transcripción
+				toast.info("Funcionalidad de transcripción en desarrollo")
+			} else {
+				// Adjuntar audio
+				const result = await createAudioAttachment({
+					noteId: note.id,
+					audioBlob,
+					duration
+				})
+
+				if (result.success) {
+					toast.success("Audio adjuntado correctamente")
+					// Actualizar la nota para mostrar el audio adjunto
+					if (onNoteUpdate && note) {
+						onNoteUpdate(note)
+					}
+				} else {
+					toast.error(result.error || "Error al adjuntar audio")
+				}
+			}
+		} catch (error) {
+			console.error('Error handling audio:', error)
+			toast.error("Error al procesar el audio")
+		} finally {
+			setShowAudioRecorder(false)
 		}
 	}
 
@@ -484,12 +576,11 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 					>
 						<X className="h-5 w-5" />
 					</Button>
-					<Input 
-						ref={titleRef}
-						value={note.title}
-						onChange={(e) => handleTitleChange(e.target.value)}
-						placeholder="Título de la nota..."
-						className="flex-1 mx-2 text-lg font-semibold mobile-input"
+					<div className="flex-1 mx-2" />
+					<NoteAttachmentsMenu
+						onDocumentUpload={handleDocumentUpload}
+						onTranscribe={handleTranscribe}
+						onAudioAttach={handleAudioAttach}
 					/>
 					<Button 
 						onClick={() => saveNote(true)}
@@ -500,13 +591,14 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 					</Button>
 				</header>
 				
-				{/* Editor */}
+				{/* Editor unificado */}
 				<div className="flex-1 overflow-y-auto p-4">
-					<BlockEditor
-						content={note.content}
-						onUpdate={handleContentChange}
-						onSave={() => saveNote(true)}
-						placeholder="Escribe tu nota aquí..."
+					<ContentEditable
+						innerRef={unifiedEditorRef as any}
+						html={unifiedContent}
+						onChange={handleUnifiedContentChange}
+						className="unified-note-input"
+						data-placeholder="Título de la nota..."
 					/>
 				</div>
 
@@ -531,6 +623,17 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 						</div>
 					</div>
 				</div>
+
+				{/* Audio Recorder Modal */}
+				{showAudioRecorder && (
+					<div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
+						<AudioRecorder
+							mode={audioMode}
+							onSave={handleAudioSave}
+							onCancel={() => setShowAudioRecorder(false)}
+						/>
+					</div>
+				)}
 			</div>
 		)
 	}
@@ -590,6 +693,12 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 							{isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
 						</Button>
 						
+						<NoteAttachmentsMenu
+							onDocumentUpload={handleDocumentUpload}
+							onTranscribe={handleTranscribe}
+							onAudioAttach={handleAudioAttach}
+						/>
+						
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -633,14 +742,7 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 					</div>
 				</div>
 
-				{/* Title Input */}
-				<Input
-					ref={titleRef}
-					value={note.title}
-					onChange={(e) => handleTitleChange(e.target.value)}
-					placeholder="Título de la nota..."
-					className="text-3xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50"
-				/>
+			{/* Título integrado en el editor unificado */}
 			</div>
 
 			{/* Metadata Bar simplificada */}
@@ -703,13 +805,14 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 				</div>
 			</div>
 
-			{/* Content Editor */}
+			{/* Editor unificado */}
 			<div className="flex-1 p-4 overflow-hidden min-h-0">
-				<BlockEditor
-					content={note.content}
-					onUpdate={handleContentChange}
-					onSave={() => saveNote(true)}
-					placeholder="Escribe tu nota aquí... Usa / para comandos rápidos."
+				<ContentEditable
+					innerRef={unifiedEditorRef as any}
+					html={unifiedContent}
+					onChange={handleUnifiedContentChange}
+					className="unified-note-input"
+					data-placeholder="Título de la nota..."
 				/>
 			</div>
 
@@ -740,13 +843,22 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 			{/* AI Insights Panel */}
 			<AIInsightsPanel
 				noteId={noteId}
-				noteContent={note?.content}
-				noteTitle={note?.title}
 				isOpen={showInsightsPanel}
 				onClose={() => setShowInsightsPanel(false)}
 				onToggleCollapse={() => setInsightsPanelCollapsed(!insightsPanelCollapsed)}
 				isCollapsed={insightsPanelCollapsed}
 			/>
+
+			{/* Audio Recorder Modal */}
+			{showAudioRecorder && (
+				<div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
+					<AudioRecorder
+						mode={audioMode}
+						onSave={handleAudioSave}
+						onCancel={() => setShowAudioRecorder(false)}
+					/>
+				</div>
+			)}
 		</div>
 	)
 }

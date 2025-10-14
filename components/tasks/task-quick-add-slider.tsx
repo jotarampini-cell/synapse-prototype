@@ -47,7 +47,8 @@ export function TaskQuickAddSlider({
 		if (isOpen && inputRef.current) {
 			setTimeout(() => {
 				inputRef.current?.focus()
-			}, 100)
+				inputRef.current?.click() // Forzar apertura de teclado en móvil
+			}, 150)
 		}
 	}, [isOpen])
 

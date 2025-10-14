@@ -21,7 +21,7 @@ import { TaskSidebarMenu } from "@/components/tasks/task-sidebar-menu"
 import { TaskSortMenu } from "@/components/tasks/task-sort-menu"
 import { TaskQuickAddSlider } from "@/components/tasks/task-quick-add-slider"
 import { StarredTasksView } from "@/components/tasks/starred-tasks-view"
-import { TaskBottomBar } from "@/components/tasks/task-bottom-bar"
+import { UniversalBottomBar } from "@/components/universal-bottom-bar"
 import { AppFooter } from "@/components/app-footer"
 import { 
 	Menu, 
@@ -229,22 +229,6 @@ export default function TareasPage() {
 	if (isMobile) {
 		return (
 			<div className="h-screen flex flex-col bg-gradient-to-br from-blue-50/30 via-background to-purple-50/20 overflow-x-hidden">
-				{/* Header con título y + Nueva lista */}
-				<header className="h-16 px-4 flex items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl safe-area-top">
-					<div className="flex items-center gap-2">
-						<Star className="h-5 w-5 text-yellow-500" />
-						<h1 className="text-xl font-bold">Tareas</h1>
-					</div>
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => console.log('Nueva lista')}
-						className="text-sm"
-					>
-						+ Nueva lista
-					</Button>
-				</header>
-
 				{/* Tabs */}
 				<div className="px-4 py-2 border-b border-border/50 bg-background/50">
 					<TaskTabs
@@ -277,8 +261,9 @@ export default function TareasPage() {
 				</main>
 
 				{/* Barra inferior integrada con navegación */}
-				<TaskBottomBar
-					onAddTask={() => setIsAddingTask(true)}
+				{/* Barra inferior universal */}
+				<UniversalBottomBar
+					onAddAction={() => setIsAddingTask(true)}
 					onOpenSidebar={() => setIsSidebarOpen(true)}
 					sortField={sortField}
 					sortOrder={sortOrder}
@@ -289,9 +274,6 @@ export default function TareasPage() {
 					showCompleted={showCompleted}
 					onToggleCompleted={() => setShowCompleted(!showCompleted)}
 				/>
-				
-				{/* Footer móvil */}
-				<AppFooter />
 
 				{/* Componentes modales */}
 				<TaskSidebarMenu
@@ -318,21 +300,6 @@ export default function TareasPage() {
 	// Layout desktop
 	return (
 		<div className="h-screen flex flex-col bg-gradient-to-br from-blue-50/30 via-background to-purple-50/20">
-			{/* Header con título y + Nueva lista */}
-			<header className="h-16 px-6 flex items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl">
-				<div className="flex items-center gap-2">
-					<Star className="h-6 w-6 text-yellow-500" />
-					<h1 className="text-2xl font-bold">Tareas</h1>
-				</div>
-				<Button
-					variant="ghost"
-					size="sm"
-					onClick={() => console.log('Nueva lista')}
-				>
-					+ Nueva lista
-				</Button>
-			</header>
-
 			{/* Tabs */}
 			<div className="px-6 py-3 border-b border-border/50 bg-background/50">
 				<TaskTabs
