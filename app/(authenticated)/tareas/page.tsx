@@ -27,7 +27,8 @@ import {
 	Plus, 
 	MoreVertical,
 	Star,
-	CheckSquare
+	CheckSquare,
+	ChevronUp
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -183,6 +184,7 @@ export default function TareasPage() {
 	const [sortField, setSortField] = useState<"position" | "title" | "due_date" | "priority" | "created_at" | "starred">("position")
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
 	const [showCompleted, setShowCompleted] = useState(false)
+	const [taskActionsExpanded, setTaskActionsExpanded] = useState(false)
 
 	// Cargar listas de tareas
 	useEffect(() => {
@@ -267,60 +269,65 @@ export default function TareasPage() {
 				{/* FAB para nueva tarea */}
 				<Button
 					onClick={() => setIsAddingTask(true)}
-					className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl shadow-primary/30 z-40 touch-target hover:scale-110 active:scale-95 transition-transform"
+					className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl shadow-primary/30 z-50 touch-target hover:scale-110 active:scale-95 transition-transform"
 					size="icon"
 				>
 					<Plus className="h-6 w-6" />
 				</Button>
 
-				{/* Botón hamburguesa flotante izquierdo */}
+				{/* Indicador chevron para desplegar */}
 				<Button
-					onClick={() => setIsSidebarOpen(true)}
-					className="fixed bottom-20 left-4 h-12 w-12 rounded-full shadow-xl shadow-primary/20 z-40 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50"
+					onClick={() => setTaskActionsExpanded(!taskActionsExpanded)}
+					className="fixed bottom-36 right-4 h-10 w-10 rounded-full shadow-lg shadow-primary/20 z-50 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50"
 					size="icon"
-					variant="ghost"
+					variant="secondary"
 				>
-					<Menu className="h-5 w-5" />
+					<ChevronUp className={cn(
+						"h-4 w-4 transition-transform duration-200",
+						taskActionsExpanded && "rotate-180"
+					)} />
 				</Button>
 
-				{/* Botones de acción flotantes */}
-				<div className="fixed bottom-32 right-4 flex flex-col gap-2 z-40">
-					{/* Botón de ordenamiento */}
-					<Button
-						onClick={() => {/* Toggle sort menu */}}
-						className="h-10 w-10 rounded-full shadow-lg shadow-primary/20 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50"
-						size="icon"
-						variant="ghost"
-					>
-						<MoreVertical className="h-4 w-4" />
-					</Button>
-					
-					{/* Botón de destacadas */}
-					<Button
-						onClick={() => setShowStarred(!showStarred)}
-						className={cn(
-							"h-10 w-10 rounded-full shadow-lg shadow-primary/20 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50",
-							showStarred && "bg-yellow-500/20 border-yellow-500/50"
-						)}
-						size="icon"
-						variant="ghost"
-					>
-						<Star className="h-4 w-4" />
-					</Button>
-					
-					{/* Botón de completadas */}
-					<Button
-						onClick={() => setShowCompleted(!showCompleted)}
-						className={cn(
-							"h-10 w-10 rounded-full shadow-lg shadow-primary/20 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50",
-							showCompleted && "bg-green-500/20 border-green-500/50"
-						)}
-						size="icon"
-						variant="ghost"
-					>
-						<CheckSquare className="h-4 w-4" />
-					</Button>
-				</div>
+				{/* Acciones desplegables alineadas */}
+				{taskActionsExpanded && (
+					<div className="fixed bottom-48 right-4 flex flex-col gap-2 z-50">
+						{/* Botón hamburguesa para listas */}
+						<Button
+							onClick={() => setIsSidebarOpen(true)}
+							className="h-10 w-10 rounded-full shadow-lg shadow-primary/20 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50"
+							size="icon"
+							variant="secondary"
+						>
+							<Menu className="h-4 w-4" />
+						</Button>
+
+						{/* Botón de destacadas */}
+						<Button
+							onClick={() => setShowStarred(!showStarred)}
+							className={cn(
+								"h-10 w-10 rounded-full shadow-lg shadow-primary/20 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50",
+								showStarred && "bg-yellow-500/20 border-yellow-500/50"
+							)}
+							size="icon"
+							variant="secondary"
+						>
+							<Star className="h-4 w-4" />
+						</Button>
+
+						{/* Botón de completadas */}
+						<Button
+							onClick={() => setShowCompleted(!showCompleted)}
+							className={cn(
+								"h-10 w-10 rounded-full shadow-lg shadow-primary/20 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50",
+								showCompleted && "bg-green-500/20 border-green-500/50"
+							)}
+							size="icon"
+							variant="secondary"
+						>
+							<CheckSquare className="h-4 w-4" />
+						</Button>
+					</div>
+				)}
 
 				{/* Componentes modales */}
 				<TaskSidebarMenu

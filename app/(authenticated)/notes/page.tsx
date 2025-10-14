@@ -50,6 +50,11 @@ import { log } from "@/lib/logger"
 import { createContent } from "@/app/actions/content"
 import { createDefaultFolders } from "@/app/actions/folders"
 import { toast } from "sonner"
+// Nuevos componentes para UI móvil
+import { FoldersGalleryView } from "@/components/notes/folders-gallery-view"
+import { NotesGalleryView } from "@/components/notes/notes-gallery-view"
+import { HiddenSearchBar } from "@/components/notes/hidden-search-bar"
+import { NotesFabMenu } from "@/components/notes/notes-fab-menu"
 
 // interface Note {
 // 	id: string
@@ -97,6 +102,10 @@ export default function NotesPage() {
 	const [aiPanelOpen, setAiPanelOpen] = useState(false)
 	const [filesSectionCollapsed, setFilesSectionCollapsed] = useState(false)
 	const [isFocusMode, setIsFocusMode] = useState(false)
+	
+	// Mobile navigation state
+	const [currentView, setCurrentView] = useState<'folders' | 'notes' | 'editor'>('folders')
+	const [selectedFolderName, setSelectedFolderName] = useState<string>('')
 	
 	// Mobile detection usando hook personalizado
 	const { isMobile } = useMobileDetection()
@@ -307,102 +316,98 @@ export default function NotesPage() {
 
 	log.info('Estado de la página:', { isFocusMode, selectedNote, aiPanelOpen })
 	
-	// Layout móvil
+	// Layout móvil - Nuevo sistema estilo Apple Notes
 	if (isMobile) {
 		return (
 			<div className="h-screen flex flex-col bg-background">
-				{/* Header simplificado para móvil */}
-				{!isFocusMode && !selectedNote && (
-					<header className="h-14 px-4 flex items-center border-b border-border bg-background safe-area-top">
-						<div className="flex-1 mx-2">
-							<Input 
-								placeholder="Buscar notas..." 
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								className="mobile-input"
-							/>
-						</div>
-					</header>
-				)}
-
-				{/* Breadcrumbs móvil */}
-				{!isFocusMode && selectedNote && (
-					<div className="h-12 px-4 flex items-center border-b border-border bg-background safe-area-top">
+				{/* Header con breadcrumb condicional */}
+				{currentView !== 'folders' && (
+					<header className="h-12 flex items-center px-4 border-b border-border bg-background safe-area-top">
 						<Button 
 							variant="ghost" 
 							size="icon"
-							onClick={() => setSelectedNote(null)}
+							onClick={() => {
+								if (currentView === 'editor') {
+									setCurrentView('notes')
+									setSelectedNote(null)
+								} else if (currentView === 'notes') {
+									setCurrentView('folders')
+									setSelectedFolder(null)
+									setSelectedFolderName('')
+								}
+							}}
 							className="touch-target"
 						>
 							<ChevronLeft className="h-5 w-5" />
 						</Button>
-						<span className="flex-1 text-center font-medium truncate px-2">
-							Nota actual
+						<span className="ml-2 font-medium truncate">
+							{currentView === 'notes' ? selectedFolderName : 'Nota'}
 						</span>
-						<div className="w-10" /> {/* Spacer */}
-					</div>
+					</header>
 				)}
-
-				{/* Contenido principal */}
-				<main className="flex-1 overflow-hidden">
-					{selectedNote ? (
+				
+				{/* Búsqueda oculta */}
+				<HiddenSearchBar onSearch={setSearchQuery} />
+				
+				{/* Contenido según vista */}
+				<main className="flex-1 overflow-y-auto">
+					{currentView === 'folders' && (
+						<FoldersGalleryView
+							onFolderSelect={(id) => {
+								setSelectedFolder(id)
+								setSelectedFolderName('Carpeta') // TODO: Obtener nombre real
+								setCurrentView('notes')
+							}}
+							onCreateFolder={() => {
+								// El FAB maneja la creación
+							}}
+						/>
+					)}
+					
+					{currentView === 'notes' && (
+						<NotesGalleryView
+							folderId={selectedFolder}
+							onNoteSelect={(id) => {
+								setSelectedNote(id)
+								setCurrentView('editor')
+							}}
+							searchQuery={searchQuery}
+						/>
+					)}
+					
+					{currentView === 'editor' && selectedNote && (
 						<div className="h-full">
 							<NoteEditor
 								noteId={selectedNote}
 								onNoteUpdate={handleNoteUpdate}
-								onClose={() => setSelectedNote(null)}
+								onClose={() => {
+									setCurrentView('notes')
+									setSelectedNote(null)
+								}}
 								onToggleAIPanel={() => setAiPanelOpen(!aiPanelOpen)}
-							/>
-						</div>
-					) : (
-						<div className="h-full overflow-y-auto pb-20">
-							<NotesList
-								selectedFolderId={selectedFolder}
-								selectedNoteId={selectedNote}
-								onNoteSelect={handleNoteSelect}
-								onCreateNote={handleCreateNoteFromFolder}
 							/>
 						</div>
 					)}
 				</main>
-
-				{/* Bottom Navigation */}
+				
+				{/* MobileBottomNav siempre visible */}
 				<MobileBottomNav />
-
-				{/* FAB para nueva nota */}
-				<Button
-					onClick={() => handleCreateNote('Nueva Nota', 'Contenido de la nota...')}
-					className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl shadow-primary/30 z-40 touch-target hover:scale-110 active:scale-95 transition-transform"
-					size="icon"
-				>
-					<Plus className="h-6 w-6" />
-				</Button>
-
-				{/* Sidebar móvil */}
-				{sidebarCollapsed && (
-					<div className="fixed inset-0 z-50 bg-background">
-						<div className="h-full flex flex-col">
-							<div className="h-14 px-4 flex items-center border-b border-border">
-								<span className="font-semibold">Carpetas</span>
-								<Button 
-									variant="ghost" 
-									size="icon"
-									onClick={() => setSidebarCollapsed(false)}
-									className="ml-auto touch-target"
-								>
-									<X className="h-5 w-5" />
-								</Button>
-							</div>
-							<div className="flex-1 overflow-y-auto p-4">
-								<FolderTree
-									selectedFolderId={selectedFolder}
-									onFolderSelect={setSelectedFolder}
-									onCreateNote={handleCreateNoteFromFolder}
-								/>
-							</div>
-						</div>
-					</div>
-				)}
+				
+				{/* FAB condicional */}
+				<NotesFabMenu
+					onCreateNote={() => {
+						if (currentView === 'folders') {
+							// Crear carpeta - manejado por FoldersGalleryView
+						} else {
+							// Crear nota
+							handleCreateNote('Nueva Nota', 'Contenido de la nota...')
+						}
+					}}
+					currentView={currentView}
+					onFilterChange={(filter) => setFilterBy(filter as any)}
+					onSortChange={(sort) => setSortBy(sort as any)}
+					onViewModeChange={(mode) => setViewMode(mode as any)}
+				/>
 
 				{/* AI Panel móvil */}
 				{aiPanelOpen && (
