@@ -432,7 +432,7 @@ export function NotesGalleryView({
 						<div className="flex items-center gap-1 flex-1 min-w-0 pr-1">
 							<FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
 							<h3 className="font-medium text-sm truncate">
-								{note.title}
+								{note.title || 'Sin título'}
 							</h3>
 						</div>
 						
