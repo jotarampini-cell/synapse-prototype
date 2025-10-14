@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useAppKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
-import { UniversalBottomBar } from "@/components/universal-bottom-bar"
+import { MobileBottomNav, MobileBottomNavSpacer } from "@/components/mobile-bottom-nav"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -366,10 +366,17 @@ export default function NotesPage() {
 					)}
 				</main>
 
-				{/* Barra inferior universal */}
-				<UniversalBottomBar 
-					onAddAction={() => handleCreateNote('Nueva Nota', 'Contenido de la nota...')}
-				/>
+				{/* Bottom Navigation */}
+				<MobileBottomNav />
+
+				{/* FAB para nueva nota */}
+				<Button
+					onClick={() => handleCreateNote('Nueva Nota', 'Contenido de la nota...')}
+					className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl shadow-primary/30 z-40 touch-target hover:scale-110 active:scale-95 transition-transform"
+					size="icon"
+				>
+					<Plus className="h-6 w-6" />
+				</Button>
 
 				{/* Sidebar móvil */}
 				{sidebarCollapsed && (

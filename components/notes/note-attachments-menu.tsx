@@ -14,7 +14,7 @@ import {
 	Upload, 
 	Mic, 
 	FileText,
-	Plus
+	Paperclip
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -76,7 +76,7 @@ export function NoteAttachmentsMenu({
 					className="h-8 w-8 p-0 hover:bg-muted/50"
 					aria-label="Adjuntar archivo"
 				>
-					<Plus className="h-4 w-4" />
+					<Paperclip className="h-4 w-4" />
 				</Button>
 			</SheetTrigger>
 			<SheetContent side="bottom" className="h-auto">

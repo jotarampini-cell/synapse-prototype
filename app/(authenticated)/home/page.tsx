@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { MobileModal, useMobileModal } from "@/components/mobile-modal"
@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { SimpleBlockEditor } from "@/components/block-editor/simple-block-editor"
+import ContentEditable from "react-contenteditable"
+import "./note-editor.css"
 import { createBasicTextContent } from "@/app/actions/content"
 import { getRecentActivity } from "@/app/actions/activity"
 import { Separator } from "@/components/ui/separator"
@@ -61,6 +63,10 @@ export default function HomePage() {
 	const [noteContent, setNoteContent] = useState("")
 	const [isSaving, setIsSaving] = useState(false)
 	const [attachedFiles, setAttachedFiles] = useState<any[]>([])
+	
+	// Estados para editor unificado
+	const [unifiedContent, setUnifiedContent] = useState("")
+	const unifiedEditorRef = useRef<HTMLElement>(null)
 
 	// Estados para actividad reciente
 	const [recentActivities, setRecentActivities] = useState([])
@@ -82,6 +88,20 @@ export default function HomePage() {
 		}
 		loadRecentActivity()
 	}, [])
+
+	// Función para manejar contenido unificado
+	const handleUnifiedContentChange = (evt: any) => {
+		const content = evt.target.value
+		setUnifiedContent(content)
+		
+		// Extraer título (primera línea) y contenido (resto)
+		const lines = content.split('\n')
+		const title = lines[0] || ''
+		const restContent = lines.slice(1).join('\n').trim()
+		
+		setNoteTitle(title)
+		setNoteContent(restContent)
+	}
 
 	// Función para guardar nota
 	const handleSaveNote = async () => {
@@ -355,6 +375,7 @@ export default function HomePage() {
 						setNoteTitle("")
 						setNoteContent("")
 						setAttachedFiles([])
+						setUnifiedContent("")
 					}}
 					title="Nueva Nota"
 					headerActions={
@@ -366,41 +387,15 @@ export default function HomePage() {
 						</Button>
 					}
 				>
-					<div className="p-4 space-y-4">
-						<Input
-							placeholder="Título de la nota"
-							value={noteTitle}
-							onChange={(e) => setNoteTitle(e.target.value)}
-							className="text-base font-medium border-0 shadow-none focus-visible:ring-0 px-0"
-							autoFocus
-						/>
-						<Separator />
-						
-						{/* Carga de archivos */}
-						<FileUpload
-							onFilesUploaded={(files) => setAttachedFiles(prev => [...prev, ...files])}
-							onFileRemove={(fileId) => setAttachedFiles(prev => prev.filter(f => f.id !== fileId))}
-							maxFiles={3}
-							maxSize={5}
-							className="mb-4"
-						/>
-						
-						{/* Grabación de voz */}
-						<VoiceRecorder
-							onTranscription={(text) => {
-								// Agregar la transcripción al contenido existente
-								const currentContent = typeof noteContent === 'string' ? noteContent : ''
-								setNoteContent(currentContent + (currentContent ? '\n\n' : '') + text)
-							}}
-							className="mb-4"
-						/>
-						
-						<div className="min-h-[300px] max-h-[50vh] overflow-y-auto">
-							<SimpleBlockEditor
-								content={typeof noteContent === 'string' ? noteContent : ''}
-								onUpdate={(data) => setNoteContent(data)}
-								onSave={(data) => setNoteContent(data)}
-								placeholder="Comienza a escribir..."
+					<div className="p-4">
+						{/* Editor unificado */}
+						<div className="min-h-[400px]">
+							<ContentEditable
+								innerRef={unifiedEditorRef as any}
+								html={unifiedContent}
+								onChange={handleUnifiedContentChange}
+								className="unified-note-input"
+								data-placeholder="Título de la nota..."
 							/>
 						</div>
 					</div>

@@ -21,13 +21,14 @@ import { TaskSidebarMenu } from "@/components/tasks/task-sidebar-menu"
 import { TaskSortMenu } from "@/components/tasks/task-sort-menu"
 import { TaskQuickAddSlider } from "@/components/tasks/task-quick-add-slider"
 import { StarredTasksView } from "@/components/tasks/starred-tasks-view"
-import { UniversalBottomBar } from "@/components/universal-bottom-bar"
+import { MobileBottomNav, MobileBottomNavSpacer } from "@/components/mobile-bottom-nav"
 import { AppFooter } from "@/components/app-footer"
 import { 
 	Menu, 
 	Plus, 
 	MoreVertical,
-	Star
+	Star,
+	CheckSquare
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -261,19 +262,66 @@ export default function TareasPage() {
 				</main>
 
 				{/* Barra inferior integrada con navegación */}
-				{/* Barra inferior universal */}
-				<UniversalBottomBar
-					onAddAction={() => setIsAddingTask(true)}
-					onOpenSidebar={() => setIsSidebarOpen(true)}
-					sortField={sortField}
-					sortOrder={sortOrder}
-					onSortChange={(field, order) => {
-						setSortField(field)
-						setSortOrder(order)
-					}}
-					showCompleted={showCompleted}
-					onToggleCompleted={() => setShowCompleted(!showCompleted)}
-				/>
+				{/* Bottom Navigation */}
+				<MobileBottomNav />
+
+				{/* FAB para nueva tarea */}
+				<Button
+					onClick={() => setIsAddingTask(true)}
+					className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl shadow-primary/30 z-40 touch-target hover:scale-110 active:scale-95 transition-transform"
+					size="icon"
+				>
+					<Plus className="h-6 w-6" />
+				</Button>
+
+				{/* Botón hamburguesa flotante izquierdo */}
+				<Button
+					onClick={() => setIsSidebarOpen(true)}
+					className="fixed bottom-20 left-4 h-12 w-12 rounded-full shadow-xl shadow-primary/20 z-40 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50"
+					size="icon"
+					variant="ghost"
+				>
+					<Menu className="h-5 w-5" />
+				</Button>
+
+				{/* Botones de acción flotantes */}
+				<div className="fixed bottom-32 right-4 flex flex-col gap-2 z-40">
+					{/* Botón de ordenamiento */}
+					<Button
+						onClick={() => {/* Toggle sort menu */}}
+						className="h-10 w-10 rounded-full shadow-lg shadow-primary/20 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50"
+						size="icon"
+						variant="ghost"
+					>
+						<MoreVertical className="h-4 w-4" />
+					</Button>
+					
+					{/* Botón de destacadas */}
+					<Button
+						onClick={() => setShowStarred(!showStarred)}
+						className={cn(
+							"h-10 w-10 rounded-full shadow-lg shadow-primary/20 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50",
+							showStarred && "bg-yellow-500/20 border-yellow-500/50"
+						)}
+						size="icon"
+						variant="ghost"
+					>
+						<Star className="h-4 w-4" />
+					</Button>
+					
+					{/* Botón de completadas */}
+					<Button
+						onClick={() => setShowCompleted(!showCompleted)}
+						className={cn(
+							"h-10 w-10 rounded-full shadow-lg shadow-primary/20 touch-target hover:scale-110 active:scale-95 transition-transform bg-background/90 backdrop-blur-sm border border-border/50",
+							showCompleted && "bg-green-500/20 border-green-500/50"
+						)}
+						size="icon"
+						variant="ghost"
+					>
+						<CheckSquare className="h-4 w-4" />
+					</Button>
+				</div>
 
 				{/* Componentes modales */}
 				<TaskSidebarMenu
