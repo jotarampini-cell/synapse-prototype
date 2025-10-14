@@ -15,7 +15,7 @@ import { NotesActionsMenu } from "./notes-actions-menu"
 
 interface NotesFabMenuProps {
 	onCreateNote: () => void
-	currentView: 'folders' | 'notes'
+	currentView: 'folders' | 'notes' | 'editor'
 	onFilterChange?: (filter: string) => void
 	onSortChange?: (sort: string) => void
 	onViewModeChange?: (mode: string) => void
@@ -60,6 +60,11 @@ export function NotesFabMenu({
 				<Plus className="h-6 w-6" />
 			</Button>
 		)
+	}
+
+	// En vista de editor, no mostrar FAB (se maneja desde el editor)
+	if (currentView === 'editor') {
+		return null
 	}
 
 	// En vista de notas, mostrar FAB + chevron con acciones

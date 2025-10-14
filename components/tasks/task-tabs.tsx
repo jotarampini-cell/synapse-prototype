@@ -42,11 +42,27 @@ export function TaskTabs({
 						"flex-shrink-0 h-9 px-3 rounded-lg transition-all",
 						"hover:bg-muted/50 active:scale-95",
 						showStarred 
-							? "bg-primary/10 text-primary border border-primary/20" 
+							? "bg-gradient-to-r from-yellow-50 to-orange-50 text-yellow-700 border border-yellow-200 shadow-sm" 
 							: "text-muted-foreground hover:text-foreground"
 					)}
 				>
-					<span className="text-sm font-medium">⭐ Destacadas</span>
+					<svg 
+						className={cn(
+							"h-4 w-4 mr-1.5 transition-all duration-200",
+							showStarred 
+								? "text-yellow-500 fill-current drop-shadow-sm" 
+								: "text-muted-foreground"
+						)}
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					>
+						<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+					</svg>
+					<span className="text-sm font-medium">Destacadas</span>
 				</Button>
 
 				{/* Separador */}

@@ -250,9 +250,16 @@ export default function TareasPage() {
 		console.log('Rendering mobile layout for tasks')
 		return (
 			<div className="h-screen flex flex-col bg-gradient-to-br from-blue-50/30 via-background to-purple-50/20 overflow-x-hidden">
-				{/* Header simple */}
-				<div className="px-4 py-2 border-b border-border/50 bg-background/50">
-					<h1 className="text-lg font-semibold">Tareas</h1>
+				{/* Header con tabs horizontal */}
+				<div className="px-4 py-3 border-b border-border/50 bg-background/50">
+					<TaskTabs
+						taskLists={taskLists}
+						selectedListId={selectedList}
+						onListSelect={setSelectedList}
+						onCreateNewList={() => console.log('Crear nueva lista')}
+						showStarred={showStarred}
+						onToggleStarred={() => setShowStarred(!showStarred)}
+					/>
 				</div>
 
 				{/* Contenido principal */}

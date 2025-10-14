@@ -269,7 +269,7 @@ export function TaskItem({
 						</Button>
 					</div>
 				) : (
-					<div className="flex items-center gap-2">
+					<div className="flex flex-col gap-1 min-w-0">
 						{/* Título */}
 						<h3 className={cn(
 							"font-medium transition-all duration-300 truncate text-sm",
@@ -278,32 +278,81 @@ export function TaskItem({
 							{task.title}
 						</h3>
 						
-						{/* Indicador de fecha */}
-						{task.due_date && (
-							<div className="flex items-center gap-1 text-xs text-muted-foreground">
-								<Calendar className="h-3 w-3" />
-								<span>{new Date(task.due_date).toLocaleDateString()}</span>
-							</div>
-						)}
+						{/* Detalles de la tarea - Solo mostrar si existen */}
+						<div className="flex items-center gap-3 text-xs text-muted-foreground">
+							{/* Fecha de vencimiento */}
+							{task.due_date && (
+								<div className="flex items-center gap-1">
+									<Calendar className="h-3 w-3" />
+									<span>{new Date(task.due_date).toLocaleDateString()}</span>
+								</div>
+							)}
+							
+							{/* Tiempo estimado */}
+							{task.estimated_time && (
+								<div className="flex items-center gap-1">
+									<Clock className="h-3 w-3" />
+									<span>{task.estimated_time}</span>
+								</div>
+							)}
+							
+							{/* Prioridad */}
+							{task.priority && task.priority !== 'low' && (
+								<div className={cn(
+									"px-1.5 py-0.5 rounded-full text-xs font-medium",
+									task.priority === 'high' && "bg-red-100 text-red-700",
+									task.priority === 'medium' && "bg-yellow-100 text-yellow-700"
+								)}>
+									{task.priority === 'high' ? 'Alta' : 'Media'}
+								</div>
+							)}
+							
+							{/* Tags */}
+							{task.tags && task.tags.length > 0 && (
+								<div className="flex items-center gap-1">
+									{task.tags.slice(0, 2).map((tag, index) => (
+										<span key={index} className="px-1.5 py-0.5 bg-muted rounded text-xs">
+											{tag}
+										</span>
+									))}
+									{task.tags.length > 2 && (
+										<span className="text-xs">+{task.tags.length - 2}</span>
+									)}
+								</div>
+							)}
+						</div>
 					</div>
 				)}
 			</div>
 
-			{/* Estrella para destacar */}
+			{/* Estrella para destacar - Diseño moderno */}
 			<button
 				onClick={(e) => {
 					e.stopPropagation()
 					handleToggleStarred()
 				}}
 				className={cn(
-					"flex-shrink-0 h-5 w-5 transition-all duration-200",
-					"hover:scale-110 active:scale-95",
+					"flex-shrink-0 h-6 w-6 transition-all duration-200 rounded-full",
+					"hover:scale-110 active:scale-95 flex items-center justify-center",
 					task.is_starred 
-						? "text-yellow-500 fill-current" 
-						: "text-muted-foreground hover:text-yellow-500"
+						? "bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-lg shadow-yellow-500/30" 
+						: "text-muted-foreground hover:text-yellow-500 hover:bg-yellow-50"
 				)}
 			>
-				<Star className="h-4 w-4" />
+				<svg 
+					className={cn(
+						"h-3.5 w-3.5 transition-all duration-200",
+						task.is_starred && "drop-shadow-sm"
+					)}
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+				>
+					<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+				</svg>
 			</button>
 
 			{/* Botón de acciones - Solo visible en hover */}
