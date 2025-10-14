@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { useSearchParams } from "next/navigation"
+import { Button } from "@/components/ui/button"
 import { 
 	getTasks, 
 	getTaskLists, 
@@ -14,9 +15,20 @@ import {
 	type TaskList,
 	type TaskListWithStats
 } from "@/app/actions/tasks"
-import { TaskListSelector } from "@/components/tasks/task-list-selector"
 import { TaskList as TaskListComponent } from "@/components/tasks/task-list"
+import { TaskTabs } from "@/components/tasks/task-tabs"
+import { TaskSidebarMenu } from "@/components/tasks/task-sidebar-menu"
+import { TaskSortMenu } from "@/components/tasks/task-sort-menu"
+import { TaskQuickAddSlider } from "@/components/tasks/task-quick-add-slider"
+import { StarredTasksView } from "@/components/tasks/starred-tasks-view"
 import { AppFooter } from "@/components/app-footer"
+import { 
+	Menu, 
+	Plus, 
+	MoreVertical,
+	Star
+} from "lucide-react"
+import { cn } from "@/lib/utils"
 
 // Mock data para desarrollo
 const mockTaskLists: TaskListWithStats[] = [
@@ -165,24 +177,21 @@ export default function TareasPage() {
 	const [selectedList, setSelectedList] = useState<string>("")
 	const [taskLists, setTaskLists] = useState<TaskListWithStats[]>([])
 	const [isAddingTask, setIsAddingTask] = useState(false)
+	const [showStarred, setShowStarred] = useState(false)
+	const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+	const [sortField, setSortField] = useState<"position" | "title" | "due_date" | "priority" | "created_at" | "starred">("position")
+	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+	const [showCompleted, setShowCompleted] = useState(false)
 
 	// Cargar listas de tareas
 	useEffect(() => {
 		loadTaskLists()
 	}, [])
 
-	// Detectar parámetro create=true para abrir formulario automáticamente
+	// Detectar parámetro create=true para abrir slider automáticamente
 	useEffect(() => {
 		if (shouldCreate && !isAddingTask) {
 			setIsAddingTask(true)
-			// Scroll al formulario después de un breve delay
-			setTimeout(() => {
-				const input = document.querySelector('input[placeholder*="Título"]')
-				if (input instanceof HTMLElement) {
-					input.scrollIntoView({ behavior: 'smooth', block: 'center' })
-					input.focus()
-				}
-			}, 300)
 		}
 	}, [shouldCreate, isAddingTask])
 
@@ -218,83 +227,235 @@ export default function TareasPage() {
 	// Layout móvil
 	if (isMobile) {
 		return (
-			<div className="h-screen flex flex-col bg-background overflow-x-hidden">
-				{/* Header */}
-				<header className="h-14 px-4 flex items-center border-b border-border bg-background safe-area-top">
-					<h1 className="text-lg font-semibold">Tareas</h1>
+			<div className="h-screen flex flex-col bg-gradient-to-br from-blue-50/30 via-background to-purple-50/20 overflow-x-hidden">
+				{/* Header con estrella, título y + Nueva lista */}
+				<header className="h-16 px-4 flex items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl safe-area-top">
+					<div className="flex items-center gap-3">
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => setIsSidebarOpen(true)}
+							className="h-10 w-10"
+						>
+							<Menu className="h-5 w-5" />
+						</Button>
+						<div className="flex items-center gap-2">
+							<Star className="h-5 w-5 text-yellow-500" />
+							<h1 className="text-xl font-bold">Tareas</h1>
+						</div>
+					</div>
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={() => console.log('Nueva lista')}
+						className="text-sm"
+					>
+						+ Nueva lista
+					</Button>
 				</header>
+
+				{/* Tabs */}
+				<div className="px-4 py-2 border-b border-border/50 bg-background/50">
+					<TaskTabs
+						taskLists={taskLists}
+						selectedListId={selectedList}
+						onListSelect={setSelectedList}
+						onCreateNewList={() => console.log('Crear nueva lista')}
+						showStarred={showStarred}
+						onToggleStarred={() => setShowStarred(!showStarred)}
+					/>
+				</div>
 
 				{/* Contenido principal */}
 				<main className="flex-1 overflow-y-auto overflow-x-hidden pb-20">
 					<div className="p-4">
-						{/* Selector de lista */}
-						<TaskListSelector
-							taskLists={taskLists}
-							selectedListId={selectedList}
-							onListSelect={setSelectedList}
-							onListsChange={loadTaskLists}
-						/>
-						
-						{/* Lista de tareas */}
-						{currentList && (
-							<div className="mt-4">
-								<TaskListComponent
-									selectedList={currentList}
-									onTasksChange={loadTaskLists}
-								/>
+						{/* Vista de tareas destacadas o lista normal */}
+						{showStarred ? (
+							<StarredTasksView onTaskUpdate={loadTaskLists} />
+						) : currentList ? (
+							<TaskListComponent
+								selectedList={currentList}
+								onTasksChange={loadTaskLists}
+							/>
+						) : (
+							<div className="text-center py-12">
+								<div className="text-muted-foreground">Selecciona una lista de tareas</div>
 							</div>
 						)}
 					</div>
 				</main>
+
+				{/* Barra inferior fija */}
+				<div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-background/80 backdrop-blur-xl border-t border-border/50">
+					<div className="flex items-center justify-between">
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => setIsSidebarOpen(true)}
+							className="h-12 w-12 rounded-full"
+						>
+							<Menu className="h-6 w-6" />
+						</Button>
+						
+						<Button
+							onClick={() => setIsAddingTask(true)}
+							className="h-14 w-14 rounded-full shadow-2xl shadow-primary/30"
+							size="icon"
+						>
+							<Plus className="h-6 w-6" />
+						</Button>
+						
+						<TaskSortMenu
+							sortField={sortField}
+							sortOrder={sortOrder}
+							onSortChange={(field, order) => {
+								setSortField(field)
+								setSortOrder(order)
+							}}
+							showCompleted={showCompleted}
+							onToggleCompleted={() => setShowCompleted(!showCompleted)}
+						/>
+					</div>
+				</div>
 
 				{/* Bottom Navigation */}
 				<MobileBottomNav />
 				
 				{/* Footer móvil */}
 				<AppFooter />
+
+				{/* Componentes modales */}
+				<TaskSidebarMenu
+					isOpen={isSidebarOpen}
+					onClose={() => setIsSidebarOpen(false)}
+					taskLists={taskLists}
+					selectedListId={selectedList}
+					onListSelect={setSelectedList}
+					onListsChange={loadTaskLists}
+					showStarred={showStarred}
+					onToggleStarred={() => setShowStarred(!showStarred)}
+				/>
+
+				<TaskQuickAddSlider
+					isOpen={isAddingTask}
+					onClose={() => setIsAddingTask(false)}
+					onTaskCreated={loadTaskLists}
+					listId={selectedList}
+				/>
 			</div>
 		)
 	}
 
 	// Layout desktop
 	return (
-		<div className="h-screen flex bg-background">
-			{/* Sidebar de listas */}
-			<div className="w-64 border-r border-border bg-muted/20">
-				<div className="p-4">
-					<h2 className="text-lg font-semibold mb-4">Listas de tareas</h2>
-					<TaskListSelector
-						taskLists={taskLists}
-						selectedListId={selectedList}
-						onListSelect={setSelectedList}
-						onListsChange={loadTaskLists}
+		<div className="h-screen flex flex-col bg-gradient-to-br from-blue-50/30 via-background to-purple-50/20">
+			{/* Header con estrella, título y + Nueva lista */}
+			<header className="h-16 px-6 flex items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl">
+				<div className="flex items-center gap-4">
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => setIsSidebarOpen(true)}
+						className="h-10 w-10"
+					>
+						<Menu className="h-5 w-5" />
+					</Button>
+					<div className="flex items-center gap-2">
+						<Star className="h-6 w-6 text-yellow-500" />
+						<h1 className="text-2xl font-bold">Tareas</h1>
+					</div>
+				</div>
+				<Button
+					variant="ghost"
+					size="sm"
+					onClick={() => console.log('Nueva lista')}
+				>
+					+ Nueva lista
+				</Button>
+			</header>
+
+			{/* Tabs */}
+			<div className="px-6 py-3 border-b border-border/50 bg-background/50">
+				<TaskTabs
+					taskLists={taskLists}
+					selectedListId={selectedList}
+					onListSelect={setSelectedList}
+					onCreateNewList={() => console.log('Crear nueva lista')}
+					showStarred={showStarred}
+					onToggleStarred={() => setShowStarred(!showStarred)}
+				/>
+			</div>
+
+			{/* Contenido principal */}
+			<main className="flex-1 p-6 overflow-y-auto">
+				<div className="max-w-4xl mx-auto">
+					{/* Vista de tareas destacadas o lista normal */}
+					{showStarred ? (
+						<StarredTasksView onTaskUpdate={loadTaskLists} />
+					) : currentList ? (
+						<TaskListComponent
+							selectedList={currentList}
+							onTasksChange={loadTaskLists}
+						/>
+					) : (
+						<div className="text-center py-12">
+							<div className="text-muted-foreground">Selecciona una lista de tareas</div>
+						</div>
+					)}
+				</div>
+			</main>
+
+			{/* Barra inferior fija */}
+			<div className="px-6 py-4 bg-background/80 backdrop-blur-xl border-t border-border/50">
+				<div className="max-w-4xl mx-auto flex items-center justify-between">
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => setIsSidebarOpen(true)}
+						className="h-12 w-12 rounded-full"
+					>
+						<Menu className="h-6 w-6" />
+					</Button>
+					
+					<Button
+						onClick={() => setIsAddingTask(true)}
+						className="h-14 w-14 rounded-full shadow-2xl shadow-primary/30"
+						size="icon"
+					>
+						<Plus className="h-6 w-6" />
+					</Button>
+					
+					<TaskSortMenu
+						sortField={sortField}
+						sortOrder={sortOrder}
+						onSortChange={(field, order) => {
+							setSortField(field)
+							setSortOrder(order)
+						}}
+						showCompleted={showCompleted}
+						onToggleCompleted={() => setShowCompleted(!showCompleted)}
 					/>
 				</div>
 			</div>
 
-			{/* Contenido principal */}
-			<div className="flex-1 flex flex-col">
-				<header className="h-16 px-6 flex items-center justify-between border-b border-border">
-					<div>
-						<h1 className="text-2xl font-bold">{currentList?.name}</h1>
-						<p className="text-sm text-muted-foreground">
-							{currentList?.pending_tasks} tareas pendientes
-						</p>
-					</div>
-				</header>
+			{/* Componentes modales */}
+			<TaskSidebarMenu
+				isOpen={isSidebarOpen}
+				onClose={() => setIsSidebarOpen(false)}
+				taskLists={taskLists}
+				selectedListId={selectedList}
+				onListSelect={setSelectedList}
+				onListsChange={loadTaskLists}
+				showStarred={showStarred}
+				onToggleStarred={() => setShowStarred(!showStarred)}
+			/>
 
-				<main className="flex-1 p-6">
-					<div className="max-w-4xl mx-auto">
-						{/* Lista de tareas */}
-						{currentList && (
-							<TaskListComponent
-								selectedList={currentList}
-								onTasksChange={loadTaskLists}
-							/>
-						)}
-					</div>
-				</main>
-			</div>
+			<TaskQuickAddSlider
+				isOpen={isAddingTask}
+				onClose={() => setIsAddingTask(false)}
+				onTaskCreated={loadTaskLists}
+				listId={selectedList}
+			/>
 		</div>
 	)
 }

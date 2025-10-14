@@ -31,6 +31,7 @@ export interface Task {
 	"position": number
 	notes?: string
 	completed_at?: string
+	is_starred?: boolean
 	created_at: string
 	updated_at: string
 }
@@ -1269,6 +1270,80 @@ export async function createTaskFromNote(noteId: string, taskData: {
 		return { success: true, task: taskResult.task }
 	} catch (error) {
 		console.error('Error creating task from note:', error)
+		return { success: false, error: "Error interno del servidor" }
+	}
+}
+
+// =====================================================
+// FUNCIONES PARA TAREAS DESTACADAS
+// =====================================================
+
+export async function toggleTaskStarred(taskId: string): Promise<{ success: boolean; error?: string }> {
+	try {
+		const supabase = await createClient()
+		const { data: { user } } = await supabase.auth.getUser()
+		
+		if (!user) {
+			return { success: false, error: "No autenticado" }
+		}
+
+		// Obtener el estado actual de la estrella
+		const { data: task } = await supabase
+			.from('tasks')
+			.select('is_starred')
+			.eq('id', taskId)
+			.eq('user_id', user.id)
+			.single()
+
+		if (!task) {
+			return { success: false, error: "Tarea no encontrada" }
+		}
+
+		const newStarredState = !task.is_starred
+
+		const { error } = await supabase
+			.from('tasks')
+			.update({ is_starred: newStarredState })
+			.eq('id', taskId)
+			.eq('user_id', user.id)
+
+		if (error) {
+			console.error('Error toggling task starred:', error)
+			return { success: false, error: error.message }
+		}
+
+		revalidatePath('/tareas')
+		return { success: true }
+	} catch (error) {
+		console.error('Error toggling task starred:', error)
+		return { success: false, error: "Error interno del servidor" }
+	}
+}
+
+export async function getStarredTasks(): Promise<{ success: boolean; tasks?: Task[]; error?: string }> {
+	try {
+		const supabase = await createClient()
+		const { data: { user } } = await supabase.auth.getUser()
+		
+		if (!user) {
+			return { success: false, error: "No autenticado" }
+		}
+
+		const { data: tasks, error } = await supabase
+			.from('tasks')
+			.select('*')
+			.eq('user_id', user.id)
+			.eq('is_starred', true)
+			.order('"position"', { ascending: true })
+
+		if (error) {
+			console.error('Error fetching starred tasks:', error)
+			return { success: false, error: error.message }
+		}
+
+		return { success: true, tasks: tasks || [] }
+	} catch (error) {
+		console.error('Error fetching starred tasks:', error)
 		return { success: false, error: "Error interno del servidor" }
 	}
 }

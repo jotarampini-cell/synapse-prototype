@@ -17,7 +17,8 @@ import {
 	Link as LinkIcon,
 	Briefcase,
 	GripVertical,
-	MousePointer2
+	MousePointer2,
+	Star
 } from "lucide-react"
 import { 
 	DropdownMenu,
@@ -30,12 +31,14 @@ import {
 	updateTask, 
 	deleteTask, 
 	toggleTaskStatus,
+	toggleTaskStarred,
 	type Task 
 } from "@/app/actions/tasks"
 import { SubtaskList } from "./subtask-list"
 import { TaskLinkedNotes } from "./task-linked-notes"
 import { TaskNoteLinker } from "./task-note-linker"
 import { TaskProjectLinker } from "./task-project-linker"
+import { cn } from "@/lib/utils"
 
 interface TaskItemProps {
 	task: Task
@@ -89,6 +92,20 @@ export function TaskItem({
 		}
 	}
 
+	const handleToggleStarred = async () => {
+		setIsLoading(true)
+		try {
+			const result = await toggleTaskStarred(task.id)
+			if (result.success) {
+				onTaskUpdate()
+			}
+		} catch (error) {
+			console.error("Error toggling starred:", error)
+		} finally {
+			setIsLoading(false)
+		}
+	}
+
 	const handleUpdateTask = async () => {
 		if (!editTitle.trim()) return
 
@@ -137,9 +154,11 @@ export function TaskItem({
 	return (
 		<div className={`transition-all duration-300 ease-in-out ${isCompleted ? 'transform translate-x-2' : ''}`}>
 			<div 
-				className={`group flex items-start gap-2 p-1.5 hover:bg-muted/30 active:bg-muted/40 rounded-md transition-all duration-200 ${
-					isCompleted ? "opacity-60 bg-green-50/50 border-l-4 border-green-400" : ""
-				} ${level === 0 ? "bg-muted/5 hover:bg-muted/20 active:bg-muted/30" : "hover:bg-muted/15 active:bg-muted/25"}`}
+				className={cn(
+					"group flex items-center gap-3 p-3 hover:bg-muted/30 active:bg-muted/40 rounded-lg transition-all duration-200",
+					isCompleted && "opacity-60 bg-green-50/50 border-l-4 border-green-400",
+					level === 0 ? "bg-muted/5 hover:bg-muted/20 active:bg-muted/30" : "hover:bg-muted/15 active:bg-muted/25"
+				)}
 				style={indentStyle}
 				onClick={() => {
 					onSelect?.()
@@ -158,19 +177,18 @@ export function TaskItem({
 
 			{/* Checkbox personalizado con animación */}
 			<div 
-				className={`relative mt-0.5 flex-shrink-0 ${level === 0 ? "h-6 w-6 md:h-5 md:w-5" : "h-5 w-5 md:h-4 md:w-4"} cursor-pointer`}
+				className="relative flex-shrink-0 h-5 w-5 cursor-pointer"
 				onClick={handleToggleTask}
 			>
 				<div 
-					className={`
-						relative w-full h-full rounded border-2 transition-all duration-300 ease-in-out
-						${isCompleted 
+					className={cn(
+						"relative w-full h-full rounded border-2 transition-all duration-300 ease-in-out",
+						isCompleted 
 							? 'bg-green-500 border-green-500 scale-110 shadow-lg shadow-green-500/30' 
-							: 'bg-background border-muted-foreground hover:border-primary hover:scale-105 active:scale-110'
-						}
-						${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-						${isCompleted ? 'animate-pulse' : ''}
-					`}
+							: 'bg-background border-muted-foreground hover:border-primary hover:scale-105 active:scale-110',
+						isLoading && 'opacity-50 cursor-not-allowed',
+						isCompleted && 'animate-pulse'
+					)}
 				>
 					{/* Checkmark animado */}
 					{isCompleted && (
@@ -198,11 +216,11 @@ export function TaskItem({
 				</div>
 			</div>
 
-			{/* Contenido de la tarea */}
+			{/* Contenido de la tarea - Minimalista */}
 			<div 
 				className="flex-1 min-w-0 cursor-pointer"
-				onDoubleClick={() => onOpenDetails?.(task)}
-				title="Doble clic para editar"
+				onClick={() => onOpenDetails?.(task)}
+				title="Click para ver detalles"
 			>
 				{isEditing ? (
 					<div className="flex items-center gap-2">
@@ -240,99 +258,50 @@ export function TaskItem({
 						</Button>
 					</div>
 				) : (
-					<div className="space-y-1">
+					<div className="flex items-center gap-2">
 						{/* Título */}
-						<div className="flex items-center gap-2">
-							<h3 className={`font-medium transition-all duration-300 truncate ${
-								level === 0 ? "text-sm" : "text-xs"
-							} ${
-								isCompleted ? "line-through text-muted-foreground opacity-70" : ""
-							}`}>
-								{task.title}
-							</h3>
-							{task.priority === "high" && (
-								<div className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-							)}
-							{task.status === "in_progress" && (
-								<Badge variant="secondary" className="text-xs">
-									En curso
-								</Badge>
-							)}
-							{/* Indicadores */}
-							<div className="flex items-center gap-1 ml-auto">
-								{/* Indicador de expansión */}
-								{task.description && (
-									<div className="opacity-60">
-										{isExpanded ? (
-											<ChevronDown className="h-3 w-3 text-muted-foreground" />
-										) : (
-											<ChevronRight className="h-3 w-3 text-muted-foreground" />
-										)}
-									</div>
-								)}
-								{/* Indicador de doble clic */}
-								<div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-									<MousePointer2 className="h-3 w-3 text-muted-foreground" />
-								</div>
+						<h3 className={cn(
+							"font-medium transition-all duration-300 truncate text-sm",
+							isCompleted && "line-through text-muted-foreground opacity-70"
+						)}>
+							{task.title}
+						</h3>
+						
+						{/* Indicador de fecha */}
+						{task.due_date && (
+							<div className="flex items-center gap-1 text-xs text-muted-foreground">
+								<Calendar className="h-3 w-3" />
+								<span>{new Date(task.due_date).toLocaleDateString()}</span>
 							</div>
-						</div>
-
-						{/* Descripción */}
-						{task.description && (
-							<p className={`text-muted-foreground ${
-								level === 0 ? "text-xs" : "text-xs"
-							} ${
-								isExpanded ? "" : "line-clamp-2"
-							}`}>
-								{task.description}
-							</p>
-						)}
-
-						{/* Metadatos */}
-						<div className="flex items-center gap-3 text-xs text-muted-foreground">
-							{task.due_date && (
-								<div className="flex items-center gap-1">
-									<Calendar className="h-3 w-3" />
-									<span>{new Date(task.due_date).toLocaleDateString()}</span>
-								</div>
-							)}
-							{task.estimated_time && (
-								<div className="flex items-center gap-1">
-									<Clock className="h-3 w-3" />
-									<span>{task.estimated_time}</span>
-								</div>
-							)}
-							{task.tags && task.tags.length > 0 && (
-								<div className="flex items-center gap-1">
-									{task.tags.slice(0, 2).map(tag => (
-										<Badge key={tag} variant="outline" className="text-xs">
-											{tag}
-										</Badge>
-									))}
-									{task.tags.length > 2 && (
-										<span>+{task.tags.length - 2}</span>
-									)}
-								</div>
-							)}
-						</div>
-
-						{/* Notas */}
-						{task.notes && (
-							<p className="text-xs text-muted-foreground italic">
-								{task.notes}
-							</p>
 						)}
 					</div>
 				)}
 			</div>
 
-			{/* Botón de acciones */}
+			{/* Estrella para destacar */}
+			<button
+				onClick={(e) => {
+					e.stopPropagation()
+					handleToggleStarred()
+				}}
+				className={cn(
+					"flex-shrink-0 h-5 w-5 transition-all duration-200",
+					"hover:scale-110 active:scale-95",
+					task.is_starred 
+						? "text-yellow-500 fill-current" 
+						: "text-muted-foreground hover:text-yellow-500"
+				)}
+			>
+				<Star className="h-4 w-4" />
+			</button>
+
+			{/* Botón de acciones - Solo visible en hover */}
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button 
 						variant="ghost" 
 						size="icon" 
-						className="h-8 w-8 md:h-8 md:w-8 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0"
+						className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
 					>
 						<MoreHorizontal className="h-4 w-4" />
 					</Button>
@@ -342,40 +311,44 @@ export function TaskItem({
 						<Edit2 className="h-4 w-4 mr-2" />
 						Editar
 					</DropdownMenuItem>
+					<DropdownMenuItem onClick={handleToggleStarred}>
+						<Star className={cn("h-4 w-4 mr-2", task.is_starred && "fill-current")} />
+						{task.is_starred ? "Quitar de destacadas" : "Marcar como destacada"}
+					</DropdownMenuItem>
 					<DropdownMenuItem onClick={handleDuplicateTask}>
 						<Copy className="h-4 w-4 mr-2" />
 						Duplicar
 					</DropdownMenuItem>
-						{onAddSubtask && (
-							<DropdownMenuItem onClick={() => onAddSubtask(task.id)}>
-								<Plus className="h-4 w-4 mr-2" />
-								Agregar subtarea
-							</DropdownMenuItem>
-						)}
-						<DropdownMenuItem asChild>
-							<TaskNoteLinker 
-								task={task} 
-								onLinkCreated={onTaskUpdate}
-								trigger={
-									<div className="flex items-center">
-										<LinkIcon className="h-4 w-4 mr-2" />
-										Vincular nota
-									</div>
-								}
-							/>
+					{onAddSubtask && (
+						<DropdownMenuItem onClick={() => onAddSubtask(task.id)}>
+							<Plus className="h-4 w-4 mr-2" />
+							Agregar subtarea
 						</DropdownMenuItem>
-						<DropdownMenuItem asChild>
-							<TaskProjectLinker 
-								taskId={task.id} 
-								onLinkChange={onTaskUpdate}
-								trigger={
-									<div className="flex items-center">
-										<Briefcase className="h-4 w-4 mr-2" />
-										Vincular proyecto
-									</div>
-								}
-							/>
-						</DropdownMenuItem>
+					)}
+					<DropdownMenuItem asChild>
+						<TaskNoteLinker 
+							task={task} 
+							onLinkCreated={onTaskUpdate}
+							trigger={
+								<div className="flex items-center">
+									<LinkIcon className="h-4 w-4 mr-2" />
+									Vincular nota
+								</div>
+							}
+						/>
+					</DropdownMenuItem>
+					<DropdownMenuItem asChild>
+						<TaskProjectLinker 
+							taskId={task.id} 
+							onLinkChange={onTaskUpdate}
+							trigger={
+								<div className="flex items-center">
+									<Briefcase className="h-4 w-4 mr-2" />
+									Vincular proyecto
+								</div>
+							}
+						/>
+					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem 
 						onClick={handleDeleteTask}

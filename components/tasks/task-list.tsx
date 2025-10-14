@@ -346,159 +346,17 @@ export function TaskList({ selectedList, onTasksChange }: TaskListProps) {
 			onDragEnd={handleDragEnd}
 		>
 			<div className="space-y-4 overflow-x-hidden">
-			{/* Header con controles */}
-			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+			{/* Header simplificado - Solo título y contador */}
+			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-2">
 					<h2 className="text-lg font-semibold">{selectedList.name}</h2>
 					<span className="text-sm text-muted-foreground">
 						({pendingTasks.length} pendientes)
 					</span>
 				</div>
-				<div className="flex items-center gap-2 flex-wrap">
-					<KeyboardShortcutsHelp />
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setShowCompleted(!showCompleted)}
-						className="text-xs sm:text-sm"
-					>
-						{showCompleted ? "Ocultar completadas" : "Mostrar completadas"}
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setIsAddingTask(true)}
-					>
-						<Plus className="h-4 w-4 mr-2" />
-						Nueva Tarea
-					</Button>
-				</div>
 			</div>
 
-			{/* Búsqueda y filtros */}
-			<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-				<div className="relative flex-1">
-					<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-					<Input
-						placeholder="Buscar tareas..."
-						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
-						className="pl-9"
-					/>
-				</div>
-				<div className="flex gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => handleSort("due_date")}
-						className="flex-1 sm:flex-none"
-					>
-						Fecha
-						{sortField === "due_date" && (
-							sortOrder === "asc" ? <SortAsc className="h-4 w-4 ml-1" /> : <SortDesc className="h-4 w-4 ml-1" />
-						)}
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => handleSort("priority")}
-						className="flex-1 sm:flex-none"
-					>
-						Prioridad
-						{sortField === "priority" && (
-							sortOrder === "asc" ? <SortAsc className="h-4 w-4 ml-1" /> : <SortDesc className="h-4 w-4 ml-1" />
-						)}
-					</Button>
-				</div>
-			</div>
-
-			{/* Agregar nueva tarea */}
-			{isAddingTask && (
-				<div className="flex flex-col gap-2 p-3 border border-dashed border-muted-foreground/30 rounded-lg">
-					<div className="flex items-center gap-3">
-						<Checkbox 
-							checked={false}
-							onCheckedChange={() => {}}
-							className="h-5 w-5"
-						/>
-						<div className="flex-1 relative">
-							<Input
-								ref={inputRef}
-								placeholder="Título de la tarea..."
-								value={newTaskTitle}
-								className="h-10 md:h-9 border-0 shadow-none focus-visible:ring-0 min-w-0"
-								onChange={(e) => {
-									const value = e.target.value
-									setNewTaskTitle(value)
-									setIsTyping(true)
-									
-									// Limpiar timeout anterior
-									if (autoSaveTimeoutRef.current) {
-										clearTimeout(autoSaveTimeoutRef.current)
-									}
-									
-									// Solo configurar auto-save si hay contenido y no es muy corto
-									if (value.trim() && value.trim().length >= 3) {
-										// Tiempo más largo en móvil para evitar guardado prematuro
-										const timeoutDuration = window.innerWidth < 768 ? 5000 : 4000
-										
-										autoSaveTimeoutRef.current = setTimeout(() => {
-											// Verificar que el valor actual del input coincida con el valor del timeout
-											const currentValue = inputRef.current?.value || ""
-											if (currentValue.trim() === value.trim() && currentValue.trim().length >= 3) {
-												setIsTyping(false)
-												handleAddTask()
-											}
-										}, timeoutDuration)
-									}
-								}}
-								onKeyDown={(e) => {
-									if (e.key === "Enter" && !e.shiftKey) {
-										e.preventDefault()
-										handleAddTask()
-									} else if (e.key === "Escape") {
-										setIsAddingTask(false)
-										setNewTaskTitle("")
-										setNewTaskDescription("")
-									}
-								}}
-								autoFocus
-							/>
-							{/* Indicador de estado */}
-							{(isTyping || isAutoSaving) && (
-								<div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-									{isTyping ? (
-										<div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-									) : (
-										<div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-									)}
-								</div>
-							)}
-						</div>
-					</div>
-						<Textarea
-							placeholder="Detalles (opcional)..."
-							value={newTaskDescription}
-							onChange={(e) => setNewTaskDescription(e.target.value)}
-							className="min-h-[60px] md:min-h-[50px] border-0 shadow-none focus-visible:ring-0 resize-none ml-8 min-w-0"
-							onKeyDown={(e) => {
-								if (e.key === "Enter" && e.ctrlKey) {
-									e.preventDefault()
-									handleAddTask()
-								} else if (e.key === "Escape") {
-									setIsAddingTask(false)
-									setNewTaskTitle("")
-									setNewTaskDescription("")
-								}
-							}}
-							rows={2}
-						/>
-						{/* Mensaje de ayuda */}
-						<div className="text-xs text-muted-foreground ml-8 flex items-center gap-1">
-							<span>Enter para guardar • Ctrl+Enter para guardar desde descripción • Se guarda automáticamente después de 5s de inactividad</span>
-						</div>
-				</div>
-			)}
+			{/* Lista de tareas - Sin controles complejos */}
 
 			{/* Lista de tareas */}
 			<SortableContext items={pendingTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
@@ -568,15 +426,14 @@ export function TaskList({ selectedList, onTasksChange }: TaskListProps) {
 			</SortableContext>
 
 			{/* Empty state */}
-			{filteredAndSortedTasks.length === 0 && !isAddingTask && (
+			{filteredAndSortedTasks.length === 0 && (
 				<div className="text-center py-12">
 					<div className="text-muted-foreground mb-4">
-						{searchQuery ? "No se encontraron tareas con ese criterio" : "No hay tareas en esta lista"}
+						No hay tareas en esta lista
 					</div>
-					<Button onClick={() => setIsAddingTask(true)}>
-						<Plus className="h-4 w-4 mr-2" />
-						Crear Primera Tarea
-					</Button>
+					<p className="text-sm text-muted-foreground">
+						Usa el botón + para crear tu primera tarea
+					</p>
 				</div>
 			)}
 
