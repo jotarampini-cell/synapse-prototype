@@ -53,3 +53,4 @@ export async function getRecentActivity() {
     return { success: false, activities: [] }
   }
 }
+

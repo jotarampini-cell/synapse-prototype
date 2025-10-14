@@ -319,3 +319,4 @@ export function EditorToolbar({ onCommand, className }: EditorToolbarProps) {
     </div>
   )
 }
+

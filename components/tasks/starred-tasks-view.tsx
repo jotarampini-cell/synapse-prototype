@@ -120,3 +120,4 @@ export function StarredTasksView({ onTaskUpdate }: StarredTasksViewProps) {
 		</div>
 	)
 }
+

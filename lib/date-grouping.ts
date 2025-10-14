@@ -18,36 +18,41 @@ export function formatRelativeDate(date: string): string {
 export function extractTextPreview(content: string): string {
 	// Extraer texto plano del contenido (puede ser HTML o JSON)
 	if (!content || content.trim() === '') {
-		console.log('extractTextPreview: No content provided or empty content')
 		return 'Sin contenido'
 	}
-	
-	console.log('extractTextPreview: Processing content:', content.substring(0, 100))
 	
 	try {
 		// Si es JSON (BlockEditor)
 		const parsed = JSON.parse(content)
 		if (parsed.blocks && Array.isArray(parsed.blocks)) {
 			const result = parsed.blocks
-				.map((block: any) => block.data?.text || '')
+				.map((block: any) => {
+					// Extraer texto de diferentes tipos de bloques
+					if (block.data?.text) return block.data.text
+					if (block.data?.content) return block.data.content
+					if (block.text) return block.text
+					return ''
+				})
 				.join(' ')
 				.replace(/<[^>]*>/g, '') // Remover HTML tags
+				.replace(/\s+/g, ' ') // Normalizar espacios
 				.trim()
-				.substring(0, 100)
-			console.log('extractTextPreview: JSON result:', result)
+				.substring(0, 120)
 			return result || 'Sin contenido'
 		}
 	} catch {
 		// Si no es JSON, tratar como texto plano
 		const result = content
 			.replace(/<[^>]*>/g, '') // Remover HTML tags
+			.replace(/\s+/g, ' ') // Normalizar espacios
 			.trim()
-			.substring(0, 100)
-		console.log('extractTextPreview: Plain text result:', result)
+			.substring(0, 120)
 		return result || 'Sin contenido'
 	}
 	
-	const result = content.trim().substring(0, 100)
-	console.log('extractTextPreview: Fallback result:', result)
+	const result = content
+		.replace(/\s+/g, ' ') // Normalizar espacios
+		.trim()
+		.substring(0, 120)
 	return result || 'Sin contenido'
 }
