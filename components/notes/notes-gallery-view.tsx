@@ -211,13 +211,39 @@ export function NotesGalleryView({
 
 	if (isLoading) {
 		return (
-			<div className="p-4 grid grid-cols-2 gap-4">
+			<div className="p-4 space-y-2">
 				{[1, 2, 3, 4, 5, 6].map((i) => (
-					<Card key={i} className="p-3 animate-pulse">
-						<div className="h-3 bg-muted rounded mb-2" />
-						<div className="h-4 bg-muted rounded mb-2" />
-						<div className="h-3 bg-muted rounded w-2/3" />
-					</Card>
+					<div
+						key={i}
+						className="w-full bg-card/50 backdrop-blur-sm rounded-xl p-3 border border-border/50 animate-pulse"
+					>
+						<div className="flex items-start gap-3">
+							{/* Icono circular skeleton */}
+							<div className="w-10 h-10 rounded-lg bg-muted/50 flex-shrink-0" />
+							
+							{/* Contenido principal skeleton */}
+							<div className="flex-1 min-w-0 max-w-0">
+								{/* Título skeleton */}
+								<div className="h-4 bg-muted/50 rounded mb-1 w-3/4" />
+								
+								{/* Preview del contenido skeleton */}
+								<div className="h-3 bg-muted/30 rounded mb-1 w-full" />
+								
+								{/* Información secundaria skeleton */}
+								<div className="flex items-center gap-1">
+									<div className="h-3 bg-muted/30 rounded w-20" />
+									<div className="h-3 bg-muted/30 rounded w-1" />
+									<div className="h-3 bg-muted/30 rounded w-16" />
+								</div>
+							</div>
+							
+							{/* Badge skeleton */}
+							<div className="h-5 bg-muted/50 rounded w-12 flex-shrink-0" />
+							
+							{/* Menú skeleton */}
+							<div className="h-6 w-6 bg-muted/50 rounded flex-shrink-0" />
+						</div>
+					</div>
 				))}
 			</div>
 		)
@@ -269,10 +295,10 @@ export function NotesGalleryView({
             return (
                 <div className="p-4 space-y-2">
                     {sortedNotes.map((note) => (
-                        <button
+                        <div
                             key={note.id}
+                            className="w-full group bg-card/50 backdrop-blur-sm rounded-xl p-3 text-left transition-all active:scale-98 hover:bg-card hover:shadow-md border border-border/50 cursor-pointer"
                             onClick={() => onNoteSelect(note.id)}
-                            className="w-full group bg-card/50 backdrop-blur-sm rounded-xl p-3 text-left transition-all active:scale-98 hover:bg-card hover:shadow-md border border-border/50"
                         >
                             <div className="flex items-start gap-3">
                                 {/* Icono circular como en Actividad Reciente */}
@@ -281,7 +307,7 @@ export function NotesGalleryView({
                                 </div>
                                 
                                 {/* Contenido principal */}
-                                <div className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0 max-w-0">
                                     {/* Título */}
                                     <h3 className="font-medium text-sm mb-1 truncate group-hover:text-primary transition-colors">
                                         {note.title || 'Sin título'}
@@ -293,24 +319,24 @@ export function NotesGalleryView({
                                     </p>
                                     
                                     {/* Información secundaria */}
-                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                        <span>{formatRelativeDate(note.updated_at)}</span>
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                        <span className="truncate">{formatRelativeDate(note.updated_at)}</span>
                                         {note.word_count > 0 && (
                                             <>
                                                 <span>•</span>
-                                                <span>{note.word_count} palabras</span>
+                                                <span className="whitespace-nowrap">{note.word_count} palabras</span>
                                             </>
                                         )}
                                         {note.is_pinned && (
                                             <>
                                                 <span>•</span>
-                                                <Pin className="h-3 w-3" />
+                                                <Pin className="h-3 w-3 flex-shrink-0" />
                                             </>
                                         )}
                                         {note.is_archived && (
                                             <>
                                                 <span>•</span>
-                                                <Archive className="h-3 w-3" />
+                                                <Archive className="h-3 w-3 flex-shrink-0" />
                                             </>
                                         )}
                                     </div>
@@ -368,7 +394,7 @@ export function NotesGalleryView({
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
-                        </button>
+                        </div>
                     ))}
                 </div>
             )

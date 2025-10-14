@@ -168,7 +168,12 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 
 	const loadFolders = async () => {
 		try {
-			const folderTree = await getFolderTree()
+			const folderTreeResult = await getFolderTree()
+			if (!folderTreeResult.success) {
+				console.error("Error loading folders:", folderTreeResult.error)
+				return
+			}
+			
 			// Flatten the tree for the dropdown
 			const flattenFolders = (folders: Folder[]): Folder[] => {
 				const result: Folder[] = []
@@ -185,7 +190,7 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 				})
 				return result
 			}
-			setFolders(flattenFolders(folderTree))
+			setFolders(flattenFolders(folderTreeResult.folders))
 		} catch (error) {
 			console.error("Error loading folders:", error)
 		}
@@ -610,12 +615,12 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 							<span>{note.reading_time} min</span>
 						</div>
 						<div className="flex items-center gap-2">
-							{note.tags.slice(0, 2).map((tag) => (
+							{note.tags && note.tags.slice(0, 2).map((tag) => (
 								<Badge key={tag} variant="secondary" className="text-xs">
 									{tag}
 								</Badge>
 							))}
-							{note.tags.length > 2 && (
+							{note.tags && note.tags.length > 2 && (
 								<Badge variant="secondary" className="text-xs">
 									+{note.tags.length - 2}
 								</Badge>
