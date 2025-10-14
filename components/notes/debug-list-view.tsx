@@ -36,29 +36,52 @@ export function DebugListView() {
 	console.log('DebugListView rendering with notes:', notes)
 
 	return (
-		<div className="p-4 space-y-2">
-			<h2 className="text-lg font-bold mb-4">Debug List View</h2>
+		<div style={{ padding: '16px' }}>
+			<h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: 'black' }}>
+				Debug List View - {notes.length} notas
+			</h2>
 			{notes.map((note) => (
-				<Card 
+				<div 
 					key={note.id}
-					className="p-3 border bg-white"
+					style={{ 
+						padding: '12px', 
+						border: '1px solid #ccc', 
+						backgroundColor: 'white',
+						marginBottom: '8px',
+						borderRadius: '8px'
+					}}
 				>
-					<div className="flex items-center gap-3">
-						<FileText className="h-4 w-4 text-blue-500" />
-						<div className="flex-1">
-							<h3 className="font-semibold text-sm text-black">
+					<div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+						<FileText style={{ width: '16px', height: '16px', color: 'blue' }} />
+						<div style={{ flex: 1 }}>
+							<h3 style={{ 
+								fontWeight: 'bold', 
+								fontSize: '14px', 
+								color: 'black',
+								margin: '0 0 4px 0'
+							}}>
 								{note.title}
 							</h3>
-							<p className="text-sm text-gray-600">
+							<p style={{ 
+								fontSize: '12px', 
+								color: '#666',
+								margin: '0 0 4px 0'
+							}}>
 								{note.content}
 							</p>
-							<div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-								<Clock className="h-3 w-3" />
+							<div style={{ 
+								display: 'flex', 
+								alignItems: 'center', 
+								gap: '4px',
+								fontSize: '10px',
+								color: '#999'
+							}}>
+								<Clock style={{ width: '12px', height: '12px' }} />
 								<span>{new Date(note.updated_at).toLocaleString()}</span>
 							</div>
 						</div>
 					</div>
-				</Card>
+				</div>
 			))}
 		</div>
 	)
