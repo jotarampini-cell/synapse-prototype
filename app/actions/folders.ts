@@ -105,15 +105,16 @@ export async function getFolderTree() {
 	
 	if (!user) {
 		log.info('Usuario no autenticado en getFolderTree')
-		return []
+		return { success: false, folders: [], error: 'Usuario no autenticado' }
 	}
 
 	try {
 		// Usar directamente el fallback ya que la función SQL no existe aún
-		return await getFolderTreeFallback(user.id)
+		const folders = await getFolderTreeFallback(user.id)
+		return { success: true, folders }
 	} catch (error) {
 		log.error('Error getting folder tree:', { error })
-		throw new Error('Error al obtener árbol de carpetas')
+		return { success: false, folders: [], error: 'Error al obtener árbol de carpetas' }
 	}
 }
 

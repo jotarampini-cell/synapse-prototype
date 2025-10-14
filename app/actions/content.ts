@@ -696,16 +696,16 @@ export async function createContent(formData: FormData) {
 }
 
 // Función getUserContents
-export async function getUserContents() {
+export async function getUserContents(params?: { folder_id?: string | null; limit?: number }) {
 	const supabase = await createClient()
 	const { data: { user } } = await supabase.auth.getUser()
 	
 	if (!user) {
 		console.log('Usuario no autenticado en getUserContents')
-		return []
+		return { success: false, contents: [], error: 'Usuario no autenticado' }
 	}
 	
-	const { data: contents, error } = await supabase
+	let query = supabase
 		.from('contents')
 		.select(`
 			id,
@@ -731,15 +731,34 @@ export async function getUserContents() {
 		.eq('user_id', user.id)
 		.order('updated_at', { ascending: false })
 	
+	// Filtrar por carpeta si se especifica
+	if (params?.folder_id !== undefined) {
+		if (params.folder_id === null) {
+			query = query.is('folder_id', null)
+		} else {
+			query = query.eq('folder_id', params.folder_id)
+		}
+	}
+	
+	// Limitar resultados si se especifica
+	if (params?.limit) {
+		query = query.limit(params.limit)
+	}
+	
+	const { data: contents, error } = await query
+	
 	if (error) {
-		throw new Error(error.message)
+		console.error('Error getting user contents:', error)
+		return { success: false, contents: [], error: error.message }
 	}
 	
 	// Agregar hasSummary a cada contenido
-	return contents?.map(content => ({
+	const contentsWithSummary = contents?.map(content => ({
 		...content,
 		hasSummary: content.summaries && content.summaries.length > 0
 	})) || []
+	
+	return { success: true, contents: contentsWithSummary }
 }
 
 // ===== FUNCIÓN PARA ADJUNTAR AUDIO =====
