@@ -151,69 +151,56 @@ export function FoldersGalleryView({
 
 	return (
 		<div className="p-4">
-			{/* Grid de carpetas */}
-			<div className="grid grid-cols-2 gap-4 mb-6">
+			{/* Lista de carpetas */}
+			<div className="space-y-2">
 				{folders.map((folder) => (
-					<Card 
+					<div 
 						key={folder.id}
-						className="p-4 cursor-pointer hover:shadow-md transition-shadow"
+						className="flex items-center justify-between p-4 bg-card rounded-lg border cursor-pointer hover:bg-accent transition-colors"
 						onClick={() => onFolderSelect(folder.id)}
 					>
-						<div className="flex items-start justify-between mb-3">
-							<div className="flex items-center gap-2">
-								<Folder 
-									className="h-5 w-5" 
-									style={{ color: folder.color }}
-								/>
-								<h3 className="font-semibold text-sm truncate">
+						<div className="flex items-center gap-3">
+							<Folder 
+								className="h-5 w-5" 
+								style={{ color: folder.color }}
+							/>
+							<div>
+								<h3 className="font-semibold text-base">
 									{folder.name}
 								</h3>
+								<p className="text-sm text-muted-foreground">
+									{folder.notesCount} notas
+								</p>
 							</div>
-							
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button 
-										variant="ghost" 
-										size="icon"
-										className="h-6 w-6"
-										onClick={(e) => e.stopPropagation()}
-									>
-										<MoreHorizontal className="h-3 w-3" />
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end">
-									<DropdownMenuItem>
-										<Edit className="h-4 w-4 mr-2" />
-										Renombrar
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
-									<DropdownMenuItem 
-										className="text-destructive"
-										onClick={() => handleDeleteFolder(folder.id)}
-									>
-										<Trash2 className="h-4 w-4 mr-2" />
-										Eliminar
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
 						</div>
 						
-						{/* Contador de notas */}
-						<Badge variant="secondary" className="mb-3">
-							{folder.notesCount} notas
-						</Badge>
-						
-						{/* Preview de notas recientes */}
-						{folder.recentNotes.length > 0 && (
-							<div className="space-y-1">
-								{folder.recentNotes.map((note) => (
-									<div key={note.id} className="text-xs text-muted-foreground truncate">
-										{note.title}
-									</div>
-								))}
-							</div>
-						)}
-					</Card>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button 
+									variant="ghost" 
+									size="icon"
+									className="h-8 w-8"
+									onClick={(e) => e.stopPropagation()}
+								>
+									<MoreHorizontal className="h-4 w-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem>
+									<Edit className="h-4 w-4 mr-2" />
+									Renombrar
+								</DropdownMenuItem>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem 
+									className="text-destructive"
+									onClick={() => handleDeleteFolder(folder.id)}
+								>
+									<Trash2 className="h-4 w-4 mr-2" />
+									Eliminar
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
 				))}
 			</div>
 			

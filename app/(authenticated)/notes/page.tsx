@@ -373,7 +373,9 @@ export default function NotesPage() {
 						<FoldersGalleryView
 							onFolderSelect={(id) => {
 								setSelectedFolder(id)
-								setSelectedFolderName('Carpeta') // TODO: Obtener nombre real
+								// Obtener el nombre de la carpeta desde los datos mock
+								const folderName = id === '1' ? 'Personal' : id === '2' ? 'Trabajo' : 'Carpeta'
+								setSelectedFolderName(folderName)
 								setCurrentView('notes')
 							}}
 							onCreateFolder={() => {

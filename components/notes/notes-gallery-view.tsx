@@ -83,20 +83,10 @@ export function NotesGalleryView({
 	const loadNotes = async () => {
 		try {
 			setIsLoading(true)
-			const result = await getUserContents({
-				folder_id: folderId,
-				limit: 100
-			})
+			console.log('Loading notes for folder:', folderId)
 			
-			if (result.success && result.contents) {
-				setNotes(result.contents)
-			} else {
-				setNotes([])
-			}
-		} catch (error) {
-			console.error('Error loading notes:', error)
-			toast.error('Error al cargar las notas')
-			// En caso de error, mostrar datos mock como fallback
+			// TEMPORAL: Usar datos mock hasta resolver problemas con Server Actions
+			console.log('Using mock data for notes')
 			const mockNotes: Note[] = [
 				{
 					id: '1',
@@ -142,6 +132,22 @@ export function NotesGalleryView({
 				}
 			]
 			setNotes(mockNotes)
+			
+			// TODO: Restaurar cuando se resuelvan los problemas de Server Actions
+			// const result = await getUserContents({
+			// 	folder_id: folderId,
+			// 	limit: 100
+			// })
+			// 
+			// if (result.success && result.contents) {
+			// 	setNotes(result.contents)
+			// } else {
+			// 	setNotes([])
+			// }
+		} catch (error) {
+			console.error('Error loading notes:', error)
+			toast.error('Error al cargar las notas')
+			setNotes([])
 		} finally {
 			setIsLoading(false)
 		}
