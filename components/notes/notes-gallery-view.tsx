@@ -223,7 +223,10 @@ export function NotesGalleryView({
 	}
 
 	// Renderizado condicional basado en viewMode
+	console.log('NotesGalleryView render - viewMode:', viewMode, 'notes count:', sortedNotes.length)
+	
 	if (viewMode === 'list') {
+		console.log('Rendering list view with', sortedNotes.length, 'notes')
 		return (
 			<div className="p-4 space-y-2">
 				{sortedNotes.map((note) => (
@@ -315,6 +318,7 @@ export function NotesGalleryView({
 	}
 
 	// Vista galería (mejorada y más pequeña con overflow controlado)
+	console.log('Rendering gallery view with', sortedNotes.length, 'notes')
 	return (
 		<div className="p-3 grid grid-cols-2 gap-3">
 			{sortedNotes.map((note) => (

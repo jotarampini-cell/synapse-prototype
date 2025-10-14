@@ -374,6 +374,7 @@ export default function NotesPage() {
 	
 	// Layout móvil - Nuevo sistema estilo Apple Notes
 	if (isMobile) {
+		console.log('Mobile layout - currentView:', currentView, 'viewMode:', viewMode, 'selectedFolder:', selectedFolder)
 		return (
 			<div className="h-screen flex flex-col bg-background">
 				{/* Header con breadcrumb condicional */}
@@ -448,6 +449,9 @@ export default function NotesPage() {
 						</div>
 					)}
 				</main>
+				
+				{/* Spacer para evitar que el contenido se oculte detrás del bottom nav */}
+				<MobileBottomNavSpacer />
 				
 				{/* MobileBottomNav siempre visible */}
 				<MobileBottomNav />
