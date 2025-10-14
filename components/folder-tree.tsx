@@ -282,17 +282,26 @@ export function FolderTree({ selectedFolderId, onFolderSelect, onCreateNote }: F
 	const loadFolders = async () => {
 		try {
 			setIsLoading(true)
-			const folderTree = await getFolderTree()
-			
-			// Convertir lista plana a árbol jerárquico
-			const folderMap = new Map<string, FolderType & { children?: FolderType[] }>()
-			const rootFolders: (FolderType & { children?: FolderType[] })[] = []
+		const folderTreeResult = await getFolderTree()
+		
+		// Verificar si la respuesta es exitosa
+		if (!folderTreeResult.success || !folderTreeResult.folders) {
+			console.error('Error getting folder tree:', folderTreeResult.error)
+			setFolders([])
+			return
+		}
+		
+		const folderTree = folderTreeResult.folders
+		
+		// Convertir lista plana a árbol jerárquico
+		const folderMap = new Map<string, FolderType & { children?: FolderType[] }>()
+		const rootFolders: (FolderType & { children?: FolderType[] })[] = []
 
-			folderTree.forEach(folder => {
-				folderMap.set(folder.id, { ...folder, children: [] })
-			})
+		folderTree.forEach(folder => {
+			folderMap.set(folder.id, { ...folder, children: [] })
+		})
 
-			folderTree.forEach(folder => {
+		folderTree.forEach(folder => {
 				const folderWithChildren = folderMap.get(folder.id)!
 				if (folder.parent_id) {
 					const parent = folderMap.get(folder.parent_id)
