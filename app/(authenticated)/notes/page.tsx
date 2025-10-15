@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useAppKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
-import { useHideBrowserToolbar, useViewportHeight } from "@/hooks/use-hide-browser-toolbar"
 import { MobileBottomNav, MobileBottomNavSpacer } from "@/components/mobile-bottom-nav"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -118,9 +117,6 @@ export default function NotesPage() {
 	// Mobile detection usando hook personalizado
 	const { isMobile, isLoading: isMobileLoading } = useMobileDetection()
 	
-	// Hook para ocultar toolbar del navegador al hacer scroll
-	const { isToolbarHidden } = useHideBrowserToolbar()
-	const { viewportHeight } = useViewportHeight()
 	
 	// Debug: Log mobile detection
 	useEffect(() => {
@@ -387,14 +383,7 @@ export default function NotesPage() {
 	if (isMobile) {
 		console.log('Mobile layout - currentView:', currentView, 'viewMode:', viewMode, 'selectedFolder:', selectedFolder)
 		return (
-			<div 
-				key="mobile-view" 
-				className="flex flex-col bg-background"
-				style={{ 
-					height: isMobile ? viewportHeight : '100vh',
-					minHeight: isMobile ? viewportHeight : '100vh'
-				}}
-			>
+			<div key="mobile-view" className="h-screen flex flex-col bg-background">
 				{/* Header con breadcrumb condicional */}
 				{currentView !== 'folders' && (
 					<header className="h-12 flex items-center px-4 border-b border-border bg-background safe-area-top">
