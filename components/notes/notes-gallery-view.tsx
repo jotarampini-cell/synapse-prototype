@@ -353,7 +353,7 @@ export function NotesGalleryView({
 							</div>
 							
 							{/* Contenido principal */}
-							<div className="flex-1 min-w-0 max-w-0">
+							<div className="flex-1 min-w-0">
 								{/* Título */}
 								<h3 className="font-medium text-sm mb-1 truncate group-hover:text-primary transition-colors">
 									{note.title || 'Sin título'}
