@@ -64,13 +64,14 @@ export function NotesGalleryView({
 	folderId, 
 	onNoteSelect,
 	searchQuery = "",
-	viewMode = 'gallery',
+	viewMode = 'list', // Cambiado a 'list' por defecto para que coincida con la captura de pantalla
 	filterBy = 'all',
 	sortBy = 'updated_at',
 	onCreateNote
 }: NotesGalleryViewProps) {
 	const [notes, setNotes] = useState<Note[]>([])
 	const [isLoading, setIsLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
 
 	useEffect(() => {
 		loadNotes()
@@ -112,6 +113,7 @@ export function NotesGalleryView({
 	const loadNotes = async () => {
 		try {
 			setIsLoading(true)
+			setError(null)
 			console.log('Loading notes for folder:', folderId)
 			
 			// Usar datos reales
@@ -148,6 +150,7 @@ export function NotesGalleryView({
 			}
 		} catch (error) {
 			console.error('Error loading notes:', error)
+			setError('Error al cargar las notas')
 			toast.error('Error al cargar las notas')
 			setNotes([])
 		} finally {
@@ -162,7 +165,7 @@ export function NotesGalleryView({
 			if (result.success) {
 				setNotes(prev => prev.map(note => 
 					note.id === noteId 
-						? { ...note, is_pinned: result.is_pinned }
+						? { ...note, is_pinned: result.is_pinned ?? false }
 						: note
 				))
 				toast.success(result.message)
@@ -182,7 +185,7 @@ export function NotesGalleryView({
 			if (result.success) {
 				setNotes(prev => prev.map(note => 
 					note.id === noteId 
-						? { ...note, is_archived: result.is_archived }
+						? { ...note, is_archived: result.is_archived ?? false }
 						: note
 				))
 				toast.success(result.message)
@@ -208,6 +211,12 @@ export function NotesGalleryView({
 			toast.error('Error al eliminar la nota')
 		}
 	}
+
+	// Para depuración, muestra los datos de las notas
+	useEffect(() => {
+		console.log('NotesGalleryView - notes:', notes)
+		console.log('NotesGalleryView - sortedNotes:', sortedNotes)
+	}, [notes, sortedNotes])
 
 	if (isLoading) {
 		// Skeleton condicional basado en viewMode
@@ -266,6 +275,26 @@ export function NotesGalleryView({
 		}
 	}
 
+	// Mostrar error si hay alguno
+	if (error) {
+		return (
+			<div className="p-8 text-center">
+				<FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
+				<p className="text-muted-foreground mb-2">
+					{error}
+				</p>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={loadNotes}
+					className="mt-2"
+				>
+					Reintentar
+				</Button>
+			</div>
+		)
+	}
+
 	if (sortedNotes.length === 0) {
 		// Si hay búsqueda, mostrar mensaje de no encontrado
 		if (searchQuery) {
@@ -304,118 +333,118 @@ export function NotesGalleryView({
 	// Renderizado condicional basado en viewMode
 	console.log('NotesGalleryView render - viewMode:', viewMode, 'notes count:', sortedNotes.length)
 	
-        if (viewMode === 'list') {
-            console.log('Rendering list view with', sortedNotes.length, 'notes')
-            console.log('List view notes data:', sortedNotes)
+	if (viewMode === 'list') {
+		console.log('Rendering list view with', sortedNotes.length, 'notes')
+		console.log('List view notes data:', sortedNotes)
 
-            // VISTA DE LISTA CON DISEÑO DE ACTIVIDAD RECIENTE (HOME MÓVIL)
-            return (
-                <div className="p-4 space-y-2">
-                    {sortedNotes.map((note) => (
-                        <div
-                            key={note.id}
-                            className="w-full group bg-card/50 backdrop-blur-sm rounded-xl p-3 text-left transition-all active:scale-98 hover:bg-card hover:shadow-md border border-border/50 cursor-pointer"
-                            onClick={() => onNoteSelect(note.id)}
-                        >
-                            <div className="flex items-start gap-3">
-                                {/* Icono circular como en Actividad Reciente */}
-                                <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-500/20">
-                                    <FileText className="h-5 w-5 text-blue-600" />
-                                </div>
-                                
-                                {/* Contenido principal */}
-                                <div className="flex-1 min-w-0 max-w-0">
-                                    {/* Título */}
-                                    <h3 className="font-medium text-sm mb-1 truncate group-hover:text-primary transition-colors">
-                                        {note.title || 'Sin título'}
-                                    </h3>
-                                    
-                                    {/* Preview del contenido */}
-                                    <p className="text-xs text-muted-foreground line-clamp-1 truncate mb-1">
-                                        {extractTextPreview(note.content) || note.content || 'Sin contenido'}
-                                    </p>
-                                    
-                                    {/* Información secundaria */}
-                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                        <span className="truncate">{formatRelativeDate(note.updated_at)}</span>
-                                        {note.word_count > 0 && (
-                                            <>
-                                                <span>•</span>
-                                                <span className="whitespace-nowrap">{note.word_count} palabras</span>
-                                            </>
-                                        )}
-                                        {note.is_pinned && (
-                                            <>
-                                                <span>•</span>
-                                                <Pin className="h-3 w-3 flex-shrink-0" />
-                                            </>
-                                        )}
-                                        {note.is_archived && (
-                                            <>
-                                                <span>•</span>
-                                                <Archive className="h-3 w-3 flex-shrink-0" />
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
-                                
-                                {/* Badge de tipo como en Actividad Reciente */}
-                                <Badge 
-                                    variant="secondary" 
-                                    className="text-xs flex-shrink-0"
-                                >
-                                    nota
-                                </Badge>
-                                
-                                {/* Menú opciones */}
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-6 w-6 flex-shrink-0"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <MoreHorizontal className="h-3 w-3" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem
-                                            onClick={() => handleTogglePin(note.id, note.is_pinned)}
-                                        >
-                                            {note.is_pinned ? (
-                                                <PinOff className="h-4 w-4 mr-2" />
-                                            ) : (
-                                                <Pin className="h-4 w-4 mr-2" />
-                                            )}
-                                            {note.is_pinned ? 'Desfijar' : 'Fijar'}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => handleToggleArchive(note.id, note.is_archived)}
-                                        >
-                                            {note.is_archived ? (
-                                                <ArchiveRestore className="h-4 w-4 mr-2" />
-                                            ) : (
-                                                <Archive className="h-4 w-4 mr-2" />
-                                            )}
-                                            {note.is_archived ? 'Desarchivar' : 'Archivar'}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem
-                                            className="text-destructive"
-                                            onClick={() => handleDeleteNote(note.id)}
-                                        >
-                                            <Trash2 className="h-4 w-4 mr-2" />
-                                            Eliminar
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )
-        }
+		// VISTA DE LISTA CON DISEÑO DE ACTIVIDAD RECIENTE (HOME MÓVIL)
+		return (
+			<div className="p-4 space-y-2">
+				{sortedNotes.map((note) => (
+					<div
+						key={note.id}
+						className="w-full group bg-card/50 backdrop-blur-sm rounded-xl p-3 text-left transition-all active:scale-98 hover:bg-card hover:shadow-md border border-border/50 cursor-pointer"
+						onClick={() => onNoteSelect(note.id)}
+					>
+						<div className="flex items-start gap-3">
+							{/* Icono circular como en Actividad Reciente */}
+							<div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-500/20">
+								<FileText className="h-5 w-5 text-blue-600" />
+							</div>
+							
+							{/* Contenido principal */}
+							<div className="flex-1 min-w-0 max-w-0">
+								{/* Título */}
+								<h3 className="font-medium text-sm mb-1 truncate group-hover:text-primary transition-colors">
+									{note.title || 'Sin título'}
+								</h3>
+								
+								{/* Preview del contenido */}
+								<p className="text-xs text-muted-foreground line-clamp-1 truncate mb-1">
+									{extractTextPreview(note.content) || note.content || 'Sin contenido'}
+								</p>
+								
+								{/* Información secundaria */}
+								<div className="flex items-center gap-1 text-xs text-muted-foreground">
+									<span className="truncate">{formatRelativeDate(note.updated_at)}</span>
+									{note.word_count > 0 && (
+										<>
+											<span>•</span>
+											<span className="whitespace-nowrap">{note.word_count} palabras</span>
+										</>
+									)}
+									{note.is_pinned && (
+										<>
+											<span>•</span>
+											<Pin className="h-3 w-3 flex-shrink-0" />
+										</>
+									)}
+									{note.is_archived && (
+										<>
+											<span>•</span>
+											<Archive className="h-3 w-3 flex-shrink-0" />
+										</>
+									)}
+								</div>
+							</div>
+							
+							{/* Badge de tipo como en Actividad Reciente */}
+							<Badge 
+								variant="secondary" 
+								className="text-xs flex-shrink-0"
+							>
+								nota
+							</Badge>
+							
+							{/* Menú opciones */}
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button
+										variant="ghost"
+										size="icon"
+										className="h-6 w-6 flex-shrink-0"
+										onClick={(e) => e.stopPropagation()}
+									>
+										<MoreHorizontal className="h-3 w-3" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem
+										onClick={() => handleTogglePin(note.id, note.is_pinned)}
+									>
+										{note.is_pinned ? (
+											<PinOff className="h-4 w-4 mr-2" />
+										) : (
+											<Pin className="h-4 w-4 mr-2" />
+										)}
+										{note.is_pinned ? 'Desfijar' : 'Fijar'}
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										onClick={() => handleToggleArchive(note.id, note.is_archived)}
+									>
+										{note.is_archived ? (
+											<ArchiveRestore className="h-4 w-4 mr-2" />
+										) : (
+											<Archive className="h-4 w-4 mr-2" />
+										)}
+										{note.is_archived ? 'Desarchivar' : 'Archivar'}
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										className="text-destructive"
+										onClick={() => handleDeleteNote(note.id)}
+									>
+										<Trash2 className="h-4 w-4 mr-2" />
+										Eliminar
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					</div>
+				))}
+			</div>
+		)
+	}
 
 	// Vista galería (mejorada y más pequeña con overflow controlado)
 	console.log('Rendering gallery view with', sortedNotes.length, 'notes')
