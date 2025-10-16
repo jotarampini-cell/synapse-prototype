@@ -35,6 +35,15 @@ import { cn } from "@/lib/utils"
 import { SampleNotes } from "./sample-notes"
 import { DebugListView } from "./debug-list-view"
 
+// Función para normalizar texto (quitar acentos, ñ, etc.)
+function normalizeText(text: string): string {
+	return text
+		.toLowerCase()
+		.normalize("NFD") // Descomponer caracteres acentuados
+		.replace(/[\u0300-\u036f]/g, "") // Remover marcas diacríticas
+		.trim()
+}
+
 interface Note {
 	id: string
 	title: string
@@ -83,10 +92,15 @@ export function NotesGalleryView({
 		
 		// Filtrar por búsqueda
 		if (searchQuery) {
-			filtered = filtered.filter(note => 
-				note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				extractTextPreview(note.content).toLowerCase().includes(searchQuery.toLowerCase())
-			)
+			const normalizedQuery = normalizeText(searchQuery)
+			
+			filtered = filtered.filter(note => {
+				const normalizedTitle = normalizeText(note.title)
+				const normalizedContent = normalizeText(extractTextPreview(note.content))
+				
+				return normalizedTitle.includes(normalizedQuery) || 
+					   normalizedContent.includes(normalizedQuery)
+			})
 		}
 		
 		// Filtrar por estado (pin/archive)
@@ -340,10 +354,14 @@ export function NotesGalleryView({
 		// VISTA DE LISTA CON DISEÑO DE ACTIVIDAD RECIENTE (HOME MÓVIL)
 		return (
 			<div className="p-4 space-y-2">
-				{sortedNotes.map((note) => (
+				{sortedNotes.map((note, index) => (
 					<div
 						key={note.id}
-						className="w-full group bg-card/50 backdrop-blur-sm rounded-xl p-3 text-left transition-all active:scale-98 hover:bg-card hover:shadow-md border border-border/50 cursor-pointer"
+						className="w-full group bg-card/50 backdrop-blur-sm rounded-xl p-3 text-left transition-all active:scale-98 hover:bg-card hover:shadow-md border border-border/50 cursor-pointer animate-in fade-in slide-in-from-bottom-2 duration-200"
+						style={{ 
+							animationDelay: `${index * 30}ms`, // Efecto stagger
+							animationFillMode: 'both'
+						}}
 						onClick={() => onNoteSelect(note.id)}
 					>
 						<div className="flex items-start gap-3">
@@ -450,10 +468,14 @@ export function NotesGalleryView({
 	console.log('Rendering gallery view with', sortedNotes.length, 'notes')
 	return (
 		<div className="p-3 grid grid-cols-2 gap-3">
-			{sortedNotes.map((note) => (
+			{sortedNotes.map((note, index) => (
 				<Card 
 					key={note.id}
-					className="p-3 cursor-pointer hover:shadow-sm transition-all duration-200 h-32 flex flex-col overflow-hidden rounded-xl border bg-card hover:bg-muted/50"
+					className="p-3 cursor-pointer hover:shadow-sm transition-all duration-200 h-36 flex flex-col overflow-hidden rounded-xl border bg-card hover:bg-muted/50 animate-in fade-in slide-in-from-bottom-2 duration-200"
+					style={{ 
+						animationDelay: `${index * 30}ms`, // Efecto stagger
+						animationFillMode: 'both'
+					}}
 					onClick={() => onNoteSelect(note.id)}
 				>
 					{/* Título arriba - Altura fija */}

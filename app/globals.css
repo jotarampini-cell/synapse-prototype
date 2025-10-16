@@ -357,3 +357,36 @@
   background: linear-gradient(to right, hsl(var(--primary) / 0.05), hsl(var(--primary) / 0.15)) !important;
   color: hsl(var(--foreground)) !important;
 }
+
+/* Smooth scrolling para móvil */
+@media (max-width: 768px) {
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Touch target mínimo de 44x44px (Apple HIG) */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Animaciones para lista de notas */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .note-item-animated {
+    animation: fadeIn 0.2s ease-out forwards;
+  }
+}

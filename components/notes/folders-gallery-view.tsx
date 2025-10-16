@@ -100,25 +100,32 @@ function SortableFolderItem({
 				isDragging && "z-50"
 			)}
 		>
-			<Card
-				className="p-4 cursor-pointer hover:shadow-md transition-all duration-200 bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card select-none"
-				onClick={() => onFolderSelect(folder.id)}
-				style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
+		<Card
+			className={cn(
+				"p-4 transition-all duration-200 select-none",
+				"bg-card/50 backdrop-blur-sm border border-border/50",
+				isDragging && "shadow-2xl scale-105 opacity-90 border-primary/50 bg-primary/5"
+			)}
+			style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
+		>
+			<div 
+				{...attributes}
+				{...listeners}
+				className="flex items-center justify-between cursor-grab active:cursor-grabbing touch-target"
+				onMouseDown={(e) => e.preventDefault()}
+				onTouchStart={(e) => e.preventDefault()}
 			>
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-3 flex-1 min-w-0">
-						{/* Handle de arrastre */}
-						<div
-							{...attributes}
-							{...listeners}
-							className="p-1 cursor-grab active:cursor-grabbing hover:bg-muted/50 rounded transition-colors select-none"
-							onClick={(e) => e.stopPropagation()}
-							onMouseDown={(e) => e.preventDefault()}
-							onTouchStart={(e) => e.preventDefault()}
-							style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
-						>
-							<GripVertical className="h-4 w-4 text-muted-foreground" />
-						</div>
+				<div 
+					className="flex items-center gap-3 flex-1 min-w-0"
+					onClick={(e) => {
+						e.stopPropagation()
+						onFolderSelect(folder.id)
+					}}
+				>
+					{/* Ícono de drag siempre visible */}
+					<div className="p-2 -ml-2 touch-target">
+						<GripVertical className="h-4 w-4 text-muted-foreground" />
+					</div>
 
 						{/* Icono de carpeta */}
 						<div 
@@ -194,11 +201,15 @@ export function FoldersGalleryView({
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
 			activationConstraint: {
-				distance: 8,
+				distance: 12, // Aumentar de 8 a 12px para evitar activación accidental
+				delay: 150, // Añadir delay de 150ms para distinguir drag de tap
+				tolerance: 5,
 			},
 			// Prevenir selección de texto durante el drag
 			onActivation: (event) => {
-				event.preventDefault()
+				if (event.event && event.event.preventDefault) {
+					event.event.preventDefault()
+				}
 			},
 		}),
 		useSensor(KeyboardSensor, {

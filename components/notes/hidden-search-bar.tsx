@@ -23,13 +23,20 @@ export function HiddenSearchBar({
 		const handleScroll = () => {
 			const currentScrollY = window.scrollY
 			
-			// Mostrar al hacer scroll hacia abajo
+			// Solo procesar si hay scroll significativo (>10px para evitar jitter)
+			if (Math.abs(currentScrollY - lastScrollY) < 10) return
+			
+			// Mostrar al hacer scroll hacia ABAJO
 			if (currentScrollY > lastScrollY && currentScrollY > 50) {
 				setIsVisible(true)
 			} 
-			// Ocultar al hacer scroll hacia arriba
+			// Ocultar al hacer scroll hacia ARRIBA (pero mantener si hay búsqueda activa)
 			else if (currentScrollY < lastScrollY) {
-				setIsVisible(false)
+				if (searchQuery.trim() === '') {
+					// Sin búsqueda activa: ocultar
+					setIsVisible(false)
+				}
+				// Con búsqueda activa: mantener visible (no hacer nada)
 			}
 			
 			setLastScrollY(currentScrollY)
@@ -37,7 +44,7 @@ export function HiddenSearchBar({
 		
 		window.addEventListener('scroll', handleScroll, { passive: true })
 		return () => window.removeEventListener('scroll', handleScroll)
-	}, [lastScrollY])
+	}, [lastScrollY, searchQuery])
 
 	const handleSearchChange = (value: string) => {
 		setSearchQuery(value)
@@ -51,27 +58,54 @@ export function HiddenSearchBar({
 
 	return (
 		<div className={cn(
-			"fixed top-0 left-0 right-0 z-40 transition-transform duration-300",
-			"bg-background/95 backdrop-blur-lg border-b border-border/50",
-			isVisible ? "translate-y-0" : "-translate-y-full"
+			"fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out",
+			"bg-background/98 backdrop-blur-xl",
+			"border-b border-border/30 shadow-sm",
+			isVisible 
+				? "translate-y-0 opacity-100" 
+				: "-translate-y-full opacity-0"
 		)}>
-			<div className="p-4">
-				<div className="relative">
-					<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+			<div className="max-w-2xl mx-auto px-4 py-3">
+				<div className="relative group">
+					{/* Ícono de búsqueda animado */}
+					<div className="absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200">
+						<Search className={cn(
+							"h-4 w-4 transition-colors duration-200",
+							searchQuery 
+								? "text-primary" 
+								: "text-muted-foreground group-focus-within:text-primary"
+						)} />
+					</div>
+					
+					{/* Input con animación */}
 					<Input
-						placeholder={placeholder}
+						placeholder="Buscar en notas..."
 						value={searchQuery}
 						onChange={(e) => handleSearchChange(e.target.value)}
-						className="pl-10 pr-10"
+						className={cn(
+							"pl-10 pr-10 h-11 rounded-xl border-border/50",
+							"bg-muted/30 backdrop-blur-sm",
+							"transition-all duration-200",
+							"focus:bg-background focus:border-primary/50 focus:shadow-md",
+							"placeholder:text-muted-foreground/70",
+							searchQuery && "bg-background border-primary/30"
+						)}
 					/>
+					
+					{/* Botón de limpiar con animación */}
 					{searchQuery && (
 						<Button
 							variant="ghost"
 							size="icon"
-							className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6"
+							className={cn(
+								"absolute right-1 top-1/2 transform -translate-y-1/2",
+								"h-8 w-8 rounded-full",
+								"bg-muted/50 hover:bg-muted transition-all duration-200",
+								"animate-in fade-in zoom-in-95"
+							)}
 							onClick={handleClearSearch}
 						>
-							<X className="h-3 w-3" />
+							<X className="h-3.5 w-3.5" />
 						</Button>
 					)}
 				</div>
