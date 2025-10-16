@@ -190,6 +190,7 @@ export function MobileSearchBar({ onSearch, scrollContainerRef }: MobileSearchBa
 					</button>
 				</div>
 			</div>
+			</div>
 		</>
 	)
 }
