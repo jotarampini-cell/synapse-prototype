@@ -101,6 +101,7 @@ export default function NotesPage() {
 	
 	// Refs
 	const mainScrollRef = useRef<HTMLDivElement>(null)
+	
 	const [showDefaultFoldersPrompt, setShowDefaultFoldersPrompt] = useState(false)
 	
 	// Layout state

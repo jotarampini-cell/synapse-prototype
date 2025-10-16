@@ -20,11 +20,13 @@ export function HiddenSearchBar({
 	const [isVisible, setIsVisible] = useState(false)
 	const [lastScrollY, setLastScrollY] = useState(0)
 	const [searchQuery, setSearchQuery] = useState("")
+	
 
 	useEffect(() => {
 		const handleScroll = () => {
 			// Obtener scroll del contenedor correcto (no del window)
 			const currentScrollY = scrollContainerRef?.current?.scrollTop ?? window.scrollY
+			
 			
 			// Solo procesar si hay scroll significativo (>10px para evitar jitter)
 			if (Math.abs(currentScrollY - lastScrollY) < 10) return
