@@ -6,8 +6,9 @@ import { useCommandPalette } from "@/hooks/use-command-palette"
 import { useRouter, usePathname } from "next/navigation"
 import { WelcomeBanner } from "@/components/responsive-banner"
 import { AppFooter } from "@/components/app-footer"
+import { NavigationProvider, useNavigation } from "@/contexts/navigation-context"
 
-export default function AuthenticatedLayout({
+function AuthenticatedLayoutContent({
 	children,
 }: {
 	children: React.ReactNode
@@ -15,6 +16,7 @@ export default function AuthenticatedLayout({
 	const router = useRouter()
 	const pathname = usePathname()
 	const { isOpen: isCommandPaletteOpen, closeCommandPalette } = useCommandPalette()
+	const { showBackButton, backButtonText, onBackClick } = useNavigation()
 	
 	// Solo mostrar banner en la página home
 	const isHomePage = pathname === "/home" || pathname === "/"
@@ -30,7 +32,11 @@ export default function AuthenticatedLayout({
 
 	return (
 		<div className="min-h-screen bg-background overflow-x-hidden">
-			<UnifiedNavigation />
+			<UnifiedNavigation 
+				showBackButton={showBackButton}
+				backButtonText={backButtonText}
+				onBackClick={onBackClick || undefined}
+			/>
 			
 			
 			<main>
@@ -48,5 +54,19 @@ export default function AuthenticatedLayout({
 				onNoteSelect={handleNoteSelect}
 			/>
 		</div>
+	)
+}
+
+export default function AuthenticatedLayout({
+	children,
+}: {
+	children: React.ReactNode
+}) {
+	return (
+		<NavigationProvider>
+			<AuthenticatedLayoutContent>
+				{children}
+			</AuthenticatedLayoutContent>
+		</NavigationProvider>
 	)
 }

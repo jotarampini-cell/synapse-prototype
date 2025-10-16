@@ -20,7 +20,8 @@ import {
 	CheckSquare, 
 	BookOpen, 
 	Folder,
-	Search
+	Search,
+	ChevronLeft
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -70,9 +71,18 @@ const navigationItems: NavigationItem[] = [
 interface UnifiedNavigationProps {
 	showUserMenu?: boolean
 	className?: string
+	showBackButton?: boolean
+	backButtonText?: string
+	onBackClick?: () => void
 }
 
-export function UnifiedNavigation({ showUserMenu = true, className }: UnifiedNavigationProps) {
+export function UnifiedNavigation({ 
+	showUserMenu = true, 
+	className,
+	showBackButton = false,
+	backButtonText,
+	onBackClick
+}: UnifiedNavigationProps) {
 	const pathname = usePathname()
 	
 	// Command Palette
@@ -89,6 +99,25 @@ export function UnifiedNavigation({ showUserMenu = true, className }: UnifiedNav
 		<header className={cn("sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm overflow-x-hidden", className)}>
 			<div className="container mx-auto px-6 py-2">
 				<div className="flex items-center justify-between relative">
+					{/* Espacio izquierdo - botón back o vacío */}
+					<div className="flex items-center gap-2">
+						{showBackButton && (
+							<div className="flex items-center gap-2">
+								<Button 
+									variant="ghost" 
+									size="sm" 
+									onClick={onBackClick}
+									className="h-8 w-8 p-0"
+								>
+									<ChevronLeft className="h-4 w-4" />
+								</Button>
+								{backButtonText && (
+									<span className="text-sm font-medium text-foreground">{backButtonText}</span>
+								)}
+							</div>
+						)}
+					</div>
+
 					{/* Logo centrado */}
 					<div className="absolute left-1/2 transform -translate-x-1/2">
 						<Link href="/home" className="flex items-center">

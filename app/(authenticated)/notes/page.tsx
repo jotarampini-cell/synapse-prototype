@@ -51,10 +51,11 @@ import { log } from "@/lib/logger"
 import { createContent } from "@/app/actions/content"
 import { createFolder, createDefaultFolders, getFolderTree } from "@/app/actions/folders"
 import { toast } from "sonner"
+import { useNavigation } from "@/contexts/navigation-context"
 // Nuevos componentes para UI móvil
 import { FoldersGalleryView } from "@/components/notes/folders-gallery-view"
 import { NotesGalleryView } from "@/components/notes/notes-gallery-view"
-import { MobileSearchBar } from "@/components/notes/mobile-search-bar"
+import { SmartSearchBar } from "@/components/notes/smart-search-bar"
 import { NotesFabMenu } from "@/components/notes/notes-fab-menu"
 import { CreateFolderModal } from "@/components/notes/create-folder-modal"
 import { QuickNoteModal } from "@/components/notes/quick-note-modal"
@@ -89,6 +90,7 @@ import { QuickNoteModal } from "@/components/notes/quick-note-modal"
 export default function NotesPage() {
 	const { user, loading } = useAuth()
 	const searchParams = useSearchParams()
+	const { setNavigationProps } = useNavigation()
 	
 	// State
 	const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
@@ -126,6 +128,39 @@ export default function NotesPage() {
 	useEffect(() => {
 		console.log('Notes page - isMobile:', isMobile)
 	}, [isMobile])
+	
+	// Actualizar props de navegación según currentView
+	useEffect(() => {
+		if (isMobile) {
+			if (currentView === 'notes') {
+				setNavigationProps({
+					showBackButton: true,
+					backButtonText: selectedFolderName || 'Carpeta',
+					onBackClick: () => {
+						setCurrentView('folders')
+						setSelectedFolder(null)
+						setSelectedFolderName('')
+					}
+				})
+			} else if (currentView === 'editor') {
+				setNavigationProps({
+					showBackButton: true,
+					backButtonText: 'Nota',
+					onBackClick: () => {
+						setCurrentView('notes')
+						setSelectedNote(null)
+					}
+				})
+			} else {
+				// Vista folders - sin botón back
+				setNavigationProps({
+					showBackButton: false,
+					backButtonText: '',
+					onBackClick: undefined
+				})
+			}
+		}
+	}, [isMobile, currentView, selectedFolderName])
 	
 	
 	// Command palette
@@ -388,55 +423,25 @@ export default function NotesPage() {
 		console.log('Mobile layout - currentView:', currentView, 'viewMode:', viewMode, 'selectedFolder:', selectedFolder)
 		return (
 			<div key="mobile-view" className="h-screen flex flex-col bg-background">
-				{/* Header con breadcrumb condicional */}
-				{currentView !== 'folders' && (
-					<header className="h-12 flex items-center px-4 border-b border-border bg-background safe-area-top">
-						<Button 
-							variant="ghost" 
-							size="icon"
-							onClick={() => {
-								if (currentView === 'editor') {
-									setCurrentView('notes')
-									setSelectedNote(null)
-								} else if (currentView === 'notes') {
-									setCurrentView('folders')
-									setSelectedFolder(null)
-									setSelectedFolderName('')
-								}
-							}}
-							className="touch-target"
-						>
-							<ChevronLeft className="h-5 w-5" />
-						</Button>
-						<span className="ml-2 font-medium truncate">
-							{currentView === 'notes' ? selectedFolderName : 'Nota'}
-						</span>
-					</header>
-				)}
 				
 				{/* Contenido según vista */}
 				<main ref={mainScrollRef} className="flex-1 overflow-y-auto pb-20">
-					{/* DEBUG: Botón de prueba para search bar */}
-					<div className="fixed bottom-20 right-4 z-[10001]">
-						<button
-							onClick={() => {
-								console.log('🔧 Force showing search bar from main page')
-								// Forzar scroll para activar search bar
-								if (mainScrollRef.current) {
-									mainScrollRef.current.scrollTop = 20
-								}
-							}}
-							className="bg-green-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg"
-						>
-							FORCE SEARCH
-						</button>
-					</div>
 					
 					{/* Search bar condicional - Solo en vistas de carpetas y notas */}
 					{(currentView === 'folders' || currentView === 'notes') && (
-						<MobileSearchBar 
+						<SmartSearchBar 
 							onSearch={setSearchQuery}
 							scrollContainerRef={mainScrollRef}
+							searchContext={currentView === 'folders' ? 'folders' : 'notes'}
+							onFolderSelect={(folderId) => {
+								setSelectedFolder(folderId)
+								setSelectedFolderName('Carpeta')
+								setCurrentView('notes')
+							}}
+							onNoteSelect={(noteId) => {
+								setSelectedNote(noteId)
+								setCurrentView('editor')
+							}}
 						/>
 					)}
 					{currentView === 'folders' && (
