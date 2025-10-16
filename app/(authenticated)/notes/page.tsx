@@ -163,10 +163,13 @@ export default function NotesPage() {
 	const { contents, isLoading: contentsLoading, mutate: mutateContents } = useUserContents()
 	const { folders, isLoading: foldersLoading, mutate: mutateFolders } = useFolderTree()
 	
-	// Debug: Log mobile detection
+	// Debug: Log mobile detection y datos
 	useEffect(() => {
 		console.log('Notes page - isMobile:', isMobile)
-	}, [isMobile])
+		console.log('Notes page - contents:', contents)
+		console.log('Notes page - folders:', folders)
+		console.log('Notes page - pageState:', pageState)
+	}, [isMobile, contents, folders, pageState])
 	
 	// Actualizar props de navegación según currentView
 	useEffect(() => {

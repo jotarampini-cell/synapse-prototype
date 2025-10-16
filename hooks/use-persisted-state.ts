@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAppState } from '@/contexts/app-state-context'
 
 type PageKey = 'home' | 'notes' | 'tareas' | 'fuentes' | 'proyectos'
@@ -10,7 +9,6 @@ export function usePersistedState<T>(
 	pageKey: PageKey,
 	initialState: T
 ): [T, (state: T) => void] {
-	const router = useRouter()
 	const appState = useAppState()
 	
 	// Obtener el estado persistido o usar el inicial
@@ -66,36 +64,10 @@ export function usePersistedState<T>(
 				// Usar setTimeout para asegurar que el DOM esté listo
 				setTimeout(() => {
 					window.scrollTo(0, scrollPos)
-				}, 100)
+				}, 200)
 			}
 		}
 	}, [])
-
-	// Guardar scroll position antes de navegar
-	useEffect(() => {
-		const handleRouteChange = () => {
-			updateState({
-				...state,
-				scrollPosition: window.scrollY
-			} as T)
-		}
-
-		// Escuchar cambios de ruta
-		const handleBeforeUnload = () => {
-			updateState({
-				...state,
-				scrollPosition: window.scrollY
-			} as T)
-		}
-
-		// Agregar listeners
-		window.addEventListener('beforeunload', handleBeforeUnload)
-		
-		// Cleanup
-		return () => {
-			window.removeEventListener('beforeunload', handleBeforeUnload)
-		}
-	}, [state, updateState])
 
 	// Guardar scroll position periódicamente
 	useEffect(() => {
@@ -107,7 +79,7 @@ export function usePersistedState<T>(
 					...state,
 					scrollPosition: window.scrollY
 				} as T)
-			}, 500)
+			}, 1000)
 		}
 
 		window.addEventListener('scroll', handleScroll, { passive: true })
