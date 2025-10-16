@@ -20,13 +20,10 @@ import {
 	CheckSquare, 
 	BookOpen, 
 	Folder,
-	Search,
 	ChevronLeft
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
-import { useCommandPalette } from "@/hooks/use-command-palette"
 
 interface NavigationItem {
 	title: string
@@ -84,9 +81,6 @@ export function UnifiedNavigation({
 	onBackClick
 }: UnifiedNavigationProps) {
 	const pathname = usePathname()
-	
-	// Command Palette
-	const { isOpen: isCommandPaletteOpen, closeCommandPalette, openCommandPalette } = useCommandPalette()
 
 	const isActive = (href: string) => {
 		if (href === "/home") {
@@ -151,20 +145,6 @@ export function UnifiedNavigation({
 
 					{/* Right side controls */}
 					<div className="flex items-center gap-2 ml-auto">
-						{/* Search button - visible en desktop y mobile */}
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={openCommandPalette}
-							className="flex items-center gap-2 h-9 px-3"
-						>
-							<Search className="h-4 w-4" />
-							<span className="hidden md:inline text-sm text-muted-foreground">Buscar...</span>
-							<kbd className="hidden md:inline pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-								<span className="text-xs">⌘</span>K
-							</kbd>
-						</Button>
-						
 						{/* Menú de configuración - visible en desktop y mobile */}
 						{showUserMenu && <UserMenu />}
 					</div>

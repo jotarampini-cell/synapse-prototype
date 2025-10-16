@@ -7,6 +7,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { WelcomeBanner } from "@/components/responsive-banner"
 import { AppFooter } from "@/components/app-footer"
 import { NavigationProvider, useNavigation } from "@/contexts/navigation-context"
+import { useEffect } from "react"
 
 function AuthenticatedLayoutContent({
 	children,
@@ -16,10 +17,17 @@ function AuthenticatedLayoutContent({
 	const router = useRouter()
 	const pathname = usePathname()
 	const { isOpen: isCommandPaletteOpen, closeCommandPalette } = useCommandPalette()
-	const { showBackButton, backButtonText, onBackClick } = useNavigation()
+	const { showBackButton, backButtonText, onBackClick, resetNavigationProps } = useNavigation()
 	
 	// Solo mostrar banner en la página home
 	const isHomePage = pathname === "/home" || pathname === "/"
+	
+	// Resetear props de navegación cuando se cambie de página (excepto en /notes)
+	useEffect(() => {
+		if (pathname !== "/notes") {
+			resetNavigationProps()
+		}
+	}, [pathname, resetNavigationProps])
 
 	const handleCreateNote = (title: string, content: string) => {
 		// Redirigir a la página de notas para crear la nota

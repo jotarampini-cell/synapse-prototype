@@ -11,6 +11,7 @@ interface NavigationContextType {
 		backButtonText?: string
 		onBackClick?: () => void
 	}) => void
+	resetNavigationProps: () => void
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined)
@@ -34,12 +35,19 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 		setOnBackClick(() => click)
 	}
 
+	const resetNavigationProps = () => {
+		setShowBackButton(false)
+		setBackButtonText('')
+		setOnBackClick(undefined)
+	}
+
 	return (
 		<NavigationContext.Provider value={{
 			showBackButton,
 			backButtonText,
 			onBackClick,
-			setNavigationProps
+			setNavigationProps,
+			resetNavigationProps
 		}}>
 			{children}
 		</NavigationContext.Provider>
