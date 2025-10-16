@@ -21,6 +21,7 @@ import { VoiceRecorder } from "@/components/voice-recorder/voice-recorder"
 import { WelcomeBanner } from "@/components/responsive-banner"
 import { AppFooter } from "@/components/app-footer"
 import { usePersistedState } from "@/hooks/use-persisted-state"
+import { TestContext } from "../../../test-context-simple"
 import { 
 	Search,
 	Plus,
@@ -207,6 +208,11 @@ export default function HomePage() {
 					{/* Banner integrado */}
 					<div className="p-4">
 						<WelcomeBanner />
+					</div>
+
+					{/* Test de Contexto - Temporal */}
+					<div className="p-4 bg-yellow-100 border border-yellow-300 rounded-lg mx-4 mb-4">
+						<TestContext />
 					</div>
 
 					<div className="px-4 space-y-6">
