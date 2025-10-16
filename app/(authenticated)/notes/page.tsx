@@ -54,7 +54,7 @@ import { toast } from "sonner"
 // Nuevos componentes para UI móvil
 import { FoldersGalleryView } from "@/components/notes/folders-gallery-view"
 import { NotesGalleryView } from "@/components/notes/notes-gallery-view"
-import { HiddenSearchBar } from "@/components/notes/hidden-search-bar"
+import { MobileSearchBar } from "@/components/notes/mobile-search-bar"
 import { NotesFabMenu } from "@/components/notes/notes-fab-menu"
 import { CreateFolderModal } from "@/components/notes/create-folder-modal"
 import { QuickNoteModal } from "@/components/notes/quick-note-modal"
@@ -416,9 +416,25 @@ export default function NotesPage() {
 				
 				{/* Contenido según vista */}
 				<main ref={mainScrollRef} className="flex-1 overflow-y-auto pb-20">
+					{/* DEBUG: Botón de prueba para search bar */}
+					<div className="fixed bottom-20 right-4 z-[10001]">
+						<button
+							onClick={() => {
+								console.log('🔧 Force showing search bar from main page')
+								// Forzar scroll para activar search bar
+								if (mainScrollRef.current) {
+									mainScrollRef.current.scrollTop = 20
+								}
+							}}
+							className="bg-green-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg"
+						>
+							FORCE SEARCH
+						</button>
+					</div>
+					
 					{/* Search bar condicional - Solo en vistas de carpetas y notas */}
 					{(currentView === 'folders' || currentView === 'notes') && (
-						<HiddenSearchBar 
+						<MobileSearchBar 
 							onSearch={setSearchQuery}
 							scrollContainerRef={mainScrollRef}
 						/>
