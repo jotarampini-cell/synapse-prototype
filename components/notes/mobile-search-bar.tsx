@@ -124,7 +124,7 @@ export function MobileSearchBar({ onSearch, scrollContainerRef }: MobileSearchBa
 			<div 
 				ref={searchBarRef}
 				className={cn(
-					"fixed left-0 right-0 z-50 transition-all duration-300 ease-out",
+					"fixed left-0 right-0 z-[100] transition-all duration-300 ease-out",
 					"bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700",
 					"shadow-lg",
 					isVisible 
@@ -134,10 +134,10 @@ export function MobileSearchBar({ onSearch, scrollContainerRef }: MobileSearchBa
 				style={{
 					// Forzar estilos para móvil - aparecer debajo del header
 					position: 'fixed',
-					top: '60px', // Debajo del header
+					top: '48px', // Debajo del header (h-12 = 48px)
 					left: 0,
 					right: 0,
-					zIndex: 50, // Menor que el header pero visible
+					zIndex: 100, // Más alto que el header para estar visible
 					backgroundColor: 'white',
 					borderBottom: '1px solid #e5e7eb',
 					boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
