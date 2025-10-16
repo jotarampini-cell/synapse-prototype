@@ -415,7 +415,7 @@ export default function NotesPage() {
 				)}
 				
 				{/* Contenido según vista */}
-				<main ref={mainScrollRef} className="flex-1 overflow-y-auto">
+				<main ref={mainScrollRef} className="flex-1 overflow-y-auto pb-20">
 					{/* Search bar condicional - Solo en vistas de carpetas y notas */}
 					{(currentView === 'folders' || currentView === 'notes') && (
 						<HiddenSearchBar 

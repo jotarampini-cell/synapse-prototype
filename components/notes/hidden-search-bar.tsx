@@ -32,7 +32,7 @@ export function HiddenSearchBar({
 			if (Math.abs(currentScrollY - lastScrollY) < 10) return
 			
 			// Mostrar al hacer scroll hacia ABAJO
-			if (currentScrollY > lastScrollY && currentScrollY > 50) {
+			if (currentScrollY > lastScrollY && currentScrollY > 20) {
 				setIsVisible(true)
 			} 
 			// Ocultar al hacer scroll hacia ARRIBA (pero mantener si hay búsqueda activa)
@@ -71,7 +71,7 @@ export function HiddenSearchBar({
 
 	return (
 		<div className={cn(
-			"fixed top-0 left-0 right-0 z-40 transition-all duration-300 ease-out",
+			"fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out",
 			"bg-background/98 backdrop-blur-xl",
 			"border-b border-border/30 shadow-sm",
 			isVisible 

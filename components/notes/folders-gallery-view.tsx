@@ -431,7 +431,7 @@ export function FoldersGalleryView({
 	return (
 		<div 
 			className={cn(
-				"p-4",
+				"p-4 min-h-[calc(100vh+100px)]",
 				isDraggingActive && "select-none"
 			)}
 		>

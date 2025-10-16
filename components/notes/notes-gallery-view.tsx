@@ -313,7 +313,7 @@ export function NotesGalleryView({
 		// Si hay búsqueda, mostrar mensaje de no encontrado
 		if (searchQuery) {
 			return (
-				<div className="p-8 text-center">
+				<div className="p-8 text-center min-h-[300px] flex flex-col items-center justify-center">
 					<FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
 					<p className="text-muted-foreground mb-2">
 						No se encontraron notas que coincidan con "{searchQuery}"
@@ -324,7 +324,7 @@ export function NotesGalleryView({
 		
 		// Si no hay búsqueda, mostrar mensaje de estado vacío mejorado
 		return (
-			<div className="p-8 text-center">
+			<div className="p-8 text-center min-h-[300px] flex flex-col items-center justify-center">
 				<FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
 				<p className="text-lg font-medium text-muted-foreground mb-2">
 					No tienes notas
@@ -353,7 +353,7 @@ export function NotesGalleryView({
 
 		// VISTA DE LISTA CON DISEÑO DE ACTIVIDAD RECIENTE (HOME MÓVIL)
 		return (
-			<div className="p-4 space-y-2">
+			<div className="p-4 space-y-2 min-h-[calc(100vh+100px)]">
 				{sortedNotes.map((note, index) => (
 					<div
 						key={note.id}
@@ -467,7 +467,7 @@ export function NotesGalleryView({
 	// Vista galería (mejorada y más pequeña con overflow controlado)
 	console.log('Rendering gallery view with', sortedNotes.length, 'notes')
 	return (
-		<div className="p-3 grid grid-cols-2 gap-3">
+		<div className="p-3 grid grid-cols-2 gap-3 min-h-[calc(100vh+100px)]">
 			{sortedNotes.map((note, index) => (
 				<Card 
 					key={note.id}
