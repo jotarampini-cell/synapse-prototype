@@ -13,6 +13,10 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '10mb',
     },
+    staleTimes: {
+      dynamic: 30,  // Cache páginas dinámicas por 30 segundos
+      static: 180,  // Cache páginas estáticas por 3 minutos
+    },
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {

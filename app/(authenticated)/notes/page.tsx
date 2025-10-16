@@ -52,6 +52,8 @@ import { createContent } from "@/app/actions/content"
 import { createFolder, createDefaultFolders, getFolderTree } from "@/app/actions/folders"
 import { toast } from "sonner"
 import { useNavigation } from "@/contexts/navigation-context"
+import { usePersistedState } from "@/hooks/use-persisted-state"
+import { useUserContents, useFolderTree } from "@/hooks/use-swr-data"
 // Nuevos componentes para UI móvil
 import { FoldersGalleryView } from "@/components/notes/folders-gallery-view"
 import { NotesGalleryView } from "@/components/notes/notes-gallery-view"
@@ -92,29 +94,63 @@ export default function NotesPage() {
 	const searchParams = useSearchParams()
 	const { setNavigationProps } = useNavigation()
 	
-	// State
-	const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
-	const [selectedNote, setSelectedNote] = useState<string | null>(null)
-	const [searchQuery, setSearchQuery] = useState("")
-	const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+	// Estado persistido
+	const [pageState, setPageState] = usePersistedState('notes', {
+		scrollPosition: 0,
+		currentView: 'folders' as 'folders' | 'notes' | 'editor',
+		selectedFolder: null as string | null,
+		selectedFolderName: '',
+		selectedNote: null as string | null,
+		searchQuery: '',
+		viewMode: 'list' as 'list' | 'grid'
+	})
+	
+	// Extraer valores del estado persistido
+	const {
+		currentView,
+		selectedFolder,
+		selectedFolderName,
+		selectedNote,
+		searchQuery,
+		viewMode
+	} = pageState
+	
+	// Setters que actualizan el estado persistido
+	const setCurrentView = (view: 'folders' | 'notes' | 'editor') => {
+		setPageState({ ...pageState, currentView: view })
+	}
+	
+	const setSelectedFolder = (folder: string | null) => {
+		setPageState({ ...pageState, selectedFolder: folder })
+	}
+	
+	const setSelectedFolderName = (name: string) => {
+		setPageState({ ...pageState, selectedFolderName: name })
+	}
+	
+	const setSelectedNote = (note: string | null) => {
+		setPageState({ ...pageState, selectedNote: note })
+	}
+	
+	const setSearchQuery = (query: string) => {
+		setPageState({ ...pageState, searchQuery: query })
+	}
+	
+	const setViewMode = (mode: 'list' | 'grid') => {
+		setPageState({ ...pageState, viewMode: mode })
+	}
+	
+	// Estado local (no persistido)
 	const [sortBy, setSortBy] = useState<'updated_at' | 'created_at' | 'title'>('updated_at')
-	// const [sortOrder] = useState<'asc' | 'desc'>('desc')
 	const [filterBy, setFilterBy] = useState<'all' | 'pinned' | 'archived'>('all')
-	
-	// Refs
-	const mainScrollRef = useRef<HTMLDivElement>(null)
-	
 	const [showDefaultFoldersPrompt, setShowDefaultFoldersPrompt] = useState(false)
-	
-	// Layout state
 	const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 	const [aiPanelOpen, setAiPanelOpen] = useState(false)
 	const [filesSectionCollapsed, setFilesSectionCollapsed] = useState(false)
 	const [isFocusMode, setIsFocusMode] = useState(false)
 	
-	// Mobile navigation state
-	const [currentView, setCurrentView] = useState<'folders' | 'notes' | 'editor'>('folders')
-	const [selectedFolderName, setSelectedFolderName] = useState<string>('')
+	// Refs
+	const mainScrollRef = useRef<HTMLDivElement>(null)
 	
 	// Modal states
 	const [createFolderModalOpen, setCreateFolderModalOpen] = useState(false)
@@ -123,6 +159,9 @@ export default function NotesPage() {
 	// Mobile detection usando hook personalizado
 	const { isMobile, isLoading: isMobileLoading } = useMobileDetection()
 	
+	// Datos con SWR para caché
+	const { contents, isLoading: contentsLoading, mutate: mutateContents } = useUserContents()
+	const { folders, isLoading: foldersLoading, mutate: mutateFolders } = useFolderTree()
 	
 	// Debug: Log mobile detection
 	useEffect(() => {
@@ -299,10 +338,9 @@ export default function NotesPage() {
 	// Función para obtener o crear carpeta "Notas" predeterminada
 	const getOrCreateDefaultNotesFolder = async (): Promise<string | null> => {
 		try {
-			// Buscar carpeta "Notas" existente
-			const result = await getFolderTree()
-			if (result.success && result.folders) {
-				const notesFolder = result.folders.find(folder => folder.name === 'Notas')
+			// Buscar carpeta "Notas" existente usando datos de SWR
+			if (folders) {
+				const notesFolder = folders.find(folder => folder.name === 'Notas')
 				if (notesFolder) {
 					return notesFolder.id
 				}

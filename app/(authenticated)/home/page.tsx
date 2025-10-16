@@ -20,6 +20,7 @@ import { FileUpload } from "@/components/file-upload/file-upload"
 import { VoiceRecorder } from "@/components/voice-recorder/voice-recorder"
 import { WelcomeBanner } from "@/components/responsive-banner"
 import { AppFooter } from "@/components/app-footer"
+import { usePersistedState } from "@/hooks/use-persisted-state"
 import { 
 	Search,
 	Plus,
@@ -57,6 +58,13 @@ export default function HomePage() {
 	const { isMobile } = useMobileDetection()
 	const quickNoteModal = useMobileModal()
 	const templatesModal = useMobileModal()
+
+	// Estado persistido
+	const [pageState, setPageState] = usePersistedState('home', {
+		scrollPosition: 0,
+		searchQuery: '',
+		selectedCategory: undefined as string | undefined
+	})
 
 	// Estados para la nota rápida
 	const [noteTitle, setNoteTitle] = useState("")

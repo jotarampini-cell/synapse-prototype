@@ -114,7 +114,7 @@ export function UnifiedNavigation({
 
 					{/* Logo centrado */}
 					<div className="absolute left-1/2 transform -translate-x-1/2">
-						<Link href="/home" className="flex items-center">
+						<Link href="/home" prefetch={true} className="flex items-center">
 							<Brain className="h-8 w-8 text-primary" />
 						</Link>
 					</div>
@@ -127,6 +127,7 @@ export function UnifiedNavigation({
 									<NavigationMenuLink asChild>
 										<Link 
 											href={item.href}
+											prefetch={true}
 											className={cn(
 												"group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
 												isActive(item.href) && "bg-muted text-foreground"
