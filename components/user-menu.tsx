@@ -11,7 +11,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Settings, Home, FileText, BarChart3, Sun, Moon } from 'lucide-react'
+import { LogOut, User, Settings, Home, FileText, BarChart3, Sun, Moon, MoreVertical } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { signOut } from '@/app/actions/auth'
 import { toast } from 'sonner'
@@ -98,10 +98,7 @@ export function UserMenu() {
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
 				<Button variant="ghost" className="relative h-8 w-8 rounded-full">
-					<Avatar className="h-8 w-8">
-						<AvatarImage src="" alt={user.full_name || user.email} />
-						<AvatarFallback>{initials}</AvatarFallback>
-					</Avatar>
+					<MoreVertical className="h-4 w-4" />
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="w-56" align="end" forceMount>
