@@ -9,7 +9,16 @@ export function usePersistedState<T>(
 	pageKey: PageKey,
 	initialState: T
 ): [T, (state: T) => void] {
-	const appState = useAppState()
+	// Verificar si el contexto está disponible
+	let appState: any = null
+	try {
+		appState = useAppState()
+	} catch (error) {
+		// Si no hay contexto, usar solo el estado local
+		console.warn('usePersistedState: AppStateProvider no disponible, usando estado local')
+		const [state, setState] = useState<T>(initialState)
+		return [state, setState]
+	}
 	
 	// Obtener el estado persistido o usar el inicial
 	const getPersistedState = (): T => {
