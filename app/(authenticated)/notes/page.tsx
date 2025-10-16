@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useAppKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
@@ -98,6 +98,9 @@ export default function NotesPage() {
 	const [sortBy, setSortBy] = useState<'updated_at' | 'created_at' | 'title'>('updated_at')
 	// const [sortOrder] = useState<'asc' | 'desc'>('desc')
 	const [filterBy, setFilterBy] = useState<'all' | 'pinned' | 'archived'>('all')
+	
+	// Refs
+	const mainScrollRef = useRef<HTMLDivElement>(null)
 	const [showDefaultFoldersPrompt, setShowDefaultFoldersPrompt] = useState(false)
 	
 	// Layout state
@@ -410,11 +413,15 @@ export default function NotesPage() {
 					</header>
 				)}
 				
-				{/* Búsqueda oculta */}
-				<HiddenSearchBar onSearch={setSearchQuery} />
-				
 				{/* Contenido según vista */}
-				<main className="flex-1 overflow-y-auto">
+				<main ref={mainScrollRef} className="flex-1 overflow-y-auto">
+					{/* Search bar condicional - Solo en vistas de carpetas y notas */}
+					{(currentView === 'folders' || currentView === 'notes') && (
+						<HiddenSearchBar 
+							onSearch={setSearchQuery}
+							scrollContainerRef={mainScrollRef}
+						/>
+					)}
 					{currentView === 'folders' && (
 						<FoldersGalleryView
 							onFolderSelect={(id) => {

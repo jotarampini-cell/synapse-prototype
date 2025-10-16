@@ -9,11 +9,13 @@ import { cn } from "@/lib/utils"
 interface HiddenSearchBarProps {
 	onSearch: (query: string) => void
 	placeholder?: string
+	scrollContainerRef?: React.RefObject<HTMLDivElement>
 }
 
 export function HiddenSearchBar({ 
 	onSearch,
-	placeholder = "Buscar notas..."
+	placeholder = "Buscar notas...",
+	scrollContainerRef
 }: HiddenSearchBarProps) {
 	const [isVisible, setIsVisible] = useState(false)
 	const [lastScrollY, setLastScrollY] = useState(0)
@@ -21,7 +23,8 @@ export function HiddenSearchBar({
 
 	useEffect(() => {
 		const handleScroll = () => {
-			const currentScrollY = window.scrollY
+			// Obtener scroll del contenedor correcto (no del window)
+			const currentScrollY = scrollContainerRef?.current?.scrollTop ?? window.scrollY
 			
 			// Solo procesar si hay scroll significativo (>10px para evitar jitter)
 			if (Math.abs(currentScrollY - lastScrollY) < 10) return
@@ -42,9 +45,17 @@ export function HiddenSearchBar({
 			setLastScrollY(currentScrollY)
 		}
 		
-		window.addEventListener('scroll', handleScroll, { passive: true })
-		return () => window.removeEventListener('scroll', handleScroll)
-	}, [lastScrollY, searchQuery])
+		// Escuchar scroll del contenedor o del window como fallback
+		const scrollContainer = scrollContainerRef?.current ?? window
+		
+		if (scrollContainer instanceof HTMLElement) {
+			scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
+			return () => scrollContainer.removeEventListener('scroll', handleScroll)
+		} else {
+			window.addEventListener('scroll', handleScroll, { passive: true })
+			return () => window.removeEventListener('scroll', handleScroll)
+		}
+	}, [lastScrollY, searchQuery, scrollContainerRef])
 
 	const handleSearchChange = (value: string) => {
 		setSearchQuery(value)
@@ -58,12 +69,12 @@ export function HiddenSearchBar({
 
 	return (
 		<div className={cn(
-			"fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out",
+			"fixed top-0 left-0 right-0 z-40 transition-all duration-300 ease-out",
 			"bg-background/98 backdrop-blur-xl",
 			"border-b border-border/30 shadow-sm",
 			isVisible 
-				? "translate-y-0 opacity-100" 
-				: "-translate-y-full opacity-0"
+				? "translate-y-0 opacity-100 pointer-events-auto" 
+				: "-translate-y-full opacity-0 pointer-events-none"
 		)}>
 			<div className="max-w-2xl mx-auto px-4 py-3">
 				<div className="relative group">

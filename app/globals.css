@@ -389,4 +389,15 @@
   .note-item-animated {
     animation: fadeIn 0.2s ease-out forwards;
   }
+  
+  /* Prevenir scroll durante drag */
+  [data-dragging="true"] * {
+    touch-action: none !important;
+  }
+  
+  /* Desactivar scroll del contenedor durante drag */
+  .dragging-container {
+    overflow: hidden !important;
+    touch-action: none !important;
+  }
 }

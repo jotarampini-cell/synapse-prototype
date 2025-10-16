@@ -112,8 +112,11 @@ function SortableFolderItem({
 				{...attributes}
 				{...listeners}
 				className="flex items-center justify-between cursor-grab active:cursor-grabbing touch-target"
-				onMouseDown={(e) => e.preventDefault()}
-				onTouchStart={(e) => e.preventDefault()}
+				style={{
+					touchAction: 'none', // CRÍTICO: Prevenir scroll durante touch
+					WebkitUserSelect: 'none',
+					userSelect: 'none'
+				}}
 			>
 				<div 
 					className="flex items-center gap-3 flex-1 min-w-0"
@@ -196,6 +199,7 @@ export function FoldersGalleryView({
 }: FoldersGalleryViewProps) {
 	const [folders, setFolders] = useState<FolderWithNotes[]>([])
 	const [isLoading, setIsLoading] = useState(true)
+	const [isDraggingActive, setIsDraggingActive] = useState(false)
 
 	// Sensores para drag and drop
 	const sensors = useSensors(
@@ -216,6 +220,25 @@ export function FoldersGalleryView({
 			coordinateGetter: sortableKeyboardCoordinates,
 		})
 	)
+
+	const handleDragStart = () => {
+		setIsDraggingActive(true)
+		// Desactivar scroll del contenedor padre
+		const mainContainer = document.querySelector('main.overflow-y-auto')
+		if (mainContainer) {
+			mainContainer.classList.add('dragging-container')
+		}
+	}
+
+
+	const handleDragCancel = () => {
+		setIsDraggingActive(false)
+		// Reactivar scroll del contenedor padre
+		const mainContainer = document.querySelector('main.overflow-y-auto')
+		if (mainContainer) {
+			mainContainer.classList.remove('dragging-container')
+		}
+	}
 
 	useEffect(() => {
 		loadFolders()
@@ -330,6 +353,13 @@ export function FoldersGalleryView({
 	}
 
 	const handleDragEnd = async (event: DragEndEvent) => {
+		setIsDraggingActive(false)
+		// Reactivar scroll del contenedor padre
+		const mainContainer = document.querySelector('main.overflow-y-auto')
+		if (mainContainer) {
+			mainContainer.classList.remove('dragging-container')
+		}
+		
 		const { active, over } = event
 
 		if (over && active.id !== over.id) {
@@ -399,12 +429,19 @@ export function FoldersGalleryView({
 	}
 
 	return (
-		<div className="p-4">
+		<div 
+			className={cn(
+				"p-4",
+				isDraggingActive && "select-none"
+			)}
+		>
 			{/* Lista de carpetas con drag and drop */}
 			<DndContext
 				sensors={sensors}
 				collisionDetection={closestCenter}
+				onDragStart={handleDragStart}
 				onDragEnd={handleDragEnd}
+				onDragCancel={handleDragCancel}
 			>
 				<SortableContext
 					items={folders.map(f => f.id)}
