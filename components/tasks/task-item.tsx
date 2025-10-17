@@ -39,6 +39,7 @@ import { SubtaskList } from "./subtask-list"
 import { TaskLinkedNotes } from "./task-linked-notes"
 import { TaskNoteLinker } from "./task-note-linker"
 import { TaskProjectLinker } from "./task-project-linker"
+import { TaskSyncButton, TaskSyncBadge } from "@/components/calendar/task-sync-button"
 import { cn } from "@/lib/utils"
 
 interface TaskItemProps {
@@ -320,6 +321,9 @@ export function TaskItem({
 									)}
 								</div>
 							)}
+							
+							{/* Badge de sincronización */}
+							<TaskSyncBadge task={task} />
 						</div>
 					</div>
 				)}
@@ -374,6 +378,17 @@ export function TaskItem({
 					<DropdownMenuItem onClick={handleToggleStarred}>
 						<Star className={cn("h-4 w-4 mr-2", task.is_starred && "fill-current")} />
 						{task.is_starred ? "Quitar de destacadas" : "Marcar como destacada"}
+					</DropdownMenuItem>
+					<DropdownMenuItem asChild>
+						<TaskSyncButton 
+							task={task}
+							onSync={onTaskUpdate}
+							onUnsync={onTaskUpdate}
+							variant="ghost"
+							size="sm"
+							showLabel={true}
+							className="w-full justify-start"
+						/>
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={handleDuplicateTask}>
 						<Copy className="h-4 w-4 mr-2" />

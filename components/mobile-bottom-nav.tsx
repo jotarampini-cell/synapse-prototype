@@ -7,7 +7,7 @@ import {
 	Home, 
 	FileText, 
 	CheckSquare, 
-	Link as LinkIcon, 
+	Calendar, 
 	Briefcase 
 } from "lucide-react"
 
@@ -31,10 +31,10 @@ const navItems = [
 		ariaLabel: "Ir a Tareas"
 	},
 	{ 
-		icon: LinkIcon, 
-		label: "Fuentes", 
+		icon: Calendar, 
+		label: "Calendario", 
 		href: "/fuentes",
-		ariaLabel: "Ir a Fuentes"
+		ariaLabel: "Ir a Calendario"
 	},
 	{ 
 		icon: Briefcase, 

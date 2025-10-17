@@ -6,10 +6,10 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { 
-	X, 
-	FileText, 
-	Calendar as CalendarIcon, 
+import {
+	X,
+	FileText,
+	Calendar as CalendarIcon,
 	Star,
 	Plus
 } from "lucide-react"
@@ -17,6 +17,7 @@ import { createTask } from "@/app/actions/tasks"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { cn } from "@/lib/utils"
+import { useGoogleCalendarSync } from "@/hooks/use-google-calendar-sync"
 
 interface TaskQuickAddSliderProps {
 	isOpen: boolean
@@ -35,12 +36,15 @@ export function TaskQuickAddSlider({
 	const [description, setDescription] = useState("")
 	const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
 	const [isStarred, setIsStarred] = useState(false)
+	const [syncToCalendar, setSyncToCalendar] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 	const [showDescription, setShowDescription] = useState(false)
 	const [showCalendar, setShowCalendar] = useState(false)
 	
 	const inputRef = useRef<HTMLInputElement>(null)
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
+	
+	const { syncSettings, syncTask } = useGoogleCalendarSync()
 
 	// Auto-focus en el input cuando se abre
 	useEffect(() => {
@@ -78,6 +82,15 @@ export function TaskQuickAddSlider({
 			})
 
 			if (result.success) {
+				// Sincronizar con Google Calendar si está habilitado
+				if (syncToCalendar && result.task && dueDate) {
+					try {
+						await syncTask(result.task.id)
+					} catch (error) {
+						console.error('Error sincronizando tarea con Google Calendar:', error)
+					}
+				}
+				
 				onTaskCreated()
 				onClose()
 			}
@@ -238,6 +251,25 @@ export function TaskQuickAddSlider({
 						>
 							<Star className={cn("h-5 w-5", isStarred && "fill-current")} />
 						</Button>
+
+						{/* Botón de sincronización con Google Calendar */}
+						{syncSettings && (
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={() => setSyncToCalendar(!syncToCalendar)}
+								className={cn(
+									"h-10 w-10 p-0 transition-all duration-200 border-2",
+									syncToCalendar 
+										? "bg-green-100 text-green-600 border-green-300 shadow-md" 
+										: "text-muted-foreground hover:text-foreground border-transparent hover:border-blue-200"
+								)}
+								disabled={!dueDate}
+								title={!dueDate ? "Selecciona una fecha para sincronizar" : "Sincronizar con Google Calendar"}
+							>
+								<CalendarIcon className={cn("h-5 w-5", syncToCalendar && "animate-pulse")} />
+							</Button>
+						)}
 
 						<div className="flex-1" />
 

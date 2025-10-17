@@ -18,7 +18,7 @@ import {
 	FileText, 
 	BarChart3, 
 	CheckSquare, 
-	BookOpen, 
+	Calendar, 
 	Folder,
 	ChevronLeft
 } from "lucide-react"
@@ -52,10 +52,10 @@ const navigationItems: NavigationItem[] = [
 		description: "Gestiona tus tareas"
 	},
 	{
-		title: "Fuentes",
+		title: "Calendario",
 		href: "/fuentes",
-		icon: <BookOpen className="h-4 w-4" />,
-		description: "Fuentes de información"
+		icon: <Calendar className="h-4 w-4" />,
+		description: "Calendario y eventos"
 	},
 	{
 		title: "Proyectos",

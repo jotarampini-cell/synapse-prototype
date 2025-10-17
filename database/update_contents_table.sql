@@ -15,3 +15,4 @@ COMMENT ON COLUMN public.contents.ai_analysis_updated_at IS 'Timestamp when AI a
 
 
 
+

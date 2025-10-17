@@ -20,6 +20,7 @@ import { SortableTaskItem } from "./sortable-task-item"
 import { TaskDragOverlay } from "./drag-overlay"
 import { KeyboardShortcutsHelp } from "./keyboard-shortcuts-help"
 import { TaskCompletionCelebration } from "./task-completion-celebration"
+import { TaskSyncButton, TaskSyncBadge } from "@/components/calendar/task-sync-button"
 import { 
 	getTasks, 
 	createTask,

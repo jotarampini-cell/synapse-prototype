@@ -11,3 +11,4 @@ CREATE INDEX IF NOT EXISTS idx_tasks_starred ON tasks(user_id, is_starred) WHERE
 COMMENT ON COLUMN tasks.is_starred IS 'Indica si la tarea está marcada como destacada por el usuario';
 
 
+
