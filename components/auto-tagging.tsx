@@ -152,7 +152,7 @@ export function AutoTagging({
 			{showSuggestions && (
 				<CardContent className="space-y-4">
 					{/* Tags actuales */}
-					{currentTags.length > 0 && (
+					{currentTags && currentTags.length > 0 && (
 						<div>
 							<div className="text-xs font-medium text-muted-foreground mb-2">
 								Etiquetas actuales

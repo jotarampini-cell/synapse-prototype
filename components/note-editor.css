@@ -41,6 +41,43 @@
 	.unified-note-input::first-line {
 		font-size: 24px;
 	}
+
+	/* Estilos para el toolbar móvil */
+	.mobile-toolbar {
+		position: sticky;
+		top: 0;
+		z-index: 10;
+		background: hsl(var(--background));
+		border-bottom: 1px solid hsl(var(--border));
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: none; /* Firefox */
+		-ms-overflow-style: none; /* IE and Edge */
+	}
+
+	.mobile-toolbar::-webkit-scrollbar {
+		display: none; /* Chrome, Safari, Opera */
+	}
+
+	.mobile-toolbar .flex {
+		min-width: max-content;
+		padding: 8px 16px;
+	}
+
+	/* Asegurar que los botones del toolbar sean táctiles */
+	.mobile-toolbar button {
+		min-width: 44px;
+		min-height: 44px;
+		touch-action: manipulation;
+	}
+
+	/* Contenedor de scroll del contenido */
+	.mobile-content-scroll {
+		flex: 1;
+		overflow-y: auto;
+		overflow-x: hidden;
+		-webkit-overflow-scrolling: touch;
+	}
 }
 
 /* Estilos para el editor unificado en modo desktop */

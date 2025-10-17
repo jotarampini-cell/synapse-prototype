@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { BlockEditor } from "@/components/block-editor"
+import { EditorToolbar } from "@/components/block-editor/editor-toolbar"
 import ContentEditable from "react-contenteditable"
 import "./note-editor.css"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
@@ -506,6 +507,170 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 		}
 	}
 
+	// Función para manejar comandos del toolbar
+	const handleToolbarCommand = (command: string, value?: unknown) => {
+		if (!unifiedEditorRef.current) return
+
+		const selection = window.getSelection()
+		if (!selection || selection.rangeCount === 0) return
+
+		const range = selection.getRangeAt(0)
+		const selectedText = selection.toString()
+
+		switch (command) {
+			case 'undo':
+				document.execCommand('undo', false)
+				break
+			case 'redo':
+				document.execCommand('redo', false)
+				break
+			case 'bold':
+				document.execCommand('bold', false)
+				break
+			case 'italic':
+				document.execCommand('italic', false)
+				break
+			case 'underline':
+				document.execCommand('underline', false)
+				break
+			case 'strikethrough':
+				document.execCommand('strikeThrough', false)
+				break
+			case 'code':
+				document.execCommand('formatBlock', false, 'code')
+				break
+			case 'marker':
+				document.execCommand('backColor', false, '#ffff00')
+				break
+			case 'color':
+				if (typeof value === 'string') {
+					document.execCommand('foreColor', false, value)
+				}
+				break
+			case 'header':
+				if (typeof value === 'object' && value !== null && 'level' in value) {
+					const level = (value as { level: number }).level
+					document.execCommand('formatBlock', false, `h${level}`)
+				}
+				break
+			case 'list':
+				if (typeof value === 'object' && value !== null && 'style' in value) {
+					const style = (value as { style: string }).style
+					if (style === 'unordered') {
+						document.execCommand('insertUnorderedList', false)
+					} else if (style === 'ordered') {
+						document.execCommand('insertOrderedList', false)
+					}
+				}
+				break
+			case 'checklist':
+				// Insertar checkbox simple
+				const checkbox = document.createElement('input')
+				checkbox.type = 'checkbox'
+				checkbox.style.marginRight = '8px'
+				range.insertNode(checkbox)
+				range.collapse(false)
+				selection.removeAllRanges()
+				selection.addRange(range)
+				break
+			case 'quote':
+				document.execCommand('formatBlock', false, 'blockquote')
+				break
+			case 'link':
+				const url = prompt('Ingresa la URL:')
+				if (url) {
+					document.execCommand('createLink', false, url)
+				}
+				break
+			case 'align':
+				if (typeof value === 'string') {
+					document.execCommand('justify' + value.charAt(0).toUpperCase() + value.slice(1), false)
+				}
+				break
+			case 'image':
+				const imageUrl = prompt('Ingresa la URL de la imagen:')
+				if (imageUrl) {
+					const img = document.createElement('img')
+					img.src = imageUrl
+					img.style.maxWidth = '100%'
+					img.style.height = 'auto'
+					range.insertNode(img)
+					range.collapse(false)
+					selection.removeAllRanges()
+					selection.addRange(range)
+				}
+				break
+			case 'table':
+				// Insertar tabla simple
+				const table = document.createElement('table')
+				table.style.border = '1px solid #ccc'
+				table.style.borderCollapse = 'collapse'
+				table.style.width = '100%'
+				
+				const row = document.createElement('tr')
+				const cell1 = document.createElement('td')
+				const cell2 = document.createElement('td')
+				cell1.style.border = '1px solid #ccc'
+				cell1.style.padding = '8px'
+				cell2.style.border = '1px solid #ccc'
+				cell2.style.padding = '8px'
+				cell1.textContent = 'Celda 1'
+				cell2.textContent = 'Celda 2'
+				
+				row.appendChild(cell1)
+				row.appendChild(cell2)
+				table.appendChild(row)
+				
+				range.insertNode(table)
+				range.collapse(false)
+				selection.removeAllRanges()
+				selection.addRange(range)
+				break
+			case 'codeblock':
+				const codeBlock = document.createElement('pre')
+				codeBlock.style.backgroundColor = '#f5f5f5'
+				codeBlock.style.padding = '12px'
+				codeBlock.style.borderRadius = '4px'
+				codeBlock.style.fontFamily = 'monospace'
+				codeBlock.textContent = '// Código aquí'
+				range.insertNode(codeBlock)
+				range.collapse(false)
+				selection.removeAllRanges()
+				selection.addRange(range)
+				break
+			case 'warning':
+				const warning = document.createElement('div')
+				warning.style.backgroundColor = '#fff3cd'
+				warning.style.border = '1px solid #ffeaa7'
+				warning.style.padding = '12px'
+				warning.style.borderRadius = '4px'
+				warning.style.color = '#856404'
+				warning.textContent = '⚠️ Advertencia: Texto de advertencia aquí'
+				range.insertNode(warning)
+				range.collapse(false)
+				selection.removeAllRanges()
+				selection.addRange(range)
+				break
+			case 'delimiter':
+				const delimiter = document.createElement('hr')
+				delimiter.style.border = 'none'
+				delimiter.style.borderTop = '2px solid #ccc'
+				delimiter.style.margin = '20px 0'
+				range.insertNode(delimiter)
+				range.collapse(false)
+				selection.removeAllRanges()
+				selection.addRange(range)
+				break
+		}
+
+		// Actualizar el contenido después de aplicar el comando
+		if (unifiedEditorRef.current) {
+			const newContent = unifiedEditorRef.current.innerHTML
+			setUnifiedContent(newContent)
+			handleUnifiedContentChange({ target: { value: newContent } })
+		}
+	}
+
 
 	const getContentTypeIcon = (contentType: string) => {
 		switch (contentType) {
@@ -570,9 +735,9 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 	// Layout móvil
 	if (isMobile) {
 		return (
-			<div className="fixed inset-0 z-50 bg-background">
+			<div className="fixed inset-0 z-50 bg-background flex flex-col">
 				{/* Header sticky para móvil */}
-				<header className="h-14 flex items-center px-4 border-b border-border bg-background safe-area-top">
+				<header className="h-14 flex items-center px-4 border-b border-border bg-background safe-area-top flex-shrink-0">
 					<Button 
 						variant="ghost" 
 						size="icon" 
@@ -596,8 +761,16 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 					</Button>
 				</header>
 				
-				{/* Editor unificado */}
-				<div className="flex-1 overflow-y-auto p-4">
+				{/* Toolbar fijo con scroll horizontal */}
+				<div className="flex-shrink-0 border-b border-border bg-background">
+					<EditorToolbar 
+						onCommand={handleToolbarCommand}
+						className="mobile-toolbar"
+					/>
+				</div>
+				
+				{/* Editor unificado con scroll vertical */}
+				<div className="flex-1 overflow-y-auto p-4 min-h-0">
 					<ContentEditable
 						innerRef={unifiedEditorRef as any}
 						html={unifiedContent}
@@ -608,7 +781,7 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 				</div>
 
 				{/* Metadata simplificada en móvil */}
-				<div className="border-t border-border p-4 bg-muted/30">
+				<div className="border-t border-border p-4 bg-muted/30 flex-shrink-0">
 					<div className="flex items-center justify-between text-sm text-muted-foreground">
 						<div className="flex items-center gap-4">
 							<span>{note.word_count} palabras</span>
@@ -776,7 +949,7 @@ export function NoteEditor({ noteId, onNoteUpdate, onClose, onToggleAIPanel }: N
 						</Select>
 
 						<Input
-							value={note.tags.join(', ')}
+							value={note.tags ? note.tags.join(', ') : ''}
 							onChange={(e) => handleTagsChange(e.target.value)}
 							placeholder="Etiquetas..."
 							className="w-32 h-8 text-sm"

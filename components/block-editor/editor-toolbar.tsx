@@ -6,7 +6,7 @@ import {
   Bold, Italic, Underline, Strikethrough, Code, Link2, 
   Highlighter, List, ListOrdered, Quote, Heading1, Heading2, 
   Heading3, CheckSquare, Image, Table, AlignLeft, AlignCenter, 
-  AlignRight, Palette, MoreHorizontal
+  AlignRight, Palette, MoreHorizontal, Undo, Redo
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -39,6 +39,29 @@ export function EditorToolbar({ onCommand, className }: EditorToolbarProps) {
       className
     )}>
       <div className="flex items-center gap-1 p-2 min-w-max">
+        {/* Deshacer y Rehacer */}
+        <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onCommand('undo')}
+            className="h-8 w-8 p-0 hover:bg-accent"
+            title="Deshacer (Ctrl+Z)"
+          >
+            <Undo className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onCommand('redo')}
+            className="h-8 w-8 p-0 hover:bg-accent"
+            title="Rehacer (Ctrl+Y)"
+          >
+            <Redo className="h-4 w-4" />
+          </Button>
+        </div>
+        <Separator orientation="vertical" className="h-6 mx-1" />
+        
         {/* Formato de texto */}
         <div className="flex items-center gap-0.5">
           <Button
