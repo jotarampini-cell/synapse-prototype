@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useMobileDetection } from "@/hooks/use-mobile-detection"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { MobileModal, useMobileModal } from "@/components/mobile-modal"
@@ -21,7 +21,6 @@ import { VoiceRecorder } from "@/components/voice-recorder/voice-recorder"
 import { WelcomeBanner } from "@/components/responsive-banner"
 import { AppFooter } from "@/components/app-footer"
 import { usePersistedState } from "@/hooks/use-persisted-state"
-import { TestContext } from "../../../test-context-simple"
 import { 
 	Search,
 	Plus,
@@ -66,6 +65,16 @@ export default function HomePage() {
 		searchQuery: '',
 		selectedCategory: undefined as string | undefined
 	})
+
+	const { searchQuery, selectedCategory } = pageState
+
+	const setSearchQuery = useCallback((query: string) => {
+		setPageState(prev => ({ ...prev, searchQuery: query }))
+	}, [setPageState])
+
+	const setSelectedCategory = useCallback((category: string | undefined) => {
+		setPageState(prev => ({ ...prev, selectedCategory: category }))
+	}, [setPageState])
 
 	// Estados para la nota rápida
 	const [noteTitle, setNoteTitle] = useState("")
@@ -210,10 +219,6 @@ export default function HomePage() {
 						<WelcomeBanner />
 					</div>
 
-					{/* Test de Contexto - Temporal */}
-					<div className="p-4 bg-yellow-100 border border-yellow-300 rounded-lg mx-4 mb-4">
-						<TestContext />
-					</div>
 
 					<div className="px-4 space-y-6">
 						{/* Búsqueda rápida con sugerencias */}

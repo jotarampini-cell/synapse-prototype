@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useAppKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
@@ -115,30 +115,30 @@ export default function NotesPage() {
 		viewMode
 	} = pageState
 	
-	// Setters que actualizan el estado persistido
-	const setCurrentView = (view: 'folders' | 'notes' | 'editor') => {
-		setPageState({ ...pageState, currentView: view })
-	}
-	
-	const setSelectedFolder = (folder: string | null) => {
-		setPageState({ ...pageState, selectedFolder: folder })
-	}
-	
-	const setSelectedFolderName = (name: string) => {
-		setPageState({ ...pageState, selectedFolderName: name })
-	}
-	
-	const setSelectedNote = (note: string | null) => {
-		setPageState({ ...pageState, selectedNote: note })
-	}
-	
-	const setSearchQuery = (query: string) => {
-		setPageState({ ...pageState, searchQuery: query })
-	}
-	
-	const setViewMode = (mode: 'list' | 'grid') => {
-		setPageState({ ...pageState, viewMode: mode })
-	}
+	// Setters memoizados que actualizan el estado persistido
+	const setCurrentView = useCallback((view: 'folders' | 'notes' | 'editor') => {
+		setPageState(prev => ({ ...prev, currentView: view }))
+	}, [setPageState])
+
+	const setSelectedFolder = useCallback((folder: string | null) => {
+		setPageState(prev => ({ ...prev, selectedFolder: folder }))
+	}, [setPageState])
+
+	const setSelectedFolderName = useCallback((name: string) => {
+		setPageState(prev => ({ ...prev, selectedFolderName: name }))
+	}, [setPageState])
+
+	const setSelectedNote = useCallback((note: string | null) => {
+		setPageState(prev => ({ ...prev, selectedNote: note }))
+	}, [setPageState])
+
+	const setSearchQuery = useCallback((query: string) => {
+		setPageState(prev => ({ ...prev, searchQuery: query }))
+	}, [setPageState])
+
+	const setViewMode = useCallback((mode: 'list' | 'grid') => {
+		setPageState(prev => ({ ...prev, viewMode: mode }))
+	}, [setPageState])
 	
 	// Estado local (no persistido)
 	const [sortBy, setSortBy] = useState<'updated_at' | 'created_at' | 'title'>('updated_at')

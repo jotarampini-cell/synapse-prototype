@@ -7,7 +7,6 @@ import { useRouter, usePathname } from "next/navigation"
 import { WelcomeBanner } from "@/components/responsive-banner"
 import { AppFooter } from "@/components/app-footer"
 import { NavigationProvider, useNavigation } from "@/contexts/navigation-context"
-import { AppStateProvider } from "@/contexts/app-state-context"
 import { useEffect } from "react"
 
 function AuthenticatedLayoutContent({
@@ -72,12 +71,10 @@ export default function AuthenticatedLayout({
 	children: React.ReactNode
 }) {
 	return (
-		<AppStateProvider>
-			<NavigationProvider>
-				<AuthenticatedLayoutContent>
-					{children}
-				</AuthenticatedLayoutContent>
-			</NavigationProvider>
-		</AppStateProvider>
+		<NavigationProvider>
+			<AuthenticatedLayoutContent>
+				{children}
+			</AuthenticatedLayoutContent>
+		</NavigationProvider>
 	)
 }

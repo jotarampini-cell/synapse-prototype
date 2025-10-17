@@ -9,19 +9,34 @@ export function useUserContents() {
 	const { data, error, mutate, isLoading } = useSWR(
 		'user-contents',
 		async () => {
-			const result = await getUserContents()
-			return result.success ? result.contents : null
+			try {
+				console.log('🔄 useUserContents: Iniciando request...')
+				const result = await getUserContents()
+				console.log('📊 useUserContents: Resultado:', result)
+				
+				if (!result.success) {
+					console.error('❌ useUserContents: Error en server action:', result.error)
+					return []
+				}
+				return result.contents || []
+			} catch (error) {
+				console.error('❌ useUserContents: Error en SWR:', error)
+				return []
+			}
 		},
 		{
 			revalidateOnFocus: false,
 			dedupingInterval: 30000, // 30 segundos
 			revalidateOnReconnect: true,
-			errorRetryCount: 3,
+			errorRetryCount: 1, // Reducir reintentos
+			onError: (error) => {
+				console.error('❌ SWR Error in useUserContents:', error)
+			}
 		}
 	)
 
 	return {
-		contents: data,
+		contents: data || [],
 		isLoading,
 		error,
 		mutate
@@ -33,19 +48,34 @@ export function useFolderTree() {
 	const { data, error, mutate, isLoading } = useSWR(
 		'folder-tree',
 		async () => {
-			const result = await getFolderTree()
-			return result.success ? result.folders : null
+			try {
+				console.log('🔄 useFolderTree: Iniciando request...')
+				const result = await getFolderTree()
+				console.log('📊 useFolderTree: Resultado:', result)
+				
+				if (!result.success) {
+					console.error('❌ useFolderTree: Error en server action:', result.error)
+					return []
+				}
+				return result.folders || []
+			} catch (error) {
+				console.error('❌ useFolderTree: Error en SWR:', error)
+				return []
+			}
 		},
 		{
 			revalidateOnFocus: false,
 			dedupingInterval: 30000, // 30 segundos
 			revalidateOnReconnect: true,
-			errorRetryCount: 3,
+			errorRetryCount: 1, // Reducir reintentos
+			onError: (error) => {
+				console.error('❌ SWR Error in useFolderTree:', error)
+			}
 		}
 	)
 
 	return {
-		folders: data,
+		folders: data || [],
 		isLoading,
 		error,
 		mutate

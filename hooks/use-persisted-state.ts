@@ -1,103 +1,84 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useAppState } from '@/contexts/app-state-context'
 
 type PageKey = 'home' | 'notes' | 'tareas' | 'fuentes' | 'proyectos'
 
 export function usePersistedState<T>(
-	pageKey: PageKey,
-	initialState: T
-): [T, (state: T) => void] {
-	// Verificar si el contexto está disponible
-	let appState: any = null
-	try {
-		appState = useAppState()
-	} catch (error) {
-		// Si no hay contexto, usar solo el estado local
-		console.warn('usePersistedState: AppStateProvider no disponible, usando estado local')
-		const [state, setState] = useState<T>(initialState)
-		return [state, setState]
-	}
-	
-	// Obtener el estado persistido o usar el inicial
-	const getPersistedState = (): T => {
-		switch (pageKey) {
-			case 'home':
-				return (appState.homeState as T) || initialState
-			case 'notes':
-				return (appState.notesState as T) || initialState
-			case 'tareas':
-				return (appState.tareasState as T) || initialState
-			case 'fuentes':
-				return (appState.fuentesState as T) || initialState
-			case 'proyectos':
-				return (appState.proyectosState as T) || initialState
-			default:
-				return initialState
-		}
-	}
-
-	const [state, setState] = useState<T>(getPersistedState)
-
-	// Función para actualizar el estado
-	const updateState = useCallback((newState: T) => {
-		setState(newState)
-		
-		// Guardar en el contexto global
-		switch (pageKey) {
-			case 'home':
-				appState.setHomeState(newState as any)
-				break
-			case 'notes':
-				appState.setNotesState(newState as any)
-				break
-			case 'tareas':
-				appState.setTareasState(newState as any)
-				break
-			case 'fuentes':
-				appState.setFuentesState(newState as any)
-				break
-			case 'proyectos':
-				appState.setProyectosState(newState as any)
-				break
-		}
-	}, [pageKey, appState])
-
-	// Restaurar scroll position cuando se monta el componente
-	useEffect(() => {
-		const persistedState = getPersistedState()
-		if (persistedState && typeof persistedState === 'object' && 'scrollPosition' in persistedState) {
-			const scrollPos = (persistedState as any).scrollPosition
-			if (scrollPos > 0) {
-				// Usar setTimeout para asegurar que el DOM esté listo
-				setTimeout(() => {
-					window.scrollTo(0, scrollPos)
-				}, 200)
-			}
-		}
-	}, [])
-
-	// Guardar scroll position periódicamente
-	useEffect(() => {
-		const handleScroll = () => {
-			// Throttle para evitar demasiadas actualizaciones
-			clearTimeout((window as any).scrollTimeout)
-			;(window as any).scrollTimeout = setTimeout(() => {
-				updateState({
-					...state,
-					scrollPosition: window.scrollY
-				} as T)
-			}, 1000)
-		}
-
-		window.addEventListener('scroll', handleScroll, { passive: true })
-		
-		return () => {
-			window.removeEventListener('scroll', handleScroll)
-			clearTimeout((window as any).scrollTimeout)
-		}
-	}, [state, updateState])
-
-	return [state, updateState]
+  pageKey: PageKey,
+  initialState: T
+): [T, (newState: T | ((prev: T) => T)) => void] {
+  const appState = useAppState()
+  
+  // Obtener estado inicial del contexto o usar el default - MEMOIZADO
+  const persistedState = useMemo(() => {
+    let state = null
+    switch (pageKey) {
+      case 'home':
+        state = appState.homeState as T
+        break
+      case 'notes':
+        state = appState.notesState as T
+        break
+      case 'tareas':
+        state = appState.tareasState as T
+        break
+      case 'fuentes':
+        state = appState.fuentesState as T
+        break
+      case 'proyectos':
+        state = appState.proyectosState as T
+        break
+      default:
+        state = null
+    }
+    return state
+  }, [pageKey, appState.homeState, appState.notesState, appState.tareasState, appState.fuentesState, appState.proyectosState])
+  
+  // Estado local que se inicializa con el estado persistido o el inicial
+  const [state, setState] = useState<T>(() => {
+    const initialValue = persistedState || initialState
+    return initialValue
+  })
+  
+  // Sincronizar estado local con el persistido cuando cambie
+  useEffect(() => {
+    if (persistedState) {
+      setState(persistedState)
+    }
+  }, [persistedState, pageKey])
+  
+  // Setter memoizado que actualiza tanto el estado local como el contexto
+  const setPersistedState = useCallback((newState: T | ((prev: T) => T)) => {
+    setState(prevState => {
+      const nextState = typeof newState === 'function' 
+        ? (newState as (prev: T) => T)(prevState)
+        : newState
+      
+      
+      // Actualizar contexto global
+      switch (pageKey) {
+        case 'home':
+          appState.setHomeState(nextState as any)
+          break
+        case 'notes':
+          appState.setNotesState(nextState as any)
+          break
+        case 'tareas':
+          appState.setTareasState(nextState as any)
+          break
+        case 'fuentes':
+          appState.setFuentesState(nextState as any)
+          break
+        case 'proyectos':
+          appState.setProyectosState(nextState as any)
+          break
+      }
+      
+      return nextState
+    })
+  }, [pageKey, appState])
+  
+  return [state, setPersistedState]
 }

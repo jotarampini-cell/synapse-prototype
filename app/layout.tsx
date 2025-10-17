@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/theme-provider"
+import { AppStateProvider } from "@/contexts/app-state-context"
 import "./globals.css"
 import { Suspense } from "react"
 
@@ -27,18 +28,20 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body className={`font-sans ${inter.variable} antialiased`}>
-				<ThemeProvider
-					attribute="class"
-					defaultTheme="light"
-					enableSystem={false}
-					disableTransitionOnChange
-				>
-					<Suspense fallback={null}>
-						{children}
-						<Analytics />
-						<Toaster />
-					</Suspense>
-				</ThemeProvider>
+				<AppStateProvider>
+					<ThemeProvider
+						attribute="class"
+						defaultTheme="light"
+						enableSystem={false}
+						disableTransitionOnChange
+					>
+						<Suspense fallback={null}>
+							{children}
+							<Analytics />
+							<Toaster />
+						</Suspense>
+					</ThemeProvider>
+				</AppStateProvider>
 			</body>
 		</html>
 	)
