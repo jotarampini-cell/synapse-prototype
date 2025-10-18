@@ -19,6 +19,7 @@ import { SyncSettingsModal } from "@/components/calendar/sync-settings-modal"
 import { InternalEventModal } from "@/components/calendar/internal-event-modal"
 import { MobileMonthView } from "@/components/calendar/mobile-month-view"
 import { MobileAgendaView } from "@/components/calendar/mobile-agenda-view"
+import '@/styles/calendar-mobile.css'
 import { DebugGoogleAuth } from "@/components/debug-google-auth"
 // import { useGoogleCalendarSync } from "@/hooks/use-google-calendar-sync"
 import { useCalendar } from "@/hooks/use-calendar"
@@ -106,10 +107,22 @@ export default function CalendarPage() {
 		loadEvents(startDate, endDate)
 	}
 
+	// Aplicar estilos de scroll después del montaje (solo en móvil)
+	useEffect(() => {
+		if (isMobile) {
+			const main = document.querySelector('main');
+			if (main) {
+				main.style.overflowY = 'auto';
+				main.style.height = 'calc(100vh - 140px)';
+				main.style.minHeight = '0';
+			}
+		}
+	}, [isMobile, view]); // Re-aplicar cuando cambie la vista o el estado móvil
+
 	// Layout móvil
 	if (isMobile) {
 		return (
-			<div className="h-screen flex flex-col bg-background">
+			<div className="h-screen flex flex-col bg-background overflow-hidden mobile-calendar-container">
 				{/* Header moderno con tabs */}
 				<header className="border-b border-border bg-background safe-area-top">
 					<div className="h-14 px-4 flex items-center justify-between">
@@ -160,7 +173,14 @@ export default function CalendarPage() {
 				</header>
 
 				{/* Contenido según vista seleccionada */}
-				<main className="flex-1 overflow-y-auto pb-20">
+				<main 
+					className="flex-1 pb-24 min-h-0 mobile-calendar-main"
+					style={{ 
+						overflowY: 'auto !important', 
+						height: 'calc(100vh - 140px) !important',
+						minHeight: '0 !important'
+					}}
+				>
 					{view === 'month' ? (
 						<MobileMonthView
 							onDateSelect={handleDateSelect}
