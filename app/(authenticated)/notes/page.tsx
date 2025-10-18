@@ -463,10 +463,10 @@ export default function NotesPage() {
 	if (isMobile) {
 		console.log('Mobile layout - currentView:', currentView, 'viewMode:', viewMode, 'selectedFolder:', selectedFolder)
 		return (
-			<div key="mobile-view" className="h-screen flex flex-col bg-background">
+			<div key="mobile-view" className="mobile-page-container bg-background">
 				
 				{/* Contenido según vista */}
-				<main ref={mainScrollRef} className="flex-1 overflow-y-auto pb-20">
+				<main ref={mainScrollRef} className="mobile-page-main">
 					
 					{/* Search bar condicional - Solo en vistas de carpetas y notas */}
 					{(currentView === 'folders' || currentView === 'notes') && (
@@ -637,7 +637,7 @@ export default function NotesPage() {
 
 	// Layout desktop (original)
 	return (
-		<div key="desktop-view" className={`h-screen flex flex-col bg-background ${isFocusMode ? 'fixed inset-0 z-50' : ''}`}>
+		<div key="desktop-view" className={`desktop-page-container bg-background ${isFocusMode ? 'fixed inset-0 z-50' : ''}`}>
 			{/* Breadcrumbs cuando hay nota abierta */}
 			{!isFocusMode && selectedNote && (
 				<div className="border-b border-border bg-card/50 backdrop-blur-sm">
@@ -739,7 +739,7 @@ export default function NotesPage() {
 			)}
 
 			{/* Main Content */}
-			<div className="flex-1 flex overflow-hidden">
+			<div className="desktop-page-main flex overflow-hidden">
 				{/* Sidebar izquierda - siempre visible pero colapsable */}
 				{!sidebarCollapsed && !isFocusMode && (
 					<div className={`${isMobile ? 'absolute inset-y-0 left-0 z-50 w-64' : 'w-64'} border-r border-border bg-card flex flex-col`}>

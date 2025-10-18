@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import './mobile-utilities.css';
+@import './scroll-fix.css';
 
 @custom-variant dark (&:is(.dark *));
 

@@ -1,0 +1,177 @@
+/* styles/scroll-fix.css */
+
+/* ========================================
+   CORRECCIÓN GLOBAL DE SCROLL
+   ======================================== */
+
+/* 1. Prevenir scroll en body/html cuando hay contenedores con h-screen */
+html, body {
+  height: 100%;
+  overflow: hidden; /* Prevenir scroll del body */
+}
+
+/* 2. Asegurar que el layout principal maneje el scroll */
+#__next {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 3. Contenedores de página con h-screen deben manejar su propio scroll */
+.page-container {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 4. Main content debe ser el único que haga scroll */
+.page-main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0; /* Permite que flex item se encoja */
+}
+
+/* 5. Corregir específicamente para móvil */
+@media (max-width: 768px) {
+  /* Asegurar que el bottom nav no interfiera */
+  .mobile-page-container {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0; /* El bottom nav es fixed */
+  }
+  
+  .mobile-page-main {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+    padding-bottom: 80px; /* Espacio para bottom nav */
+  }
+  
+  /* Prevenir scroll en contenedores que no deberían hacer scroll */
+  .mobile-page-container > *:not(.mobile-page-main) {
+    flex-shrink: 0;
+    overflow: visible;
+  }
+}
+
+/* 6. Corregir para desktop */
+@media (min-width: 769px) {
+  .desktop-page-container {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .desktop-page-main {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+  }
+}
+
+/* 7. Utilidades para casos específicos */
+.scroll-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* 8. Prevenir doble scroll en modales y overlays */
+.modal-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 50;
+}
+
+.modal-content {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 9. Corregir para componentes específicos */
+.calendar-mobile-container {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-mobile-main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+  padding-bottom: 96px; /* Espacio para bottom nav */
+}
+
+/* 10. Forzar estilos en casos problemáticos */
+.force-scroll-fix {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  max-height: 100vh !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* 11. Prevenir scroll en elementos que no deberían hacer scroll */
+.no-scroll {
+  overflow: hidden !important;
+}
+
+/* 12. Asegurar que los contenedores de contenido tengan el scroll correcto */
+.content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+}
+
+/* 13. Corregir para listas y grids */
+.list-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  min-height: 0;
+}
+
+/* 14. Asegurar que los headers y footers no hagan scroll */
+.header-fixed {
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.footer-fixed {
+  flex-shrink: 0;
+  overflow: visible;
+}

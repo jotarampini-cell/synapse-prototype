@@ -107,22 +107,11 @@ export default function CalendarPage() {
 		loadEvents(startDate, endDate)
 	}
 
-	// Aplicar estilos de scroll después del montaje (solo en móvil)
-	useEffect(() => {
-		if (isMobile) {
-			const main = document.querySelector('main');
-			if (main) {
-				main.style.overflowY = 'auto';
-				main.style.height = 'calc(100vh - 140px)';
-				main.style.minHeight = '0';
-			}
-		}
-	}, [isMobile, view]); // Re-aplicar cuando cambie la vista o el estado móvil
 
 	// Layout móvil
 	if (isMobile) {
 		return (
-			<div className="h-screen flex flex-col bg-background overflow-hidden mobile-calendar-container">
+			<div className="mobile-page-container bg-background calendar-mobile-container">
 				{/* Header moderno con tabs */}
 				<header className="border-b border-border bg-background safe-area-top">
 					<div className="h-14 px-4 flex items-center justify-between">
@@ -173,14 +162,7 @@ export default function CalendarPage() {
 				</header>
 
 				{/* Contenido según vista seleccionada */}
-				<main 
-					className="flex-1 pb-24 min-h-0 mobile-calendar-main"
-					style={{ 
-						overflowY: 'auto !important', 
-						height: 'calc(100vh - 140px) !important',
-						minHeight: '0 !important'
-					}}
-				>
+				<main className="mobile-page-main calendar-mobile-main">
 					{view === 'month' ? (
 						<MobileMonthView
 							onDateSelect={handleDateSelect}
@@ -213,7 +195,7 @@ export default function CalendarPage() {
 
 	// Layout desktop
 	return (
-		<div className="h-screen flex flex-col bg-background">
+		<div className="desktop-page-container bg-background">
 			<header className="h-16 px-6 flex items-center justify-between border-b border-border">
 				<div className="flex items-center gap-3">
 					<CalendarIcon className="h-6 w-6 text-primary" />
@@ -230,7 +212,7 @@ export default function CalendarPage() {
 				</div>
 			</header>
 			
-			<main className="flex-1 p-6 overflow-hidden">
+			<main className="desktop-page-main p-6">
 				<div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6">
 					{/* Calendario - 2/3 del ancho */}
 					<div className="lg:col-span-2">

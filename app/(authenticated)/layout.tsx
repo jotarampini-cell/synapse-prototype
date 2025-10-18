@@ -39,15 +39,14 @@ function AuthenticatedLayoutContent({
 	}
 
 	return (
-		<div className="min-h-screen bg-background overflow-x-hidden">
+		<div className="page-container bg-background">
 			<UnifiedNavigation 
 				showBackButton={showBackButton}
 				backButtonText={backButtonText}
 				onBackClick={onBackClick || undefined}
 			/>
 			
-			
-			<main>
+			<main className="page-main">
 				{children}
 			</main>
 			

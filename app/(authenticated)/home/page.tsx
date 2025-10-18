@@ -192,7 +192,7 @@ export default function HomePage() {
 	// Layout móvil
 	if (isMobile) {
 		return (
-			<div className="h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
+			<div className="mobile-page-container bg-gradient-to-br from-background via-background to-muted/20">
 				{/* Header simplificado */}
 				<header className="h-16 px-4 flex items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl safe-area-top">
 					<div>
@@ -213,7 +213,7 @@ export default function HomePage() {
 				</header>
 
 				{/* Contenido principal con scroll unificado */}
-				<main className="flex-1 overflow-y-auto pb-20 safe-area-left safe-area-right">
+				<main className="mobile-page-main safe-area-left safe-area-right">
 					{/* Banner integrado */}
 					<div className="p-4">
 						<WelcomeBanner />
@@ -471,7 +471,7 @@ export default function HomePage() {
 
 	// Layout desktop
 	return (
-		<div className="h-screen flex flex-col bg-background">
+		<div className="desktop-page-container bg-background">
 			<header className="h-16 px-6 flex items-center border-b border-border">
 				<h1 className="text-2xl font-bold">Home</h1>
 				<div className="ml-auto flex gap-2">

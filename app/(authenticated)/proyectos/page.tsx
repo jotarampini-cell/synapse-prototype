@@ -99,7 +99,7 @@ export default function ProyectosPage() {
 	// Layout móvil
 	if (isMobile) {
 		return (
-			<div className="h-screen flex flex-col bg-background">
+			<div className="mobile-page-container bg-background">
 				{/* Header */}
 				<header className="h-14 px-4 flex items-center border-b border-border bg-background safe-area-top">
 					<Button 
@@ -128,7 +128,7 @@ export default function ProyectosPage() {
 				</header>
 
 				{/* Contenido principal */}
-				<main className="flex-1 overflow-y-auto pb-20">
+				<main className="mobile-page-main">
 					<div className="p-4 space-y-3">
 						{/* Stats rápidas */}
 						<div className="grid grid-cols-4 gap-2 mb-4">
@@ -342,7 +342,7 @@ export default function ProyectosPage() {
 
 	// Layout desktop
 	return (
-		<div className="h-screen flex flex-col bg-background">
+		<div className="desktop-page-container bg-background">
 			<header className="h-16 px-6 flex items-center justify-between border-b border-border">
 				<h1 className="text-2xl font-bold">Proyectos</h1>
 				<div className="flex items-center gap-4">

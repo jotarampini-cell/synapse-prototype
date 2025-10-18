@@ -249,7 +249,7 @@ export default function TareasPage() {
 	if (isMobile) {
 		console.log('Rendering mobile layout for tasks')
 		return (
-			<div className="h-screen flex flex-col bg-gradient-to-br from-blue-50/30 via-background to-purple-50/20 overflow-x-hidden">
+			<div className="mobile-page-container bg-gradient-to-br from-blue-50/30 via-background to-purple-50/20">
 				{/* Header con tabs horizontal */}
 				<div className="px-4 py-3 border-b border-border/50 bg-background/50">
 					<TaskTabs
@@ -263,7 +263,7 @@ export default function TareasPage() {
 				</div>
 
 				{/* Contenido principal */}
-				<main className="flex-1 overflow-y-auto overflow-x-hidden pb-32">
+				<main className="mobile-page-main">
 					<div className="p-4">
 						{/* Vista de tareas destacadas o lista normal */}
 						{showStarred ? (
@@ -372,7 +372,7 @@ export default function TareasPage() {
 
 	// Layout desktop
 	return (
-		<div className="h-screen flex flex-col bg-gradient-to-br from-blue-50/30 via-background to-purple-50/20">
+		<div className="desktop-page-container bg-gradient-to-br from-blue-50/30 via-background to-purple-50/20">
 			{/* Tabs */}
 			<div className="px-6 py-3 border-b border-border/50 bg-background/50">
 				<TaskTabs
@@ -386,7 +386,7 @@ export default function TareasPage() {
 			</div>
 
 			{/* Contenido principal */}
-			<main className="flex-1 p-6 overflow-y-auto">
+			<main className="desktop-page-main p-6">
 				<div className="max-w-4xl mx-auto">
 					{/* Vista de tareas destacadas o lista normal */}
 					{showStarred ? (
