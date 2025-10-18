@@ -16,10 +16,14 @@ import { CalendarView } from "@/components/calendar/calendar-view"
 import { EventList } from "@/components/calendar/event-list"
 import { EventModal } from "@/components/calendar/event-modal"
 import { SyncSettingsModal } from "@/components/calendar/sync-settings-modal"
+import { InternalEventModal } from "@/components/calendar/internal-event-modal"
+import { MobileMonthView } from "@/components/calendar/mobile-month-view"
+import { MobileAgendaView } from "@/components/calendar/mobile-agenda-view"
 import { DebugGoogleAuth } from "@/components/debug-google-auth"
-import { useGoogleCalendarSync } from "@/hooks/use-google-calendar-sync"
+// import { useGoogleCalendarSync } from "@/hooks/use-google-calendar-sync"
 import { useCalendar } from "@/hooks/use-calendar"
-import type { GoogleCalendarEvent } from "@/lib/google-calendar/client"
+import { useInternalCalendar } from "@/hooks/use-internal-calendar"
+// import type { GoogleCalendarEvent } from "@/lib/google-calendar/client"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
@@ -27,8 +31,9 @@ export default function CalendarPage() {
 	const { isMobile } = useMobileDetection()
 	const [showEventModal, setShowEventModal] = useState(false)
 	const [showSyncSettings, setShowSyncSettings] = useState(false)
-	const [selectedEvent, setSelectedEvent] = useState<GoogleCalendarEvent | null>(null)
-	const [eventToEdit, setEventToEdit] = useState<GoogleCalendarEvent | null>(null)
+	const [selectedEvent, setSelectedEvent] = useState<any | null>(null)
+	const [eventToEdit, setEventToEdit] = useState<any | null>(null)
+	const [view, setView] = useState<'month' | 'agenda'>('month')
 
 	const {
 		selectedDate,
@@ -36,52 +41,26 @@ export default function CalendarPage() {
 	} = useCalendar()
 
 	const {
-		calendars,
-		selectedCalendar,
-		todayEvents,
-		weekEvents,
-		monthEvents,
-		syncStatus,
-		syncSettings,
-		loadAllEvents,
-		loadCalendars
-	} = useGoogleCalendarSync()
+		allItems,
+		isLoading,
+		loadEvents,
+		createEvent,
+		updateEvent,
+		deleteEvent
+	} = useInternalCalendar()
 
-	// Detectar cuando el usuario regresa del OAuth
+	// Cargar eventos al montar el componente
 	useEffect(() => {
-		const urlParams = new URLSearchParams(window.location.search);
-		if (urlParams.get('connected') === 'true') {
-			// Verificar si la sesión tiene los permisos correctos
-			const checkSession = async () => {
-				try {
-					const { createClient } = await import('@/lib/supabase/client');
-					const supabase = createClient();
-					const { data: { session } } = await supabase.auth.getSession();
-					
-					if (session?.provider_token) {
-						toast.success("¡Conectado con Google Calendar!");
-						// Recargar calendarios después de la conexión
-						setTimeout(() => {
-							loadCalendars();
-						}, 1000);
-					} else {
-						toast.error("No se pudo obtener el token de Google. Intenta de nuevo.");
-					}
-				} catch (error) {
-					console.error("Error verificando sesión:", error);
-					toast.error("Error al verificar la conexión con Google");
-				}
-			};
-			
-			checkSession();
-			// Limpiar la URL
-			window.history.replaceState({}, document.title, window.location.pathname);
-		}
-	}, [loadCalendars]);
+		const startDate = new Date()
+		startDate.setMonth(startDate.getMonth() - 1)
+		const endDate = new Date()
+		endDate.setMonth(endDate.getMonth() + 2)
+		loadEvents(startDate, endDate)
+	}, [loadEvents])
 
 	// Obtener eventos del día seleccionado
-	const selectedDayEvents = selectedDate ? todayEvents.filter(event => {
-		const eventDate = new Date(event.start.dateTime || event.start.date || '')
+	const selectedDayEvents = selectedDate ? allItems.filter(event => {
+		const eventDate = new Date(event.start_time)
 		return eventDate.toDateString() === selectedDate.toDateString()
 	}) : []
 
@@ -90,16 +69,16 @@ export default function CalendarPage() {
 		selectDate(date)
 	}
 
-	const handleEventClick = (event: GoogleCalendarEvent) => {
+	const handleEventClick = (event: any) => {
 		setSelectedEvent(event)
 	}
 
-	const handleEditEvent = (event: GoogleCalendarEvent) => {
+	const handleEditEvent = (event: any) => {
 		setEventToEdit(event)
 		setShowEventModal(true)
 	}
 
-	const handleDeleteEvent = (event: GoogleCalendarEvent) => {
+	const handleDeleteEvent = (event: any) => {
 		// Implementar eliminación de evento
 		console.log('Eliminar evento:', event)
 	}
@@ -109,135 +88,105 @@ export default function CalendarPage() {
 		setShowEventModal(true)
 	}
 
-	const handleEventSaved = (event: GoogleCalendarEvent) => {
+	const handleEventSaved = (event: any) => {
 		// Recargar eventos
-		if (selectedCalendar) {
-			loadAllEvents(selectedCalendar.id)
-		}
+		const startDate = new Date()
+		startDate.setMonth(startDate.getMonth() - 1)
+		const endDate = new Date()
+		endDate.setMonth(endDate.getMonth() + 2)
+		loadEvents(startDate, endDate)
 	}
 
 	const handleEventDeleted = (eventId: string) => {
 		// Recargar eventos
-		if (selectedCalendar) {
-			loadAllEvents(selectedCalendar.id)
-		}
+		const startDate = new Date()
+		startDate.setMonth(startDate.getMonth() - 1)
+		const endDate = new Date()
+		endDate.setMonth(endDate.getMonth() + 2)
+		loadEvents(startDate, endDate)
 	}
 
 	// Layout móvil
 	if (isMobile) {
 		return (
 			<div className="h-screen flex flex-col bg-background">
-				{/* Header */}
-				<header className="h-14 px-4 flex items-center border-b border-border bg-background safe-area-top min-w-0">
-					<div className="flex items-center gap-2 min-w-0 flex-shrink-0">
-						<CalendarIcon className="h-5 w-5 text-primary flex-shrink-0" />
-						<h1 className="text-lg font-semibold truncate">Calendario</h1>
+				{/* Header moderno con tabs */}
+				<header className="border-b border-border bg-background safe-area-top">
+					<div className="h-14 px-4 flex items-center justify-between">
+						<div className="flex items-center gap-2">
+							<CalendarIcon className="h-5 w-5 text-primary" />
+							<h1 className="text-lg font-semibold">Calendario</h1>
+						</div>
+						<div className="flex items-center gap-1">
+							<Badge variant="outline" className="text-xs text-muted-foreground">
+								Google Calendar próximamente
+							</Badge>
+							<Button 
+								variant="ghost" 
+								size="icon-mobile"
+								onClick={() => handleAddEvent(selectedDate)}
+								className="touch-target"
+							>
+								<Plus className="h-5 w-5" />
+							</Button>
+						</div>
 					</div>
-					<div className="flex-1 min-w-0" />
-					<div className="flex items-center gap-1 min-w-0 flex-shrink-0">
-						{/* Botón temporal para probar */}
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={async () => {
-								try {
-									// Verificar si hay configuración de sincronización
-									if (!syncSettings) {
-										toast.info("Configurando Google Calendar...");
-										// Abrir modal de configuración
-										setShowSyncSettings(true);
-										return;
-									}
-									
-									// Si ya hay configuración, mostrar estado
-									toast.success("¡Google Calendar configurado!");
-									console.log("Estado de sincronización:", syncStatus);
-									console.log("Calendarios disponibles:", calendars.length);
-									console.log("Configuración actual:", syncSettings);
-								} catch (error) {
-									toast.error("Error al verificar configuración");
-									console.error("Error:", error);
-								}
-							}}
-							className="text-xs px-2 py-1 h-8 flex-shrink-0"
+					
+					{/* Tabs para cambiar vista */}
+					<div className="flex border-t border-border">
+						<button
+							onClick={() => setView('month')}
+							className={cn(
+								"flex-1 py-3 text-sm font-medium transition-colors",
+								view === 'month' 
+									? "text-primary border-b-2 border-primary" 
+									: "text-muted-foreground"
+							)}
 						>
-							🧪 Test
-						</Button>
-					<Button 
-						variant="ghost" 
-						size="icon-mobile" 
-							onClick={() => setShowSyncSettings(true)}
-							className="touch-target flex-shrink-0"
-					>
-							<Settings className="h-5 w-5" />
-					</Button>
-					<Button 
-						variant="ghost" 
-						size="icon-mobile"
-							onClick={() => selectedCalendar && loadAllEvents(selectedCalendar.id)}
-							className="touch-target flex-shrink-0"
-							disabled={syncStatus.isSyncing}
-					>
-							<RefreshCw className={cn("h-5 w-5", syncStatus.isSyncing && "animate-spin")} />
-					</Button>
+							Mes
+						</button>
+						<button
+							onClick={() => setView('agenda')}
+							className={cn(
+								"flex-1 py-3 text-sm font-medium transition-colors",
+								view === 'agenda' 
+									? "text-primary border-b-2 border-primary" 
+									: "text-muted-foreground"
+							)}
+						>
+							Agenda
+						</button>
 					</div>
 				</header>
 
-				{/* Contenido principal */}
+				{/* Contenido según vista seleccionada */}
 				<main className="flex-1 overflow-y-auto pb-20">
-					<div className="p-4 space-y-4">
-						{/* Vista del calendario */}
-						<CalendarView
+					{view === 'month' ? (
+						<MobileMonthView
 							onDateSelect={handleDateSelect}
 							onEventClick={handleEventClick}
-							onAddEvent={handleAddEvent}
 						/>
-
-						{/* Lista de eventos del día seleccionado */}
-						{selectedDate && (
-							<EventList
-								events={selectedDayEvents}
-								selectedDate={selectedDate}
-								onEventClick={handleEventClick}
-								onEditEvent={handleEditEvent}
-								onDeleteEvent={handleDeleteEvent}
-							/>
-						)}
-					</div>
+					) : (
+						<MobileAgendaView
+							events={allItems}
+							onEventClick={handleEventClick}
+							onEditEvent={handleEditEvent}
+							onDeleteEvent={handleDeleteEvent}
+						/>
+					)}
 				</main>
 
-				{/* Bottom Navigation */}
 				<MobileBottomNav />
-
-				{/* FAB para agregar evento */}
-				<Button
-					onClick={() => handleAddEvent(selectedDate)}
-					className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-40 touch-target"
-					size="icon"
-				>
-					<Plus className="h-6 w-6" />
-				</Button>
-
+				
 				{/* Modales */}
-				<EventModal
+				<InternalEventModal
 					isOpen={showEventModal}
 					onClose={() => setShowEventModal(false)}
 					event={eventToEdit}
-					calendars={calendars}
-					selectedDate={selectedDate || undefined}
+					selectedDate={selectedDate}
 					onEventSaved={handleEventSaved}
 					onEventDeleted={handleEventDeleted}
 				/>
-
-				<SyncSettingsModal
-					isOpen={showSyncSettings}
-					onClose={() => setShowSyncSettings(false)}
-				/>
-				
-				{/* Componente de diagnóstico temporal */}
-				<div className="mt-6">
-					<DebugGoogleAuth />
-				</div>
 			</div>
 		)
 	}
@@ -249,56 +198,11 @@ export default function CalendarPage() {
 				<div className="flex items-center gap-3">
 					<CalendarIcon className="h-6 w-6 text-primary" />
 					<h1 className="text-2xl font-bold">Calendario</h1>
-					{syncStatus.isSyncing && (
-						<Badge variant="outline" className="animate-pulse">
-							<RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-							Sincronizando...
-						</Badge>
-					)}
 				</div>
 				<div className="flex items-center gap-4">
-					{/* Botón temporal para probar */}
-					<Button
-						variant="secondary"
-						onClick={async () => {
-							try {
-								// Verificar si hay configuración de sincronización
-								if (!syncSettings) {
-									toast.info("Configurando Google Calendar...");
-									// Abrir modal de configuración
-									setShowSyncSettings(true);
-									return;
-								}
-								
-								// Si ya hay configuración, mostrar estado
-								toast.success("¡Google Calendar configurado!");
-								console.log("Estado de sincronización:", syncStatus);
-								console.log("Calendarios disponibles:", calendars.length);
-								console.log("Configuración actual:", syncSettings);
-							} catch (error) {
-								toast.error("Error al verificar configuración");
-								console.error("Error:", error);
-							}
-						}}
-						className="bg-green-100 text-green-700 hover:bg-green-200"
-					>
-						🧪 Test Google Calendar
-					</Button>
-					<Button 
-						variant="outline"
-						onClick={() => setShowSyncSettings(true)}
-					>
-						<Settings className="h-4 w-4 mr-2" />
-						Configuración
-					</Button>
-					<Button 
-						variant="outline"
-						onClick={() => selectedCalendar && loadAllEvents(selectedCalendar.id)}
-						disabled={syncStatus.isSyncing}
-					>
-						<RefreshCw className={cn("h-4 w-4 mr-2", syncStatus.isSyncing && "animate-spin")} />
-						Actualizar
-					</Button>
+					<Badge variant="outline" className="text-sm">
+						Google Calendar próximamente
+					</Badge>
 					<Button onClick={() => handleAddEvent(selectedDate || new Date())}>
 						<Plus className="h-4 w-4 mr-2" />
 						Nuevo Evento
@@ -345,25 +249,14 @@ export default function CalendarPage() {
 			</main>
 
 			{/* Modales */}
-				<EventModal
+				<InternalEventModal
 					isOpen={showEventModal}
 					onClose={() => setShowEventModal(false)}
 					event={eventToEdit}
-					calendars={calendars}
-					selectedDate={selectedDate || undefined}
+					selectedDate={selectedDate}
 					onEventSaved={handleEventSaved}
 					onEventDeleted={handleEventDeleted}
 				/>
-
-				<SyncSettingsModal
-					isOpen={showSyncSettings}
-					onClose={() => setShowSyncSettings(false)}
-				/>
-				
-				{/* Componente de diagnóstico temporal */}
-				<div className="p-4">
-					<DebugGoogleAuth />
-				</div>
 			</div>
 	)
 }

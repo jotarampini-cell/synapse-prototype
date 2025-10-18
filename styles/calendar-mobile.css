@@ -1,0 +1,112 @@
+/* Vista móvil del calendario */
+.calendar-mobile-view {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Transiciones suaves */
+.calendar-tab-transition {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Eventos en agenda */
+.agenda-event-card {
+    backdrop-filter: blur(10px);
+}
+
+/* Scroll suave en agenda */
+.agenda-scroll {
+    scroll-behavior: smooth;
+}
+
+/* Indicadores de eventos en calendario */
+.calendar-event-indicator {
+    transition: all 0.2s ease-in-out;
+}
+
+.calendar-event-indicator:hover {
+    transform: scale(1.1);
+}
+
+/* Animaciones para tabs */
+.calendar-tab {
+    position: relative;
+    overflow: hidden;
+}
+
+.calendar-tab::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: hsl(var(--primary));
+    transform: scaleX(0);
+    transition: transform 0.2s ease-in-out;
+}
+
+.calendar-tab.active::after {
+    transform: scaleX(1);
+}
+
+/* Mejoras para touch targets */
+.calendar-day-button {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+}
+
+/* Estilos para eventos del día */
+.day-events-list {
+    max-height: 300px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive adjustments */
+@media (max-width: 375px) {
+    .calendar-day-button {
+        min-height: 40px;
+        min-width: 40px;
+        font-size: 0.875rem;
+    }
+    
+    .calendar-event-indicator {
+        width: 0.75rem;
+        height: 0.75rem;
+    }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .agenda-event-card {
+        background: rgba(255, 255, 255, 0.05);
+    }
+}
+
+/* Animaciones de entrada */
+@keyframes slideInFromBottom {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.calendar-event-enter {
+    animation: slideInFromBottom 0.3s ease-out;
+}
+
+/* Mejoras de accesibilidad */
+.calendar-day-button:focus {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+.calendar-tab:focus {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
