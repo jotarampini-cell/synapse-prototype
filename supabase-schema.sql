@@ -178,6 +178,37 @@ CREATE TRIGGER on_auth_user_created
 -- Habilitar extensiones necesarias
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Tabla de proyectos
+CREATE TABLE IF NOT EXISTS projects (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    color TEXT DEFAULT '#3B82F6',
+    status TEXT CHECK (status IN ('active', 'completed', 'paused', 'archived')) DEFAULT 'active',
+    ai_summary TEXT,  -- ⭐ CAMPO MÁGICO: Aquí vive el insight de IA
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabla de relación notas-proyectos
+CREATE TABLE IF NOT EXISTS project_notes (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    project_id UUID REFERENCES projects(id) ON DELETE CASCADE NOT NULL,
+    content_id UUID REFERENCES contents(id) ON DELETE CASCADE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(project_id, content_id)
+);
+
+-- Tabla de relación tareas-proyectos
+CREATE TABLE IF NOT EXISTS project_tasks (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    project_id UUID REFERENCES projects(id) ON DELETE CASCADE NOT NULL,
+    task_id UUID REFERENCES tasks(id) ON DELETE CASCADE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(project_id, task_id)
+);
+
 -- Tabla de eventos del calendario interno
 CREATE TABLE IF NOT EXISTS calendar_events (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -197,6 +228,13 @@ CREATE TABLE IF NOT EXISTS calendar_events (
     CONSTRAINT calendar_events_end_after_start CHECK (end_time > start_time)
 );
 
+-- Índices para proyectos
+CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);
+CREATE INDEX IF NOT EXISTS idx_project_notes_project_id ON project_notes(project_id);
+CREATE INDEX IF NOT EXISTS idx_project_notes_content_id ON project_notes(content_id);
+CREATE INDEX IF NOT EXISTS idx_project_tasks_project_id ON project_tasks(project_id);
+CREATE INDEX IF NOT EXISTS idx_project_tasks_task_id ON project_tasks(task_id);
+
 -- Índices para calendar_events
 CREATE INDEX IF NOT EXISTS idx_calendar_events_user_id ON calendar_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_calendar_events_start_time ON calendar_events(start_time);
@@ -211,13 +249,59 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+-- Triggers para updated_at
+CREATE TRIGGER update_projects_updated_at 
+    BEFORE UPDATE ON projects
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- Trigger para updated_at
 CREATE TRIGGER update_calendar_events_updated_at 
     BEFORE UPDATE ON calendar_events
     FOR EACH ROW EXECUTE FUNCTION update_calendar_events_updated_at();
 
 -- Habilitar RLS
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE calendar_events ENABLE ROW LEVEL SECURITY;
+
+-- Políticas para projects
+CREATE POLICY "Users can view their own projects" ON projects
+    FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can create their own projects" ON projects
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update their own projects" ON projects
+    FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own projects" ON projects
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- Políticas para project_notes
+CREATE POLICY "Users can view their own project_notes" ON project_notes
+    FOR SELECT USING (
+        EXISTS (SELECT 1 FROM projects WHERE projects.id = project_notes.project_id AND projects.user_id = auth.uid())
+    );
+CREATE POLICY "Users can create their own project_notes" ON project_notes
+    FOR INSERT WITH CHECK (
+        EXISTS (SELECT 1 FROM projects WHERE projects.id = project_notes.project_id AND projects.user_id = auth.uid())
+    );
+CREATE POLICY "Users can delete their own project_notes" ON project_notes
+    FOR DELETE USING (
+        EXISTS (SELECT 1 FROM projects WHERE projects.id = project_notes.project_id AND projects.user_id = auth.uid())
+    );
+
+-- Políticas para project_tasks
+CREATE POLICY "Users can view their own project_tasks" ON project_tasks
+    FOR SELECT USING (
+        EXISTS (SELECT 1 FROM projects WHERE projects.id = project_tasks.project_id AND projects.user_id = auth.uid())
+    );
+CREATE POLICY "Users can create their own project_tasks" ON project_tasks
+    FOR INSERT WITH CHECK (
+        EXISTS (SELECT 1 FROM projects WHERE projects.id = project_tasks.project_id AND projects.user_id = auth.uid())
+    );
+CREATE POLICY "Users can delete their own project_tasks" ON project_tasks
+    FOR DELETE USING (
+        EXISTS (SELECT 1 FROM projects WHERE projects.id = project_tasks.project_id AND projects.user_id = auth.uid())
+    );
 
 -- Políticas para calendar_events
 CREATE POLICY "Users can view their own calendar events" ON calendar_events
